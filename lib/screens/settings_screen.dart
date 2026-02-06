@@ -1,5 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/app_settings.dart';
@@ -23,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _saving = false;
   bool _testing = false;
   bool _checkingUpdates = false;
+  bool _installingUpdate = false;
   UpdateCheckResult? _updateResult;
 
   @override
@@ -134,12 +141,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
       return;
     }
-    final uri = Uri.parse(url);
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open update download URL.')),
+
+    if (!Platform.isAndroid) {
+      final uri = Uri.parse(url);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open update download URL.')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _installingUpdate = true);
+    try {
+      final client = HttpClient();
+      final response = await client.getUrl(Uri.parse(url)).then((request) => request.close());
+      if (response.statusCode >= 400) {
+        client.close(force: true);
+        throw StateError('APK download failed: HTTP ${response.statusCode}.');
+      }
+
+      final bytes = await consolidateHttpClientResponseBytes(response);
+      client.close(force: true);
+      final tempDir = await getTemporaryDirectory();
+      final fileName = p.basename(Uri.parse(url).path).isEmpty
+          ? 'CalorieTracker-latest.apk'
+          : p.basename(Uri.parse(url).path);
+      final apkFile = File(p.join(tempDir.path, fileName));
+      await apkFile.writeAsBytes(bytes, flush: true);
+
+      final result = await OpenFilex.open(
+        apkFile.path,
+        type: 'application/vnd.android.package-archive',
       );
+      if (result.type != ResultType.done) {
+        throw StateError('Could not open installer: ${result.message}');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Installer opened. If prompted, allow installs from this app.'),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Update install failed: ${_displayError(error)}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _installingUpdate = false);
+      }
     }
   }
 
@@ -219,7 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           FilledButton(
-            onPressed: _checkingUpdates ? null : _checkForUpdates,
+            onPressed: _checkingUpdates || _installingUpdate ? null : _checkForUpdates,
             child: _checkingUpdates
                 ? const SizedBox(
                     height: 16,
@@ -238,9 +294,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (_updateResult!.updateAvailable) ...[
               const SizedBox(height: 8),
               FilledButton.icon(
-                onPressed: _downloadUpdate,
+                onPressed: _installingUpdate ? null : _downloadUpdate,
                 icon: const Icon(Icons.system_update),
-                label: const Text('Download latest APK'),
+                label: _installingUpdate
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Install latest APK'),
               ),
             ],
           ],

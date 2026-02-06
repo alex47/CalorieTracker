@@ -33,7 +33,12 @@ jobs:
           fi
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: |
+          TAG="${GITHUB_REF_NAME:-v0.0.0}"
+          VERSION_NAME="${TAG#v}"
+          # Build number must be an integer for Android.
+          VERSION_CODE="${GITHUB_RUN_NUMBER}"
+          flutter build apk --release --build-name="${VERSION_NAME}" --build-number="${VERSION_CODE}"
 
       - name: Rename APK with version tag
         run: |
