@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/app_settings.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../services/update_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -19,6 +22,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late String _selectedModel;
   bool _saving = false;
   bool _testing = false;
+  bool _checkingUpdates = false;
+  UpdateCheckResult? _updateResult;
 
   @override
   void initState() {
@@ -97,6 +102,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _checkForUpdates() async {
+    setState(() => _checkingUpdates = true);
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final service = UpdateService();
+      final result = await service.checkForUpdate(
+        currentVersion: packageInfo.version,
+      );
+      if (mounted) {
+        setState(() => _updateResult = result);
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Update check failed: ${_displayError(error)}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _checkingUpdates = false);
+      }
+    }
+  }
+
+  Future<void> _downloadUpdate() async {
+    final url = _updateResult?.downloadUrl;
+    if (url == null || url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No APK asset found in latest release.')),
+      );
+      return;
+    }
+    final uri = Uri.parse(url);
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open update download URL.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,6 +212,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 : const Text('Save settings'),
           ),
+          const SizedBox(height: 24),
+          Text(
+            'App updates',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          FilledButton(
+            onPressed: _checkingUpdates ? null : _checkForUpdates,
+            child: _checkingUpdates
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Check for updates'),
+          ),
+          if (_updateResult != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _updateResult!.updateAvailable
+                  ? 'Update available: ${_updateResult!.latestVersion} (current: ${_updateResult!.currentVersion})'
+                  : 'You are up to date (${_updateResult!.currentVersion}).',
+            ),
+            if (_updateResult!.updateAvailable) ...[
+              const SizedBox(height: 8),
+              FilledButton.icon(
+                onPressed: _downloadUpdate,
+                icon: const Icon(Icons.system_update),
+                label: const Text('Download latest APK'),
+              ),
+            ],
+          ],
           const SizedBox(height: 24),
           Text(
             'Data tools',
