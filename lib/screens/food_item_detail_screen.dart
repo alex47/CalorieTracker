@@ -32,6 +32,10 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     return raw;
   }
 
+  String _formatGrams(double value) {
+    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -105,7 +109,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
         {
           'role': 'user',
           'content':
-              'Current item:\n${_item.name}, ${_item.amount}, ${_item.calories} kcal, notes: ${_item.notes.isEmpty ? '-' : _item.notes}\n\nUpdate this item based on my correction. Return JSON with exactly one item in "items".',
+              'Current item:\n${_item.name}, ${_item.amount}, ${_item.calories} kcal, fat ${_formatGrams(_item.fat)}g, protein ${_formatGrams(_item.protein)}g, carbs ${_formatGrams(_item.carbs)}g, notes: ${_item.notes.isEmpty ? '-' : _item.notes}\n\nUpdate this item based on my correction. Return JSON with exactly one item in "items".',
         },
       ];
 
@@ -124,8 +128,20 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       final name = (updated['name'] as String? ?? '').trim();
       final amount = (updated['amount'] as String? ?? '').trim();
       final calories = (updated['calories'] as num?)?.round();
+      final fat = (updated['fat'] as num?)?.toDouble();
+      final protein = (updated['protein'] as num?)?.toDouble();
+      final carbs = (updated['carbs'] as num?)?.toDouble();
       final notes = (updated['notes'] as String? ?? '').trim();
-      if (name.isEmpty || amount.isEmpty || calories == null || calories <= 0) {
+      if (name.isEmpty ||
+          amount.isEmpty ||
+          calories == null ||
+          calories <= 0 ||
+          fat == null ||
+          fat < 0 ||
+          protein == null ||
+          protein < 0 ||
+          carbs == null ||
+          carbs < 0) {
         throw const FormatException('Invalid refined item in AI response.');
       }
 
@@ -136,6 +152,9 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           name: name,
           amount: amount,
           calories: calories,
+          fat: fat,
+          protein: protein,
+          carbs: carbs,
           notes: notes,
         );
         _dirty = true;
@@ -160,6 +179,9 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
         name: _item.name,
         amount: _item.amount,
         calories: _item.calories,
+        fat: _item.fat,
+        protein: _item.protein,
+        carbs: _item.carbs,
         notes: _item.notes,
       );
       if (mounted) {
@@ -181,7 +203,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             title: const Text('Delete item'),
             content: const Text('Are you sure you want to delete this food item?'),
             actions: [
-              TextButton(
+              FilledButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
               ),
@@ -236,6 +258,21 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           _DetailCard(
             label: 'Calories',
             value: '${_item.calories} kcal',
+          ),
+          const SizedBox(height: 12),
+          _DetailCard(
+            label: 'Fat',
+            value: '${_formatGrams(_item.fat)} g',
+          ),
+          const SizedBox(height: 12),
+          _DetailCard(
+            label: 'Protein',
+            value: '${_formatGrams(_item.protein)} g',
+          ),
+          const SizedBox(height: 12),
+          _DetailCard(
+            label: 'Carbs',
+            value: '${_formatGrams(_item.carbs)} g',
           ),
           const SizedBox(height: 12),
           _DetailCard(

@@ -28,6 +28,9 @@ class EntriesRepository {
           'name': item['name'] as String,
           'amount': item['amount'] as String,
           'calories': (item['calories'] as num).round(),
+          'fat': (item['fat'] as num?)?.toDouble() ?? 0,
+          'protein': (item['protein'] as num?)?.toDouble() ?? 0,
+          'carbs': (item['carbs'] as num?)?.toDouble() ?? 0,
           'notes': item['notes'] as String? ?? '',
         });
       }
@@ -58,6 +61,9 @@ class EntriesRepository {
     required String name,
     required String amount,
     required int calories,
+    required double fat,
+    required double protein,
+    required double carbs,
     required String notes,
   }) async {
     final db = await DatabaseService.instance.database;
@@ -67,6 +73,9 @@ class EntriesRepository {
         'name': name,
         'amount': amount,
         'calories': calories,
+        'fat': fat,
+        'protein': protein,
+        'carbs': carbs,
         'notes': notes,
       },
       where: 'id = ?',

@@ -120,7 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          FilledButton.icon(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Export is coming soon.')),
@@ -130,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: const Text('Export data'),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          FilledButton.icon(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Import is coming soon.')),

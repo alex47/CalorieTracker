@@ -19,7 +19,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -40,6 +40,9 @@ class DatabaseService {
             name TEXT NOT NULL,
             amount TEXT NOT NULL,
             calories INTEGER NOT NULL,
+            fat REAL NOT NULL DEFAULT 0,
+            protein REAL NOT NULL DEFAULT 0,
+            carbs REAL NOT NULL DEFAULT 0,
             notes TEXT,
             FOREIGN KEY(entry_id) REFERENCES entries(id)
           )
@@ -53,6 +56,19 @@ class DatabaseService {
           )
           ''',
         );
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN fat REAL NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN protein REAL NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN carbs REAL NOT NULL DEFAULT 0',
+          );
+        }
       },
     );
   }

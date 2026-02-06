@@ -5,6 +5,9 @@ class FoodItem {
     required this.name,
     required this.amount,
     required this.calories,
+    required this.fat,
+    required this.protein,
+    required this.carbs,
     required this.notes,
   });
 
@@ -13,7 +16,17 @@ class FoodItem {
   final String name;
   final String amount;
   final int calories;
+  final double fat;
+  final double protein;
+  final double carbs;
   final String notes;
+
+  static double _toDouble(Object? value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+    return 0;
+  }
 
   factory FoodItem.fromMap(Map<String, Object?> map) {
     return FoodItem(
@@ -22,6 +35,9 @@ class FoodItem {
       name: map['name'] as String,
       amount: map['amount'] as String,
       calories: map['calories'] as int,
+      fat: _toDouble(map['fat']),
+      protein: _toDouble(map['protein']),
+      carbs: _toDouble(map['carbs']),
       notes: (map['notes'] as String?) ?? '',
     );
   }

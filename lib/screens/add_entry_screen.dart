@@ -146,7 +146,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             ),
           ),
           actions: [
-            TextButton(
+            FilledButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
@@ -255,6 +255,13 @@ class _ResultsCard extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final int total;
 
+  String _formatGrams(dynamic value) {
+    if (value is! num) {
+      return '0';
+    }
+    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -277,6 +284,9 @@ class _ResultsCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                     Text('${(item['calories'] as num).round()} kcal'),
+                    Text(
+                      'Fat ${_formatGrams(item['fat'])}g • Protein ${_formatGrams(item['protein'])}g • Carbs ${_formatGrams(item['carbs'])}g',
+                    ),
                     if (notes != null && notes.isNotEmpty)
                       Text(
                         'Notes: $notes',

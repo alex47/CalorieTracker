@@ -12,11 +12,12 @@ class OpenAIService {
   static const String systemPrompt = '''
 You are a nutrition estimation assistant.
 Return ONLY JSON with this schema:
-{ "items": [ { "name": "", "amount": "", "calories": 0, "notes": "" } ], "error": "" }
+{ "items": [ { "name": "", "amount": "", "calories": 0, "fat": 0, "protein": 0, "carbs": 0, "notes": "" } ], "error": "" }
 Rules:
 - Parse each food and its amount from the user text.
 - If units are unclear, make a reasonable assumption and note it in "notes".
 - Calories must be per item.
+- Include fat, protein, and carbs (grams) per item.
 - Correct obvious typos in food names and amounts.
 - Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
 - Normalize amount text to clean, readable formatting.
@@ -77,7 +78,7 @@ Rules:
       {
         'role': 'user',
         'content': includeReminder
-            ? '$userInput\n\nReminder: respond ONLY with valid JSON and include calories and units.'
+            ? '$userInput\n\nReminder: respond ONLY with valid JSON and include calories, fat, protein, carbs, and units.'
             : userInput,
       },
     ];
@@ -128,11 +129,23 @@ Rules:
       final name = map['name'] as String? ?? '';
       final amount = map['amount'] as String? ?? '';
       final calories = map['calories'];
+      final fat = map['fat'];
+      final protein = map['protein'];
+      final carbs = map['carbs'];
       if (name.trim().isEmpty || amount.trim().isEmpty) {
         throw const FormatException('Missing name or amount.');
       }
       if (calories is! num || calories <= 0) {
         throw const FormatException('Missing or invalid calories.');
+      }
+      if (fat is! num || fat < 0) {
+        throw const FormatException('Missing or invalid fat.');
+      }
+      if (protein is! num || protein < 0) {
+        throw const FormatException('Missing or invalid protein.');
+      }
+      if (carbs is! num || carbs < 0) {
+        throw const FormatException('Missing or invalid carbs.');
       }
     }
 
