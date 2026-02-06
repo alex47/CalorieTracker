@@ -1,0 +1,58 @@
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+class DatabaseService {
+  DatabaseService._();
+
+  static final DatabaseService instance = DatabaseService._();
+
+  Database? _database;
+
+  Future<void> initialize() async {
+    _database = await openDatabase(
+      join(await getDatabasesPath(), 'calorie_tracker.db'),
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute(
+          '''
+          CREATE TABLE entries (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_date TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            prompt TEXT NOT NULL,
+            response TEXT NOT NULL
+          )
+          ''',
+        );
+        await db.execute(
+          '''
+          CREATE TABLE entry_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            entry_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            amount TEXT NOT NULL,
+            calories INTEGER NOT NULL,
+            notes TEXT,
+            FOREIGN KEY(entry_id) REFERENCES entries(id)
+          )
+          ''',
+        );
+        await db.execute(
+          '''
+          CREATE TABLE settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+          )
+          ''',
+        );
+      },
+    );
+  }
+
+  Future<Database> get database async {
+    if (_database == null) {
+      throw StateError('Database has not been initialized.');
+    }
+    return _database!;
+  }
+}
