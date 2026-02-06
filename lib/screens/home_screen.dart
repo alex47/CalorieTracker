@@ -6,6 +6,7 @@ import '../services/entries_repository.dart';
 import '../services/settings_service.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
+import 'food_item_detail_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -123,7 +124,20 @@ class _HomeScreenState extends State<HomeScreen> {
               else if (_items.isEmpty)
                 const _EmptyState()
               else
-                _ItemsTable(items: _items),
+                _ItemsTable(
+                  items: _items,
+                  onItemTap: (item) async {
+                    final changed = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FoodItemDetailScreen(item: item),
+                      ),
+                    );
+                    if (changed == true) {
+                      await _loadItems();
+                    }
+                  },
+                ),
             ],
           ),
         ),
@@ -159,33 +173,101 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _ItemsTable extends StatelessWidget {
-  const _ItemsTable({required this.items});
+  const _ItemsTable({
+    required this.items,
+    required this.onItemTap,
+  });
 
   final List<FoodItem> items;
+  final Future<void> Function(FoodItem) onItemTap;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: const [
-          DataColumn(label: Text('Food')),
-          DataColumn(label: Text('Amount')),
-          DataColumn(label: Text('Calories')),
-          DataColumn(label: Text('Notes')),
+    return Card(
+      child: Column(
+        children: [
+          _ItemsHeaderRow(textTheme: Theme.of(context).textTheme),
+          const Divider(height: 1),
+          ...items.map(
+            (item) => InkWell(
+              onTap: () async => onItemTap(item),
+              child: _ItemsDataRow(item: item),
+            ),
+          ),
         ],
-        rows: items
-            .map(
-              (item) => DataRow(
-                cells: [
-                  DataCell(Text(item.name)),
-                  DataCell(Text(item.amount)),
-                  DataCell(Text('${item.calories}')),
-                  DataCell(Text(item.notes.isEmpty ? '-' : item.notes)),
-                ],
-              ),
-            )
-            .toList(),
+      ),
+    );
+  }
+}
+
+class _ItemsHeaderRow extends StatelessWidget {
+  const _ItemsHeaderRow({required this.textTheme});
+
+  final TextTheme textTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text('Food', style: textTheme.labelLarge),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text('Amount', style: textTheme.labelLarge),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Calories',
+              style: textTheme.labelLarge,
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemsDataRow extends StatelessWidget {
+  const _ItemsDataRow({required this.item});
+
+  final FoodItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              item.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              item.amount,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              '${item.calories}',
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
       ),
     );
   }

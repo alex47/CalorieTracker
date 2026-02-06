@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DatabaseService {
   DatabaseService._();
@@ -9,6 +12,11 @@ class DatabaseService {
   Database? _database;
 
   Future<void> initialize() async {
+    if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
+
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
       version: 1,

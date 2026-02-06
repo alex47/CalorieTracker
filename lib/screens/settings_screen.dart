@@ -73,7 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _selectedModel,
+            initialValue: _selectedModel,
             decoration: const InputDecoration(
               labelText: 'Model',
               border: OutlineInputBorder(),

@@ -7,11 +7,11 @@ import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 
 class AddEntryScreen extends StatefulWidget {
-  const AddEntryScreen({super.key, DateTime? date}) : date = date ?? DateTime.now();
+  const AddEntryScreen({super.key, this.date});
 
   static const routeName = '/add-entry';
 
-  final DateTime date;
+  final DateTime? date;
 
   @override
   State<AddEntryScreen> createState() => _AddEntryScreenState();
@@ -21,8 +21,30 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   final TextEditingController _inputController = TextEditingController();
   final List<Map<String, String>> _history = [];
   List<Map<String, dynamic>> _items = [];
+  late DateTime _entryDate;
+  bool _didResolveRouteArgs = false;
   bool _loading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _entryDate = widget.date ?? DateTime.now();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didResolveRouteArgs) {
+      return;
+    }
+    _didResolveRouteArgs = true;
+
+    final routeDate = ModalRoute.of(context)?.settings.arguments;
+    if (routeDate is DateTime) {
+      _entryDate = routeDate;
+    }
+  }
 
   @override
   void dispose() {
@@ -79,7 +101,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       return;
     }
     await EntriesRepository.instance.createEntryGroup(
-      date: widget.date,
+      date: _entryDate,
       prompt: _history.isNotEmpty ? _history.last['content'] ?? '' : _inputController.text,
       response: jsonEncode({'items': _items}),
       items: _items,
@@ -96,12 +118,21 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         final controller = TextEditingController();
         return AlertDialog(
           title: const Text('Refine response'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Add corrections or more details',
+          content: SizedBox(
+            width: 460,
+            height: 180,
+            child: TextField(
+              controller: controller,
+              textAlignVertical: TextAlignVertical.top,
+              decoration: const InputDecoration(
+                labelText: 'Food and amounts',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                border: OutlineInputBorder(),
+              ),
+              expands: true,
+              minLines: null,
+              maxLines: null,
             ),
-            maxLines: 3,
           ),
           actions: [
             TextButton(
@@ -136,7 +167,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             controller: _inputController,
             decoration: const InputDecoration(
               labelText: 'Food and amounts',
-              hintText: 'e.g. 2 slices pizza, 1 tbsp honey, 150g chicken',
+              floatingLabelBehavior: FloatingLabelBehavior.always,
               border: OutlineInputBorder(),
             ),
             maxLines: 4,

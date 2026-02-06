@@ -27,14 +27,13 @@ class CalorieTrackerApp extends StatelessWidget {
         useMaterial3: true,
       ),
       routes: {
-        HomeScreen.routeName: (_) => const HomeScreen(),
-        AddEntryScreen.routeName: (_) => const AddEntryScreen(),
         SettingsScreen.routeName: (_) => const SettingsScreen(),
         AboutScreen.routeName: (_) => const AboutScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == AddEntryScreen.routeName) {
-          final date = settings.arguments as DateTime? ?? DateTime.now();
+          final args = settings.arguments;
+          final date = args is DateTime ? args : DateTime.now();
           return MaterialPageRoute(
             builder: (_) => AddEntryScreen(date: date),
           );
@@ -45,7 +44,6 @@ class CalorieTrackerApp extends StatelessWidget {
       localizationsDelegates: const [
         DefaultMaterialLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
-        DefaultCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
         Locale('en', 'US'),

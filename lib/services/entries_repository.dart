@@ -1,4 +1,3 @@
-import 'package:sqflite/sqflite.dart';
 
 import '../models/food_item.dart';
 import 'database_service.dart';
@@ -52,5 +51,35 @@ class EntriesRepository {
       [start.toIso8601String(), end.toIso8601String()],
     );
     return rows.map(FoodItem.fromMap).toList();
+  }
+
+  Future<void> updateEntryItem({
+    required int itemId,
+    required String name,
+    required String amount,
+    required int calories,
+    required String notes,
+  }) async {
+    final db = await DatabaseService.instance.database;
+    await db.update(
+      'entry_items',
+      {
+        'name': name,
+        'amount': amount,
+        'calories': calories,
+        'notes': notes,
+      },
+      where: 'id = ?',
+      whereArgs: [itemId],
+    );
+  }
+
+  Future<void> deleteEntryItem(int itemId) async {
+    final db = await DatabaseService.instance.database;
+    await db.delete(
+      'entry_items',
+      where: 'id = ?',
+      whereArgs: [itemId],
+    );
   }
 }

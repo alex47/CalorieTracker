@@ -37,12 +37,23 @@ Rules:
         );
         return _parseResponse(response);
       } catch (error) {
+        if (_isNonRetriableRequestError(error)) {
+          rethrow;
+        }
         lastError = error;
         attempt += 1;
       }
     }
 
     throw StateError('Failed to parse AI response after $maxAttempts attempts: $lastError');
+  }
+
+  bool _isNonRetriableRequestError(Object error) {
+    if (error is! StateError) {
+      return false;
+    }
+    final message = error.message.toString();
+    return message.contains('OpenAI request failed: 4');
   }
 
   Future<Map<String, dynamic>> _sendRequest({
@@ -71,7 +82,6 @@ Rules:
       body: jsonEncode({
         'model': model,
         'messages': messages,
-        'temperature': 0.2,
       }),
     );
 
