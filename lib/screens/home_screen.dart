@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 import '../main.dart';
 import '../models/food_item.dart';
@@ -19,34 +20,57 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  DateTime _selectedDate = DateTime.now();
-  List<FoodItem> _items = [];
-  bool _loading = true;
+  static const int _initialPage = 10000;
+
+  late final DateTime _baseDate;
+  late final PageController _pageController;
+  late DateTime _selectedDate;
+  final Map<String, Future<List<FoodItem>>> _dayFutures = {};
 
   @override
   void initState() {
     super.initState();
-    _loadItems();
+    _baseDate = DateTime.now();
+    _pageController = PageController(initialPage: _initialPage);
+    _selectedDate = _dateForPage(_initialPage);
   }
 
-  Future<void> _loadItems() async {
-    setState(() => _loading = true);
-    final items = await EntriesRepository.instance.fetchItemsForDate(_selectedDate);
-    setState(() {
-      _items = items;
-      _loading = false;
-    });
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
-  int _totalCalories() {
-    return _items.fold<int>(0, (sum, item) => sum + item.calories);
+  DateTime _dayOnly(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
   }
 
-  void _shiftDate(int offsetDays) {
-    setState(() {
-      _selectedDate = _selectedDate.add(Duration(days: offsetDays));
-    });
-    _loadItems();
+  String _dateKey(DateTime date) {
+    final d = _dayOnly(date);
+    return '${d.year}-${d.month}-${d.day}';
+  }
+
+  DateTime _dateForPage(int page) {
+    return _dayOnly(_baseDate.add(Duration(days: page - _initialPage)));
+  }
+
+  Future<List<FoodItem>> _itemsForDate(DateTime date) {
+    final key = _dateKey(date);
+    return _dayFutures.putIfAbsent(
+      key,
+      () => EntriesRepository.instance.fetchItemsForDate(date),
+    );
+  }
+
+  Future<void> _reloadDate(DateTime date) async {
+    final day = _dayOnly(date);
+    _dayFutures.remove(_dateKey(day));
+    setState(() {});
+    await _itemsForDate(day);
+  }
+
+  int _totalCalories(List<FoodItem> items) {
+    return items.fold<int>(0, (sum, item) => sum + item.calories);
   }
 
   Future<void> _navigateToAdd() async {
@@ -55,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       AddEntryScreen.routeName,
       arguments: _selectedDate,
     );
-    await _loadItems();
+    await _reloadDate(_selectedDate);
   }
 
   @override
@@ -88,65 +112,92 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _navigateToAdd,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         icon: const Icon(Icons.add),
         label: const Text('Add'),
       ),
-      body: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity == null) {
-            return;
-          }
-          if (details.primaryVelocity! < 0) {
-            _shiftDate(1);
-          } else if (details.primaryVelocity! > 0) {
-            _shiftDate(-1);
-          }
-        },
-        child: RefreshIndicator(
-          onRefresh: _loadItems,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                formatDate(_selectedDate),
-                style: Theme.of(context).textTheme.headlineSmall,
+      body: ScrollConfiguration(
+        behavior: const _PageViewScrollBehavior(),
+        child: PageView.builder(
+          controller: _pageController,
+          onPageChanged: (page) {
+            setState(() {
+              _selectedDate = _dateForPage(page);
+            });
+          },
+          itemBuilder: (context, page) {
+            final pageDate = _dateForPage(page);
+            return RefreshIndicator(
+              onRefresh: () => _reloadDate(pageDate),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Text(
+                    formatDate(pageDate),
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 12),
+                  FutureBuilder<List<FoodItem>>(
+                    future: _itemsForDate(pageDate),
+                    builder: (context, snapshot) {
+                      final items = snapshot.data ?? const <FoodItem>[];
+                      return _buildTotalCard(dailyGoal, _totalCalories(items));
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Food items',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  FutureBuilder<List<FoodItem>>(
+                    future: _itemsForDate(pageDate),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting &&
+                          !snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Text(
+                            'Failed to load entries.',
+                            style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          ),
+                        );
+                      }
+                      final items = snapshot.data ?? const <FoodItem>[];
+                      if (items.isEmpty) {
+                        return const _EmptyState();
+                      }
+                      return _ItemsTable(
+                        items: items,
+                        onItemTap: (item) async {
+                          final changed = await Navigator.push<bool>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => FoodItemDetailScreen(item: item),
+                            ),
+                          );
+                          if (changed == true) {
+                            await _reloadDate(pageDate);
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              _buildTotalCard(dailyGoal),
-              const SizedBox(height: 16),
-              Text(
-                'Food items',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              if (_loading)
-                const Center(child: CircularProgressIndicator())
-              else if (_items.isEmpty)
-                const _EmptyState()
-              else
-                _ItemsTable(
-                  items: _items,
-                  onItemTap: (item) async {
-                    final changed = await Navigator.push<bool>(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => FoodItemDetailScreen(item: item),
-                      ),
-                    );
-                    if (changed == true) {
-                      await _loadItems();
-                    }
-                  },
-                ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildTotalCard(int dailyGoal) {
-    final total = _totalCalories();
+  Widget _buildTotalCard(int dailyGoal, int total) {
     final remaining = dailyGoal - total;
     return Card(
       child: Padding(
@@ -285,4 +336,16 @@ class _EmptyState extends StatelessWidget {
       ),
     );
   }
+}
+
+class _PageViewScrollBehavior extends MaterialScrollBehavior {
+  const _PageViewScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
 }

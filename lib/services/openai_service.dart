@@ -12,11 +12,19 @@ class OpenAIService {
   static const String systemPrompt = '''
 You are a nutrition estimation assistant.
 Return ONLY JSON with this schema:
-{ "items": [ { "name": "", "amount": "", "calories": 0, "notes": "" } ] }
+{ "items": [ { "name": "", "amount": "", "calories": 0, "notes": "" } ], "error": "" }
 Rules:
 - Parse each food and its amount from the user text.
 - If units are unclear, make a reasonable assumption and note it in "notes".
 - Calories must be per item.
+- Correct obvious typos in food names and amounts.
+- Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
+- Normalize amount text to clean, readable formatting.
+- On successful parse, keep "notes" informational only; do not ask follow-up questions or request user actions.
+- If you cannot extract at least one valid food name + amount pair, return:
+  { "items": [], "error": "<a short natural-language explanation of what is missing and what the user should clarify>" }
+- The "error" text must sound natural and helpful, not templated.
+- Do not add any extra text outside JSON.
 ''';
 
   Future<Map<String, dynamic>> estimateCalories({
@@ -53,7 +61,8 @@ Rules:
       return false;
     }
     final message = error.message.toString();
-    return message.contains('OpenAI request failed: 4');
+    return message.contains('OpenAI request failed: 4') ||
+        message.startsWith('The AI says:');
   }
 
   Future<Map<String, dynamic>> _sendRequest({
@@ -104,9 +113,14 @@ Rules:
     }
 
     final parsed = jsonDecode(content) as Map<String, dynamic>;
+    final errorMessage = (parsed['error'] as String?)?.trim();
+    if (errorMessage != null && errorMessage.isNotEmpty) {
+      throw StateError('The AI says: $errorMessage');
+    }
+
     final items = parsed['items'] as List<dynamic>?;
     if (items == null || items.isEmpty) {
-      throw const FormatException('Missing items in response.');
+      throw const FormatException('AI returned no items and no explanation.');
     }
 
     for (final item in items) {

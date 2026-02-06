@@ -20,12 +20,42 @@ class CalorieTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const buttonBackground = Color(0xFF1E3A8A);
+    const buttonForeground = Color(0xFFF1F5FF);
+    const highlight = Color(0xFF64B5F6);
+
     return MaterialApp(
       title: 'Calorie Tracker',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: buttonBackground, brightness: Brightness.dark)
+            .copyWith(primary: buttonBackground, onPrimary: buttonForeground),
+        inputDecorationTheme: InputDecorationTheme(
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: highlight, width: 2),
+          ),
+          floatingLabelStyle: const TextStyle(color: highlight),
+        ),
+        textSelectionTheme: const TextSelectionThemeData(
+          cursorColor: highlight,
+          selectionHandleColor: highlight,
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: buttonBackground,
+            foregroundColor: buttonForeground,
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: buttonBackground,
+          foregroundColor: buttonForeground,
+        ),
+        useMaterial3: true,
+      ),
+      themeMode: ThemeMode.dark,
       routes: {
         SettingsScreen.routeName: (_) => const SettingsScreen(),
         AboutScreen.routeName: (_) => const AboutScreen(),

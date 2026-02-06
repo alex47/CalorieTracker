@@ -21,6 +21,17 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   bool _dirty = false;
   String? _errorMessage;
 
+  String _displayError(Object error) {
+    final raw = error.toString().trim();
+    if (raw.startsWith('Bad state: ')) {
+      return raw.substring('Bad state: '.length).trim();
+    }
+    if (raw.startsWith('FormatException: ')) {
+      return raw.substring('FormatException: '.length).trim();
+    }
+    return raw;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -32,34 +43,41 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       context: context,
       builder: (context) {
         final controller = TextEditingController();
-        return AlertDialog(
-          title: const Text('Refine item'),
-          content: SizedBox(
-            width: 460,
-            height: 180,
-            child: TextField(
-              controller: controller,
-              textAlignVertical: TextAlignVertical.top,
-              decoration: const InputDecoration(
-                labelText: 'Food and amounts',
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(),
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Refine item'),
+              content: SizedBox(
+                width: 460,
+                height: 180,
+                child: TextField(
+                  controller: controller,
+                  textAlignVertical: TextAlignVertical.top,
+                  onChanged: (_) => setDialogState(() {}),
+                  decoration: const InputDecoration(
+                    labelText: 'Food and amounts',
+                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                    border: OutlineInputBorder(),
+                  ),
+                  expands: true,
+                  minLines: null,
+                  maxLines: null,
+                ),
               ),
-              expands: true,
-              minLines: null,
-              maxLines: null,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('Send'),
-            ),
-          ],
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: controller.text.trim().isEmpty
+                      ? null
+                      : () => Navigator.pop(context, controller.text.trim()),
+                  child: const Text('Send'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -124,7 +142,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       });
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to refine item. ${error.toString()}';
+        _errorMessage = 'Failed to refine item. ${_displayError(error)}';
       });
     } finally {
       setState(() => _loading = false);
@@ -167,7 +185,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 onPressed: () => Navigator.pop(context, false),
                 child: const Text('Cancel'),
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: const Text('Delete'),
               ),
@@ -238,21 +256,21 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: _loading || _saving ? null : _deleteItem,
                   child: const Text('Delete'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: OutlinedButton(
+                child: FilledButton(
                   onPressed: _loading || _saving ? null : _refineItem,
                   child: const Text('Refine'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: _saving || !_dirty ? null : _saveChanges,
                   child: const Text('Save'),
                 ),

@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 24),
-          ElevatedButton(
+          FilledButton(
             onPressed: _saving ? null : _save,
             child: _saving
                 ? const SizedBox(

@@ -26,6 +26,17 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   bool _loading = false;
   String? _errorMessage;
 
+  String _displayError(Object error) {
+    final raw = error.toString().trim();
+    if (raw.startsWith('Bad state: ')) {
+      return raw.substring('Bad state: '.length).trim();
+    }
+    if (raw.startsWith('FormatException: ')) {
+      return raw.substring('FormatException: '.length).trim();
+    }
+    return raw;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -81,7 +92,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       });
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to fetch calories. ${error.toString()}';
+        _errorMessage = 'Failed to fetch calories. ${_displayError(error)}';
       });
     } finally {
       setState(() => _loading = false);
@@ -139,7 +150,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
               child: const Text('Send'),
             ),
@@ -170,10 +181,11 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               floatingLabelBehavior: FloatingLabelBehavior.always,
               border: OutlineInputBorder(),
             ),
-            maxLines: 4,
+            minLines: 5,
+            maxLines: 10,
           ),
           const SizedBox(height: 12),
-          ElevatedButton.icon(
+          FilledButton.icon(
             onPressed: _loading
                 ? null
                 : () {
@@ -182,8 +194,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       setState(() => _errorMessage = 'Please enter food items.');
                       return;
                     }
-                    _history.clear();
-                    _history.add({'role': 'user', 'content': text});
+                    setState(() {
+                      _items = [];
+                      _errorMessage = null;
+                      _history.clear();
+                      _history.add({'role': 'user', 'content': text});
+                    });
                     _submit(prompt: text);
                   },
             icon: const Icon(Icons.auto_awesome),
@@ -206,22 +222,22 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                  child: FilledButton(
+                    onPressed: _loading ? null : () => Navigator.pop(context),
                     child: const Text('Cancel'),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _refineResponse,
+                  child: FilledButton(
+                    onPressed: _loading ? null : _refineResponse,
                     child: const Text('Refine'),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: _saveEntry,
+                  child: FilledButton(
+                    onPressed: _loading ? null : _saveEntry,
                     child: const Text('Accept'),
                   ),
                 ),
