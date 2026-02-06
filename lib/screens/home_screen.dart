@@ -7,6 +7,7 @@ import '../services/entries_repository.dart';
 import '../services/settings_service.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
+import 'daily_macros_screen.dart';
 import 'food_item_detail_screen.dart';
 import 'settings_screen.dart';
 
@@ -73,6 +74,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return items.fold<int>(0, (sum, item) => sum + item.calories);
   }
 
+  double _totalFat(List<FoodItem> items) {
+    return items.fold<double>(0, (sum, item) => sum + item.fat);
+  }
+
+  double _totalProtein(List<FoodItem> items) {
+    return items.fold<double>(0, (sum, item) => sum + item.protein);
+  }
+
+  double _totalCarbs(List<FoodItem> items) {
+    return items.fold<double>(0, (sum, item) => sum + item.carbs);
+  }
+
   Future<void> _navigateToAdd() async {
     await Navigator.pushNamed(
       context,
@@ -114,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: _navigateToAdd,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        extendedPadding: const EdgeInsets.symmetric(horizontal: 36),
         icon: const Icon(Icons.add),
         label: const Text('Add'),
       ),
@@ -143,7 +157,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     future: _itemsForDate(pageDate),
                     builder: (context, snapshot) {
                       final items = snapshot.data ?? const <FoodItem>[];
-                      return _buildTotalCard(dailyGoal, _totalCalories(items));
+                      return _buildTotalCard(
+                        dailyGoal,
+                        _totalCalories(items),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DailyMacrosScreen(
+                                date: pageDate,
+                                fat: _totalFat(items),
+                                protein: _totalProtein(items),
+                                carbs: _totalCarbs(items),
+                              ),
+                            ),
+                          );
+                        },
+                      );
                     },
                   ),
                   const SizedBox(height: 16),
@@ -197,26 +227,48 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTotalCard(int dailyGoal, int total) {
-    final remaining = dailyGoal - total;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Total calories', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              '$total kcal',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Daily goal: $dailyGoal kcal (${remaining >= 0 ? remaining : 0} kcal remaining)',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
+  Widget _buildTotalCard(
+    int dailyGoal,
+    int total, {
+    required VoidCallback onTap,
+  }) {
+    final progress = dailyGoal > 0 ? (total / dailyGoal).clamp(0.0, 1.0) : 0.0;
+    final isOverGoal = total > dailyGoal;
+    const overGoalColor = Color(0xFF7F1D1D);
+    final barColor = isOverGoal ? overGoalColor : Theme.of(context).colorScheme.primary;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Card(
+        margin: EdgeInsets.zero,
+        clipBehavior: Clip.antiAlias,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              Container(
+                height: 76,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
+              FractionallySizedBox(
+                widthFactor: progress,
+                child: Container(
+                  height: 76,
+                  color: barColor,
+                ),
+              ),
+              SizedBox(
+                height: 76,
+                child: Center(
+                  child: Text(
+                    '$total kcal',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

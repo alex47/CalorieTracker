@@ -56,6 +56,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 height: 180,
                 child: TextField(
                   controller: controller,
+                  autofocus: true,
                   textAlignVertical: TextAlignVertical.top,
                   onChanged: (_) => setDialogState(() {}),
                   decoration: const InputDecoration(
@@ -69,15 +70,21 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 ),
               ),
               actions: [
-                FilledButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                SizedBox(
+                  width: 110,
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
                 ),
-                FilledButton(
-                  onPressed: controller.text.trim().isEmpty
-                      ? null
-                      : () => Navigator.pop(context, controller.text.trim()),
-                  child: const Text('Send'),
+                SizedBox(
+                  width: 110,
+                  child: FilledButton(
+                    onPressed: controller.text.trim().isEmpty
+                        ? null
+                        : () => Navigator.pop(context, controller.text.trim()),
+                    child: const Text('Send'),
+                  ),
                 ),
               ],
             );
@@ -249,37 +256,37 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             label: 'Food',
             value: _item.name,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _DetailCard(
             label: 'Amount',
             value: _item.amount,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _DetailCard(
             label: 'Calories',
             value: '${_item.calories} kcal',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _DetailCard(
             label: 'Fat',
             value: '${_formatGrams(_item.fat)} g',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _DetailCard(
             label: 'Protein',
             value: '${_formatGrams(_item.protein)} g',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _DetailCard(
             label: 'Carbs',
             value: '${_formatGrams(_item.carbs)} g',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _DetailCard(
             label: 'Notes',
             value: _item.notes.trim().isEmpty ? '-' : _item.notes,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           if (_loading || _saving) const LinearProgressIndicator(),
           if (_errorMessage != null)
             Padding(
@@ -289,7 +296,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -333,13 +340,13 @@ class _DetailCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label, style: Theme.of(context).textTheme.labelMedium),
-            const SizedBox(height: 6),
-            Text(value, style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(value, style: Theme.of(context).textTheme.bodyLarge),
           ],
         ),
       ),

@@ -19,6 +19,7 @@ class AddEntryScreen extends StatefulWidget {
 
 class _AddEntryScreenState extends State<AddEntryScreen> {
   final TextEditingController _inputController = TextEditingController();
+  final FocusNode _inputFocusNode = FocusNode();
   final List<Map<String, String>> _history = [];
   List<Map<String, dynamic>> _items = [];
   late DateTime _entryDate;
@@ -41,6 +42,11 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   void initState() {
     super.initState();
     _entryDate = widget.date ?? DateTime.now();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _inputFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -60,6 +66,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   @override
   void dispose() {
     _inputController.dispose();
+    _inputFocusNode.dispose();
     super.dispose();
   }
 
@@ -134,6 +141,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             height: 180,
             child: TextField(
               controller: controller,
+              autofocus: true,
               textAlignVertical: TextAlignVertical.top,
               decoration: const InputDecoration(
                 labelText: 'Food and amounts',
@@ -146,13 +154,19 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             ),
           ),
           actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+            SizedBox(
+              width: 110,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
             ),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('Send'),
+            SizedBox(
+              width: 110,
+              child: FilledButton(
+                onPressed: () => Navigator.pop(context, controller.text.trim()),
+                child: const Text('Send'),
+              ),
             ),
           ],
         );
@@ -176,6 +190,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         children: [
           TextField(
             controller: _inputController,
+            focusNode: _inputFocusNode,
             decoration: const InputDecoration(
               labelText: 'Food and amounts',
               floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -283,9 +298,15 @@ class _ResultsCard extends StatelessWidget {
                       '${item['name']} - ${item['amount']}',
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
-                    Text('${(item['calories'] as num).round()} kcal'),
+                    Text('Calories: ${(item['calories'] as num).round()} kcal'),
                     Text(
-                      'Fat ${_formatGrams(item['fat'])}g • Protein ${_formatGrams(item['protein'])}g • Carbs ${_formatGrams(item['carbs'])}g',
+                      'Fat: ${_formatGrams(item['fat'])} g',
+                    ),
+                    Text(
+                      'Protein: ${_formatGrams(item['protein'])} g',
+                    ),
+                    Text(
+                      'Carbs: ${_formatGrams(item['carbs'])} g',
                     ),
                     if (notes != null && notes.isNotEmpty)
                       Text(

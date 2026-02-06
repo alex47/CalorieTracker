@@ -47,6 +47,11 @@ class CalorieTrackerApp extends StatelessWidget {
           style: FilledButton.styleFrom(
             backgroundColor: buttonBackground,
             foregroundColor: buttonForeground,
+            minimumSize: const Size(0, 52),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(

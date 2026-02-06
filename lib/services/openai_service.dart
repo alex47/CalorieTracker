@@ -84,14 +84,15 @@ Rules:
     ];
 
     final response = await http.post(
-      Uri.parse('https://api.openai.com/v1/chat/completions'),
+      Uri.parse('https://api.openai.com/v1/responses'),
       headers: {
         'Authorization': 'Bearer $apiKey',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({
         'model': model,
-        'messages': messages,
+        'input': messages,
+        'store': false,
       }),
     );
 
@@ -103,12 +104,7 @@ Rules:
   }
 
   Map<String, dynamic> _parseResponse(Map<String, dynamic> response) {
-    final choices = response['choices'] as List<dynamic>?;
-    if (choices == null || choices.isEmpty) {
-      throw const FormatException('Missing choices in response.');
-    }
-
-    final content = choices.first['message']?['content'] as String?;
+    final content = _extractResponseText(response);
     if (content == null || content.isEmpty) {
       throw const FormatException('Empty content in response.');
     }
@@ -150,5 +146,33 @@ Rules:
     }
 
     return parsed;
+  }
+
+  String? _extractResponseText(Map<String, dynamic> response) {
+    final direct = response['output_text'] as String?;
+    if (direct != null && direct.trim().isNotEmpty) {
+      return direct.trim();
+    }
+
+    final output = response['output'] as List<dynamic>?;
+    if (output == null || output.isEmpty) {
+      return null;
+    }
+
+    for (final item in output) {
+      final map = item as Map<String, dynamic>;
+      final content = map['content'] as List<dynamic>?;
+      if (content == null) {
+        continue;
+      }
+      for (final part in content) {
+        final contentPart = part as Map<String, dynamic>;
+        final text = contentPart['text'] as String?;
+        if (text != null && text.trim().isNotEmpty) {
+          return text.trim();
+        }
+      }
+    }
+    return null;
   }
 }
