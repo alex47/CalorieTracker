@@ -95,133 +95,154 @@ class _HomeScreenState extends State<HomeScreen> {
     await _reloadDate(_selectedDate);
   }
 
+  bool _isTodaySelected() {
+    final today = _dayOnly(DateTime.now());
+    return _selectedDate == today;
+  }
+
+  Future<bool> _onWillPop() async {
+    if (!_isTodaySelected()) {
+      await _pageController.animateToPage(
+        _initialPage,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final dailyGoal = SettingsService.instance.settings.dailyGoal;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calorie Tracker'),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == SettingsScreen.routeName) {
-                Navigator.pushNamed(context, SettingsScreen.routeName);
-              } else if (value == AboutScreen.routeName) {
-                Navigator.pushNamed(context, AboutScreen.routeName);
-              }
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Calorie Tracker'),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == SettingsScreen.routeName) {
+                  Navigator.pushNamed(context, SettingsScreen.routeName);
+                } else if (value == AboutScreen.routeName) {
+                  Navigator.pushNamed(context, AboutScreen.routeName);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: SettingsScreen.routeName,
+                  child: Text('Settings'),
+                ),
+                const PopupMenuItem(
+                  value: AboutScreen.routeName,
+                  child: Text('About'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _navigateToAdd,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          extendedPadding: const EdgeInsets.symmetric(horizontal: 36),
+          icon: const Icon(Icons.add),
+          label: const Text('Add'),
+        ),
+        body: ScrollConfiguration(
+          behavior: const _PageViewScrollBehavior(),
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: _initialPage + 1,
+            onPageChanged: (page) {
+              setState(() {
+                _selectedDate = _dateForPage(page);
+              });
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: SettingsScreen.routeName,
-                child: Text('Settings'),
-              ),
-              const PopupMenuItem(
-                value: AboutScreen.routeName,
-                child: Text('About'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _navigateToAdd,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 36),
-        icon: const Icon(Icons.add),
-        label: const Text('Add'),
-      ),
-      body: ScrollConfiguration(
-        behavior: const _PageViewScrollBehavior(),
-        child: PageView.builder(
-          controller: _pageController,
-          onPageChanged: (page) {
-            setState(() {
-              _selectedDate = _dateForPage(page);
-            });
-          },
-          itemBuilder: (context, page) {
-            final pageDate = _dateForPage(page);
-            return RefreshIndicator(
-              onRefresh: () => _reloadDate(pageDate),
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Text(
-                    formatDate(pageDate),
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 12),
-                  FutureBuilder<List<FoodItem>>(
-                    future: _itemsForDate(pageDate),
-                    builder: (context, snapshot) {
-                      final items = snapshot.data ?? const <FoodItem>[];
-                      return _buildTotalCard(
-                        dailyGoal,
-                        _totalCalories(items),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => DailyMacrosScreen(
-                                date: pageDate,
-                                fat: _totalFat(items),
-                                protein: _totalProtein(items),
-                                carbs: _totalCarbs(items),
+            itemBuilder: (context, page) {
+              final pageDate = _dateForPage(page);
+              return RefreshIndicator(
+                onRefresh: () => _reloadDate(pageDate),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    Text(
+                      formatDate(pageDate),
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 12),
+                    FutureBuilder<List<FoodItem>>(
+                      future: _itemsForDate(pageDate),
+                      builder: (context, snapshot) {
+                        final items = snapshot.data ?? const <FoodItem>[];
+                        return _buildTotalCard(
+                          dailyGoal,
+                          _totalCalories(items),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DailyMacrosScreen(
+                                  date: pageDate,
+                                  fat: _totalFat(items),
+                                  protein: _totalProtein(items),
+                                  carbs: _totalCarbs(items),
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Food items',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  FutureBuilder<List<FoodItem>>(
-                    future: _itemsForDate(pageDate),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting &&
-                          !snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Text(
-                            'Failed to load entries.',
-                            style: TextStyle(color: Theme.of(context).colorScheme.error),
-                          ),
+                            );
+                          },
                         );
-                      }
-                      final items = snapshot.data ?? const <FoodItem>[];
-                      if (items.isEmpty) {
-                        return const _EmptyState();
-                      }
-                      return _ItemsTable(
-                        items: items,
-                        onItemTap: (item) async {
-                          final changed = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => FoodItemDetailScreen(item: item),
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Food items',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    FutureBuilder<List<FoodItem>>(
+                      future: _itemsForDate(pageDate),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting &&
+                            !snapshot.hasData) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (snapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Text(
+                              'Failed to load entries.',
+                              style: TextStyle(color: Theme.of(context).colorScheme.error),
                             ),
                           );
-                          if (changed == true) {
-                            await _reloadDate(pageDate);
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
+                        }
+                        final items = snapshot.data ?? const <FoodItem>[];
+                        if (items.isEmpty) {
+                          return const _EmptyState();
+                        }
+                        return _ItemsTable(
+                          items: items,
+                          onItemTap: (item) async {
+                            final changed = await Navigator.push<bool>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FoodItemDetailScreen(item: item),
+                              ),
+                            );
+                            if (changed == true) {
+                              await _reloadDate(pageDate);
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
