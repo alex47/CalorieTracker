@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/app_settings.dart';
+import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _goalController = TextEditingController();
   late String _selectedModel;
   bool _saving = false;
+  bool _testing = false;
 
   @override
   void initState() {
@@ -56,6 +58,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  String _displayError(Object error) {
+    final raw = error.toString().trim();
+    if (raw.startsWith('Bad state: ')) {
+      return raw.substring('Bad state: '.length).trim();
+    }
+    return raw;
+  }
+
+  Future<void> _testKey() async {
+    final apiKey = _apiKeyController.text.trim();
+    if (apiKey.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter an API key first.')),
+      );
+      return;
+    }
+
+    setState(() => _testing = true);
+    try {
+      final service = OpenAIService(apiKey);
+      await service.testConnection(model: _selectedModel);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('API key test succeeded.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('API key test failed: ${_displayError(error)}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _testing = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,6 +111,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: OutlineInputBorder(),
             ),
             obscureText: true,
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: _saving || _testing ? null : _testKey,
+            child: _testing
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Test key'),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -105,7 +157,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _saving ? null : _save,
+            onPressed: _saving || _testing ? null : _save,
             child: _saving
                 ? const SizedBox(
                     height: 16,

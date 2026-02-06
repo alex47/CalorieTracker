@@ -28,6 +28,26 @@ Rules:
 - Do not add any extra text outside JSON.
 ''';
 
+  Future<void> testConnection({required String model}) async {
+    final response = await http.post(
+      Uri.parse('https://api.openai.com/v1/responses'),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'model': model,
+        'input': 'Reply with OK.',
+        'store': false,
+        'max_output_tokens': 16,
+      }),
+    );
+
+    if (response.statusCode >= 400) {
+      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+    }
+  }
+
   Future<Map<String, dynamic>> estimateCalories({
     required String model,
     required String userInput,
