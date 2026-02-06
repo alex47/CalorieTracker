@@ -190,6 +190,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         children: [
           TextField(
             controller: _inputController,
+            enabled: !_loading,
             focusNode: _inputFocusNode,
             decoration: const InputDecoration(
               labelText: 'Food and amounts',
