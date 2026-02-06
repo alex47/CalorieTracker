@@ -22,7 +22,10 @@ class CalorieTrackerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     const buttonBackground = Color(0xFF1E3A8A);
     const buttonForeground = Color(0xFFF1F5FF);
-    const highlight = Color(0xFF64B5F6);
+    const pageBackground = Color(0xFF212121);
+    const textColor = Color(0xFFCBCBCB);
+    const boxBackground = Color(0xFF181818);
+    const borderColor = Color(0xFF343434);
 
     return MaterialApp(
       title: 'Calorie Tracker',
@@ -32,16 +35,51 @@ class CalorieTrackerApp extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: buttonBackground, brightness: Brightness.dark)
-            .copyWith(primary: buttonBackground, onPrimary: buttonForeground),
-        inputDecorationTheme: InputDecorationTheme(
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: highlight, width: 2),
+            .copyWith(
+              primary: buttonBackground,
+              onPrimary: buttonForeground,
+              surface: boxBackground,
+              surfaceContainerHighest: boxBackground,
+              onSurface: textColor,
+              onSurfaceVariant: textColor,
+              outline: borderColor,
+            ),
+        scaffoldBackgroundColor: pageBackground,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: boxBackground,
+          foregroundColor: textColor,
+        ),
+        cardTheme: const CardThemeData(
+          color: boxBackground,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: borderColor),
+            borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
-          floatingLabelStyle: const TextStyle(color: highlight),
+        ),
+        dividerTheme: const DividerThemeData(
+          color: borderColor,
+          thickness: 1,
+        ),
+        textTheme: ThemeData.dark().textTheme.apply(
+              bodyColor: textColor,
+              displayColor: textColor,
+            ),
+        inputDecorationTheme: InputDecorationTheme(
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor, width: 2),
+          ),
+          border: const OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor),
+          ),
+          labelStyle: const TextStyle(color: textColor),
+          floatingLabelStyle: const TextStyle(color: textColor),
         ),
         textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: highlight,
-          selectionHandleColor: highlight,
+          cursorColor: textColor,
+          selectionHandleColor: textColor,
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
