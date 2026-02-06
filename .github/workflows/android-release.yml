@@ -35,15 +35,20 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
+      - name: Rename APK with version tag
+        run: |
+          VERSION="${GITHUB_REF_NAME:-manual}"
+          cp build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/CalorieTracker-${VERSION}.apk"
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: calorie-tracker-apk
+          path: build/app/outputs/flutter-apk/CalorieTracker-*.apk
           if-no-files-found: error
 
       - name: Publish GitHub Release asset
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/CalorieTracker-*.apk
           generate_release_notes: true
