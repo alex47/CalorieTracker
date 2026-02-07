@@ -4,6 +4,7 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
 
 class FoodItemDetailScreen extends StatefulWidget {
@@ -240,39 +241,14 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _DetailCard(
-            label: 'Food',
-            value: _item.name,
-          ),
-          const SizedBox(height: 8),
-          _DetailCard(
-            label: 'Amount',
-            value: _item.amount,
-          ),
-          const SizedBox(height: 8),
-          _DetailCard(
-            label: 'Calories',
-            value: '${_item.calories} kcal',
-          ),
-          const SizedBox(height: 8),
-          _DetailCard(
-            label: 'Fat',
-            value: '${_formatGrams(_item.fat)} g',
-          ),
-          const SizedBox(height: 8),
-          _DetailCard(
-            label: 'Protein',
-            value: '${_formatGrams(_item.protein)} g',
-          ),
-          const SizedBox(height: 8),
-          _DetailCard(
-            label: 'Carbs',
-            value: '${_formatGrams(_item.carbs)} g',
-          ),
-          const SizedBox(height: 8),
-          _DetailCard(
-            label: 'Notes',
-            value: _item.notes.trim().isEmpty ? '-' : _item.notes,
+          FoodBreakdownCard(
+            name: _item.name,
+            amount: _item.amount,
+            calories: _item.calories,
+            fat: _item.fat,
+            protein: _item.protein,
+            carbs: _item.carbs,
+            notes: _item.notes,
           ),
           const SizedBox(height: 10),
           if (_loading || _saving) const LinearProgressIndicator(),
@@ -319,33 +295,6 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DetailCard extends StatelessWidget {
-  const _DetailCard({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
-            const SizedBox(height: 4),
-            Text(value, style: Theme.of(context).textTheme.bodyLarge),
-          ],
-        ),
       ),
     );
   }

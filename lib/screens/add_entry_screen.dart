@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
 
 class AddEntryScreen extends StatefulWidget {
@@ -107,13 +108,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
-  int _totalCalories() {
-    return _items.fold<int>(
-      0,
-      (sum, item) => sum + (item['calories'] as num? ?? 0).round(),
-    );
-  }
-
   Future<void> _saveEntry() async {
     if (_items.isEmpty) {
       setState(() => _errorMessage = 'Please request calories before saving.');
@@ -192,7 +186,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               ),
             ),
           const SizedBox(height: 16),
-          if (_items.isNotEmpty) _ResultsCard(items: _items, total: _totalCalories()),
+          if (_items.isNotEmpty) _ResultsCard(items: _items),
           const SizedBox(height: 12),
           if (_items.isNotEmpty)
             Row(
@@ -226,63 +220,28 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 }
 
 class _ResultsCard extends StatelessWidget {
-  const _ResultsCard({required this.items, required this.total});
+  const _ResultsCard({required this.items});
 
   final List<Map<String, dynamic>> items;
-  final int total;
-
-  String _formatGrams(dynamic value) {
-    if (value is! num) {
-      return '0';
-    }
-    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Review estimate', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            ...items.map((item) {
-              final notes = (item['notes'] as String?)?.trim();
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${item['name']} - ${item['amount']}',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    Text('Calories: ${(item['calories'] as num).round()} kcal'),
-                    Text(
-                      'Fat: ${_formatGrams(item['fat'])} g',
-                    ),
-                    Text(
-                      'Protein: ${_formatGrams(item['protein'])} g',
-                    ),
-                    Text(
-                      'Carbs: ${_formatGrams(item['carbs'])} g',
-                    ),
-                    if (notes != null && notes.isNotEmpty)
-                      Text(
-                        'Notes: $notes',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                  ],
-                ),
-              );
-            }),
-            const Divider(),
-            Text('Total: $total kcal', style: Theme.of(context).textTheme.titleMedium),
-          ],
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ...items.map((item) {
+          return FoodBreakdownCard(
+            margin: const EdgeInsets.only(bottom: 10),
+            name: (item['name'] as String?) ?? '',
+            amount: (item['amount'] as String?) ?? '',
+            calories: (item['calories'] as num?)?.round() ?? 0,
+            fat: (item['fat'] as num?)?.toDouble() ?? 0,
+            protein: (item['protein'] as num?)?.toDouble() ?? 0,
+            carbs: (item['carbs'] as num?)?.toDouble() ?? 0,
+            notes: (item['notes'] as String?) ?? '',
+          );
+        }),
+      ],
     );
   }
 }
