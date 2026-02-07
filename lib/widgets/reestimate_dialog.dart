@@ -26,7 +26,7 @@ Future<String?> showReestimateDialog(
                   textAlignVertical: TextAlignVertical.top,
                   onChanged: (_) => setDialogState(() {}),
                   decoration: const InputDecoration(
-                    labelText: 'Food and amounts',
+                    labelText: 'Corrections and details',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     border: OutlineInputBorder(),
                   ),
