@@ -181,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             items: const [
               DropdownMenuItem(
                 value: 'gpt-5-mini',
-                child: Text('GPT-5 mini (default)'),
+                child: Text('GPT-5 mini'),
               ),
               DropdownMenuItem(
                 value: 'gpt-5.2',
