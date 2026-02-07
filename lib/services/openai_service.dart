@@ -21,6 +21,9 @@ Rules:
 - Correct obvious typos in food names and amounts.
 - Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
 - Normalize amount text to clean, readable formatting.
+- Keep "amount" short and simple:
+  - Prefer concise forms like "1 slice", "200 g", "1 cup", "2 tablespoon".
+  - Avoid long phrases or explanations in "amount".
 - On successful parse, keep "notes" informational only; do not ask follow-up questions or request user actions.
 - If you cannot extract at least one valid food name + amount pair, return:
   { "items": [], "error": "<a short natural-language explanation of what is missing and what the user should clarify>" }
