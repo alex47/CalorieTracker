@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dialog_action_row.dart';
+
 Future<String?> showReestimateDialog(
   BuildContext context,
 ) {
@@ -39,19 +41,18 @@ Future<String?> showReestimateDialog(
               ),
             ),
             actions: [
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 110,
-                      child: FilledButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel', textAlign: TextAlign.center),
-                      ),
+              DialogActionRow(
+                alignment: MainAxisAlignment.start,
+                items: [
+                  DialogActionItem(
+                    width: 110,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel', textAlign: TextAlign.center),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
+                  ),
+                  DialogActionItem(
+                    child: Expanded(
                       child: FilledButton.icon(
                         onPressed: trimmed.isEmpty
                             ? null
@@ -60,8 +61,8 @@ Future<String?> showReestimateDialog(
                         label: const Text('Re-estimate', textAlign: TextAlign.center),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           );

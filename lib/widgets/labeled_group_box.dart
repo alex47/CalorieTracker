@@ -32,7 +32,6 @@ class LabeledGroupBox extends StatelessWidget {
       maxLines: 1,
     )..layout();
     final labelGapWidth = labelPainter.width + (gapHorizontalPadding * 2);
-    final labelLeft = gapStart + ((labelGapWidth - labelPainter.width) / 2);
 
     return Stack(
       clipBehavior: Clip.none,
@@ -61,11 +60,14 @@ class LabeledGroupBox extends StatelessWidget {
           ),
         ),
         Positioned(
-          left: labelLeft,
+          left: gapStart,
           top: 0,
-          child: Text(
-            label,
-            style: labelStyle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: gapHorizontalPadding),
+            child: Text(
+              label,
+              style: labelStyle,
+            ),
           ),
         ),
       ],

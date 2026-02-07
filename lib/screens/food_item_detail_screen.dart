@@ -4,6 +4,7 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
 
@@ -183,28 +184,24 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             title: const Text('Delete item'),
             content: const Text('Are you sure you want to delete this food item?'),
             actions: [
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    SizedBox(
-                      width: 110,
-                      child: FilledButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel', textAlign: TextAlign.center),
-                      ),
+              DialogActionRow(
+                alignment: MainAxisAlignment.end,
+                items: [
+                  DialogActionItem(
+                    width: 110,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel', textAlign: TextAlign.center),
                     ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 110,
-                      child: FilledButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete', textAlign: TextAlign.center),
-                      ),
+                  ),
+                  DialogActionItem(
+                    width: 110,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Delete', textAlign: TextAlign.center),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
