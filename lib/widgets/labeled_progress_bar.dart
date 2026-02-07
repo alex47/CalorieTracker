@@ -11,7 +11,7 @@ class LabeledProgressBar extends StatelessWidget {
     required this.color,
     this.unit = 'g',
     this.height = 44,
-    this.animationDuration = const Duration(milliseconds: 1500),
+    this.animationDuration = const Duration(seconds: 1),
     this.overGoalColor = const Color(0xFF7F1D1D),
   });
 
