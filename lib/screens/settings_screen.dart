@@ -70,9 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     setState(() => _saving = false);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Settings saved')),
-      );
+      Navigator.pop(context, true);
     }
   }
 
