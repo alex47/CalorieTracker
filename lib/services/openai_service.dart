@@ -19,6 +19,7 @@ Rules:
 - Parse each food and its amount from the user text.
 - If units are unclear, make a reasonable assumption and note it in "notes".
 - Calories must be per item.
+- Express calories in kilocalories (kcal).
 - Include fat, protein, and carbs (grams) per item.
 - Correct obvious typos in food names and amounts.
 - Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
