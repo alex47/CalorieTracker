@@ -112,7 +112,7 @@ class CalorieTrackerApp extends StatelessWidget {
         ),
         popupMenuTheme: PopupMenuThemeData(
           textStyle: appTextTheme.bodyMedium?.copyWith(
-            fontSize: textSizeMedium,
+            fontSize: textSizeLarge,
             color: AppColors.text,
           ),
         ),

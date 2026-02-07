@@ -141,11 +141,21 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context) => [
                 const PopupMenuItem(
                   value: SettingsScreen.routeName,
-                  child: Text('Settings'),
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.settings),
+                    title: Text('Settings'),
+                  ),
                 ),
                 const PopupMenuItem(
                   value: AboutScreen.routeName,
-                  child: Text('About'),
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.info_outline),
+                    title: Text('About'),
+                  ),
                 ),
               ],
             ),
