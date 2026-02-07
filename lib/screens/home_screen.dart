@@ -285,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int dailyGoal,
     int total,
   ) {
+    const barHeight = 48.0;
     final progress = dailyGoal > 0 ? (total / dailyGoal).clamp(0.0, 1.0) : 0.0;
     final isOverGoal = total > dailyGoal;
     const overGoalColor = Color(0xFF7F1D1D);
@@ -298,18 +299,18 @@ class _HomeScreenState extends State<HomeScreen> {
           alignment: Alignment.centerLeft,
           children: [
             Container(
-              height: 76,
+              height: barHeight,
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
             ),
             FractionallySizedBox(
               widthFactor: progress,
               child: Container(
-                height: 76,
+                height: barHeight,
                 color: barColor,
               ),
             ),
             SizedBox(
-              height: 76,
+              height: barHeight,
               child: Center(
                 child: Text(
                   '$total kcal',
