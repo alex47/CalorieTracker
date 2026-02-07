@@ -60,6 +60,14 @@ class CalorieTrackerApp extends StatelessWidget {
         fontSize: textSizeXSmall,
       ),
     );
+    final buttonBaseHsl = HSLColor.fromColor(AppColors.buttonBackground);
+    final buttonBorderColor = buttonBaseHsl
+        .withLightness((buttonBaseHsl.lightness + 0.12).clamp(0.0, 1.0))
+        .toColor();
+    final borderBaseHsl = HSLColor.fromColor(AppColors.border);
+    final disabledButtonBorderColor = borderBaseHsl
+        .withLightness((borderBaseHsl.lightness + 0.12).clamp(0.0, 1.0))
+        .toColor();
 
     return MaterialApp(
       title: 'Calorie Tracker',
@@ -141,11 +149,26 @@ class CalorieTrackerApp extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
+          ).copyWith(
+            side: WidgetStateProperty.resolveWith<BorderSide>((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return BorderSide(color: disabledButtonBorderColor, width: 1);
+              }
+              return BorderSide(color: buttonBorderColor, width: 1);
+            }),
           ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: AppColors.buttonBackground,
           foregroundColor: AppColors.buttonForeground,
+        ).copyWith(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: buttonBorderColor,
+              width: 1,
+            ),
+          ),
         ),
         useMaterial3: true,
       ),
