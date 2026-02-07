@@ -207,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _calorieGoalController,
             enabled: !isBusy,
             decoration: const InputDecoration(
-              labelText: 'Daily calorie goal',
+              labelText: 'Daily calorie goal (kcal)',
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
