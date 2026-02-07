@@ -1,6 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -23,6 +23,7 @@ class AboutScreen extends StatefulWidget {
 class _AboutScreenState extends State<AboutScreen> {
   bool _checkingUpdates = false;
   bool _installingUpdate = false;
+  double? _downloadProgress;
   UpdateCheckResult? _updateResult;
 
   Future<void> _openRepo(BuildContext context) async {
@@ -87,7 +88,10 @@ class _AboutScreenState extends State<AboutScreen> {
       return;
     }
 
-    setState(() => _installingUpdate = true);
+    setState(() {
+      _installingUpdate = true;
+      _downloadProgress = 0;
+    });
     try {
       final client = HttpClient();
       final response = await client.getUrl(Uri.parse(url)).then((request) => request.close());
@@ -95,31 +99,18 @@ class _AboutScreenState extends State<AboutScreen> {
         client.close(force: true);
         throw StateError('APK download failed: HTTP ${response.statusCode}.');
       }
-
-      final bytes = await consolidateHttpClientResponseBytes(response);
+      final bytes = await _collectDownloadBytes(
+        response,
+        totalBytes: response.contentLength > 0 ? response.contentLength : null,
+      );
       client.close(force: true);
-      final tempDir = await getTemporaryDirectory();
       final fileName = p.basename(Uri.parse(url).path).isEmpty
           ? 'CalorieTracker-latest.apk'
           : p.basename(Uri.parse(url).path);
-      final apkFile = File(p.join(tempDir.path, fileName));
-      await apkFile.writeAsBytes(bytes, flush: true);
-
-      final result = await OpenFilex.open(
-        apkFile.path,
-        type: 'application/vnd.android.package-archive',
+      await _writeDownloadedApkAndHandlePostAction(
+        bytes: bytes,
+        fileName: fileName,
       );
-      if (result.type != ResultType.done) {
-        throw StateError('Could not open installer: ${result.message}');
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Installer opened. If prompted, allow installs from this app.'),
-          ),
-        );
-      }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -128,8 +119,54 @@ class _AboutScreenState extends State<AboutScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _installingUpdate = false);
+        setState(() {
+          _installingUpdate = false;
+          _downloadProgress = null;
+        });
       }
+    }
+  }
+
+  Future<Uint8List> _collectDownloadBytes(
+    Stream<List<int>> stream, {
+    required int? totalBytes,
+  }) async {
+    final bytesBuilder = BytesBuilder(copy: false);
+    var receivedBytes = 0;
+    await for (final chunk in stream) {
+      bytesBuilder.add(chunk);
+      receivedBytes += chunk.length;
+      if (mounted) {
+        setState(() {
+          _downloadProgress = totalBytes == null ? null : receivedBytes / totalBytes;
+        });
+      }
+    }
+    return bytesBuilder.takeBytes();
+  }
+
+  Future<void> _writeDownloadedApkAndHandlePostAction({
+    required Uint8List bytes,
+    required String fileName,
+  }) async {
+    final tempDir = await getTemporaryDirectory();
+    final apkFile = File(p.join(tempDir.path, fileName));
+    await apkFile.writeAsBytes(bytes, flush: true);
+
+    final result = await OpenFilex.open(
+      apkFile.path,
+      type: 'application/vnd.android.package-archive',
+    );
+    if (result.type != ResultType.done) {
+      throw StateError('Could not open installer: ${result.message}');
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Installer opened. If prompted, allow installs from this app.'),
+        ),
+      );
     }
   }
 
@@ -179,17 +216,31 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                   if (_updateResult!.updateAvailable) ...[
                     const SizedBox(height: 8),
-                    FilledButton.icon(
-                      onPressed: _installingUpdate ? null : _downloadUpdate,
-                      icon: const Icon(Icons.system_update),
-                      label: _installingUpdate
-                          ? const SizedBox(
-                              height: 16,
-                              width: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Install latest APK', textAlign: TextAlign.center),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _installingUpdate ? null : _downloadUpdate,
+                        icon: const Icon(Icons.system_update),
+                        label: _installingUpdate
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Text('Install latest APK', textAlign: TextAlign.center),
+                      ),
                     ),
+                    if (_installingUpdate) ...[
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(value: _downloadProgress),
+                      const SizedBox(height: 6),
+                      Text(
+                        _downloadProgress == null
+                            ? 'Downloading update...'
+                            : 'Downloading update... ${(_downloadProgress! * 100).clamp(0, 100).toStringAsFixed(0)}%',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
                   ],
                 ],
                 const SizedBox(height: 16),
