@@ -175,60 +175,69 @@ class _HomeScreenState extends State<HomeScreen> {
                 onRefresh: () => _reloadDate(pageDate),
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   children: [
-                    Center(
-                      child: Text(
-                        formatDate(pageDate),
-                        style: Theme.of(context).textTheme.headlineSmall,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Center(
+                        child: Text(
+                          formatDate(pageDate),
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    FutureBuilder<List<FoodItem>>(
-                      future: _itemsForDate(pageDate),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting &&
-                            !snapshot.hasData) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 8),
-                            child: Center(child: CircularProgressIndicator()),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: FutureBuilder<List<FoodItem>>(
+                        future: _itemsForDate(pageDate),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting &&
+                              !snapshot.hasData) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Center(child: CircularProgressIndicator()),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Text(
+                                'Failed to load daily totals.',
+                                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                              ),
+                            );
+                          }
+                          final items = snapshot.data ?? const <FoodItem>[];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTotalCard(
+                                dailyGoal,
+                                _totalCalories(items),
+                              ),
+                              const SizedBox(height: 8),
+                              _DailyMacrosRow(
+                                fat: _totalFat(items),
+                                fatGoal: settings.dailyFatGoal.toDouble(),
+                                protein: _totalProtein(items),
+                                proteinGoal: settings.dailyProteinGoal.toDouble(),
+                                carbs: _totalCarbs(items),
+                                carbsGoal: settings.dailyCarbsGoal.toDouble(),
+                                height: _progressBarHeight,
+                              ),
+                            ],
                           );
-                        }
-                        if (snapshot.hasError) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text(
-                              'Failed to load daily totals.',
-                              style: TextStyle(color: Theme.of(context).colorScheme.error),
-                            ),
-                          );
-                        }
-                        final items = snapshot.data ?? const <FoodItem>[];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildTotalCard(
-                              dailyGoal,
-                              _totalCalories(items),
-                            ),
-                            const SizedBox(height: 8),
-                            _DailyMacrosRow(
-                              fat: _totalFat(items),
-                              fatGoal: settings.dailyFatGoal.toDouble(),
-                              protein: _totalProtein(items),
-                              proteinGoal: settings.dailyProteinGoal.toDouble(),
-                              carbs: _totalCarbs(items),
-                              carbsGoal: settings.dailyCarbsGoal.toDouble(),
-                              height: _progressBarHeight,
-                            ),
-                          ],
-                        );
-                      },
+                        },
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      'Tracked foods',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Tracked foods',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     FutureBuilder<List<FoodItem>>(
@@ -236,11 +245,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting &&
                             !snapshot.hasData) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
                         }
                         if (snapshot.hasError) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                             child: Text(
                               'Failed to load entries.',
                               style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -249,33 +261,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         final items = snapshot.data ?? const <FoodItem>[];
                         if (items.isEmpty) {
-                          return const _EmptyState();
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: _EmptyState(),
+                          );
                         }
-                        return _ItemsTable(
-                          items: items,
-                          onItemTap: (item) async {
-                            final result = await Navigator.push<dynamic>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    FoodItemDetailScreen(item: item, itemDate: pageDate),
-                              ),
-                            );
-                            if (result == true) {
-                              await _reloadDate(pageDate);
-                              return;
-                            }
-                            if (result is Map && result['reloadToday'] == true) {
-                              await _reloadDate(DateTime.now());
-                              if (!_isTodaySelected()) {
-                                await _pageController.animateToPage(
-                                  _initialPage,
-                                  duration: const Duration(milliseconds: 260),
-                                  curve: Curves.easeOutCubic,
-                                );
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _ItemsTable(
+                            items: items,
+                            onItemTap: (item) async {
+                              final result = await Navigator.push<dynamic>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      FoodItemDetailScreen(item: item, itemDate: pageDate),
+                                ),
+                              );
+                              if (result == true) {
+                                await _reloadDate(pageDate);
+                                return;
                               }
-                            }
-                          },
+                              if (result is Map && result['reloadToday'] == true) {
+                                await _reloadDate(DateTime.now());
+                                if (!_isTodaySelected()) {
+                                  await _pageController.animateToPage(
+                                    _initialPage,
+                                    duration: const Duration(milliseconds: 260),
+                                    curve: Curves.easeOutCubic,
+                                  );
+                                }
+                              }
+                            },
+                          ),
                         );
                       },
                     ),
@@ -317,6 +335,7 @@ class _ItemsTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.zero,
       child: Column(
         children: [
           _ItemsHeaderRow(textTheme: Theme.of(context).textTheme),
