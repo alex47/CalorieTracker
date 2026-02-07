@@ -24,7 +24,9 @@ Rules:
 - Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
 - Normalize amount text to clean, readable formatting.
 - Keep "amount" short and simple:
-  - Prefer concise forms like "1 slice", "200 g", "1 cup", "2 tablespoon".
+  - Use metric units in output (g, kg, ml, l) whenever applicable.
+  - If user input uses non-metric units (cup, tablespoon, ounce, pound, etc.), convert to a reasonable metric amount.
+  - Prefer concise forms like "200 g", "250 ml", "1 slice (30 g)".
   - Avoid long phrases or explanations in "amount".
 - On successful parse, keep "notes" informational only; do not ask follow-up questions or request user actions.
 - If you cannot extract at least one valid food name + amount pair, return:
@@ -107,7 +109,7 @@ Rules:
       {
         'role': 'user',
         'content': includeReminder
-            ? '$userInput\n\nReminder: respond ONLY with valid JSON and include calories, fat, protein, carbs, and units.'
+            ? '$userInput\n\nReminder: respond ONLY with valid JSON, include calories/fat/protein/carbs, and use metric units for amounts.'
             : userInput,
       },
     ];
