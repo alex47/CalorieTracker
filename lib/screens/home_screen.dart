@@ -151,13 +151,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        floatingActionButton: FilledButton.icon(
-          onPressed: _navigateToAdd,
-          style: FilledButton.styleFrom(
-            minimumSize: const Size(130, 52),
+        floatingActionButton: SizedBox(
+          width: 130,
+          child: FilledButton.icon(
+            onPressed: _navigateToAdd,
+            icon: const Icon(Icons.add),
+            label: const Text('Add'),
           ),
-          icon: const Icon(Icons.add),
-          label: const Text('Add'),
         ),
         body: ScrollConfiguration(
           behavior: const _PageViewScrollBehavior(),
