@@ -208,16 +208,17 @@ class _AboutScreenState extends State<AboutScreen> {
                 ),
                 const SizedBox(height: 16),
                 const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: isBusy ? null : _checkForUpdates,
-                      child: _checkingUpdates
-                          ? const SizedBox(
-                              height: 16,
-                              width: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : _checkForUpdates,
+                    icon: const Icon(Icons.update),
+                    label: _checkingUpdates
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                           : const Text('Check for updates', textAlign: TextAlign.center),
                     ),
                   ),
