@@ -133,9 +133,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               onSelected: (value) async {
                 if (value == SettingsScreen.routeName) {
-                  Navigator.pushNamed(context, SettingsScreen.routeName);
+                  await Navigator.pushNamed(context, SettingsScreen.routeName);
+                  if (mounted) {
+                    setState(() {});
+                  }
                 } else if (value == AboutScreen.routeName) {
-                  Navigator.pushNamed(context, AboutScreen.routeName);
+                  await Navigator.pushNamed(context, AboutScreen.routeName);
+                  if (mounted) {
+                    setState(() {});
+                  }
                 }
               },
               itemBuilder: (context) {

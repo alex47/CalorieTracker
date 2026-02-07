@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/app_settings.dart';
@@ -19,8 +21,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _fatGoalController = TextEditingController();
   final TextEditingController _proteinGoalController = TextEditingController();
   final TextEditingController _carbsGoalController = TextEditingController();
+  Timer? _autosaveTimer;
   late String _selectedModel;
-  bool _saving = false;
   bool _testing = false;
 
   @override
@@ -44,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    _autosaveTimer?.cancel();
     _apiKeyController.dispose();
     _calorieGoalController.dispose();
     _fatGoalController.dispose();
@@ -52,13 +55,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
-  Future<void> _save() async {
-    setState(() => _saving = true);
-    final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? 2000;
-    final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? 70;
-    final dailyProteinGoal = int.tryParse(_proteinGoalController.text.trim()) ?? 150;
-    final dailyCarbsGoal = int.tryParse(_carbsGoalController.text.trim()) ?? 250;
-    await SettingsService.instance.setApiKey(_apiKeyController.text.trim());
+  Future<void> _saveNonSensitiveSettings() async {
+    final current = SettingsService.instance.settings;
+    final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? current.dailyGoal;
+    final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? current.dailyFatGoal;
+    final dailyProteinGoal =
+        int.tryParse(_proteinGoalController.text.trim()) ?? current.dailyProteinGoal;
+    final dailyCarbsGoal = int.tryParse(_carbsGoalController.text.trim()) ?? current.dailyCarbsGoal;
     await SettingsService.instance.updateSettings(
       AppSettings(
         model: _selectedModel,
@@ -68,10 +71,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         dailyCarbsGoal: dailyCarbsGoal,
       ),
     );
-    setState(() => _saving = false);
-    if (mounted) {
-      Navigator.pop(context, true);
-    }
+  }
+
+  void _scheduleSettingsAutosave() {
+    _autosaveTimer?.cancel();
+    _autosaveTimer = Timer(
+      const Duration(milliseconds: 350),
+      () => _saveNonSensitiveSettings(),
+    );
   }
 
   String _displayError(Object error) {
@@ -95,9 +102,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final service = OpenAIService(apiKey);
       await service.testConnection(model: _selectedModel);
+      await SettingsService.instance.setApiKey(apiKey);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('API key test succeeded.')),
+          const SnackBar(content: Text('API key test succeeded. Key saved.')),
         );
       }
     } catch (error) {
@@ -115,7 +123,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isBusy = _saving || _testing;
+    final isBusy = _testing;
+    const sectionSpacing = 24.0;
+    const headerToContentSpacing = 12.0;
+    const controlSpacing = 16.0;
     return WillPopScope(
       onWillPop: () async => !isBusy,
       child: Scaffold(
@@ -134,14 +145,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-            TextField(
-              controller: _apiKeyController,
-              enabled: !isBusy,
-              decoration: const InputDecoration(
-                labelText: 'OpenAI API key',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
+          Text(
+            'OpenAI',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: headerToContentSpacing),
+          TextField(
+            controller: _apiKeyController,
+            enabled: !isBusy,
+            decoration: const InputDecoration(
+              labelText: 'OpenAI API key',
+              border: OutlineInputBorder(),
+            ),
+            obscureText: true,
           ),
           const SizedBox(height: 12),
           FilledButton.icon(
@@ -155,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   )
                 : const Text('Test key', textAlign: TextAlign.center),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: controlSpacing),
           DropdownButtonFormField<String>(
             initialValue: _selectedModel,
             decoration: const InputDecoration(
@@ -177,10 +193,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : (value) {
                     if (value != null) {
                       setState(() => _selectedModel = value);
+                      _scheduleSettingsAutosave();
                     }
                   },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: sectionSpacing),
+          Text(
+            'Goals',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: headerToContentSpacing),
           TextField(
             controller: _calorieGoalController,
             enabled: !isBusy,
@@ -189,8 +211,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
+            onChanged: (_) => _scheduleSettingsAutosave(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: controlSpacing),
           TextField(
             controller: _fatGoalController,
             enabled: !isBusy,
@@ -199,8 +222,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
+            onChanged: (_) => _scheduleSettingsAutosave(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: controlSpacing),
           TextField(
             controller: _proteinGoalController,
             enabled: !isBusy,
@@ -209,8 +233,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
+            onChanged: (_) => _scheduleSettingsAutosave(),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: controlSpacing),
           TextField(
             controller: _carbsGoalController,
             enabled: !isBusy,
@@ -219,33 +244,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,
+            onChanged: (_) => _scheduleSettingsAutosave(),
           ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: isBusy ? null : _save,
-            icon: const Icon(Icons.save),
-            label: _saving
-                ? const SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Save settings', textAlign: TextAlign.center),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: sectionSpacing),
           Text(
             'Data tools',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: headerToContentSpacing),
           FilledButton.icon(
             onPressed: isBusy
                 ? null
                 : () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Export is coming soon.')),
-              );
-            },
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Export is coming soon.')),
+                    );
+                  },
             icon: const Icon(Icons.download),
             label: const Text('Export data', textAlign: TextAlign.center),
           ),
@@ -254,10 +268,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: isBusy
                 ? null
                 : () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Import is coming soon.')),
-              );
-            },
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Import is coming soon.')),
+                    );
+                  },
             icon: const Icon(Icons.upload),
             label: const Text('Import data', textAlign: TextAlign.center),
           ),
