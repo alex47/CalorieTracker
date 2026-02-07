@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
@@ -6,6 +7,7 @@ class OpenAIService {
   OpenAIService(this.apiKey);
 
   static const int maxAttempts = 3;
+  static const Duration requestTimeout = Duration(seconds: 20);
 
   final String apiKey;
 
@@ -32,19 +34,23 @@ Rules:
 ''';
 
   Future<void> testConnection({required String model}) async {
-    final response = await http.post(
-      Uri.parse('https://api.openai.com/v1/responses'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'model': model,
-        'input': 'Reply with OK.',
-        'store': false,
-        'max_output_tokens': 16,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('https://api.openai.com/v1/responses'),
+          headers: {
+            'Authorization': 'Bearer $apiKey',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'model': model,
+            'input': 'Reply with OK.',
+            'store': false,
+            'max_output_tokens': 16,
+          }),
+        )
+        .timeout(requestTimeout, onTimeout: () {
+          throw StateError('OpenAI request timed out.');
+        });
 
     if (response.statusCode >= 400) {
       throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
@@ -106,18 +112,22 @@ Rules:
       },
     ];
 
-    final response = await http.post(
-      Uri.parse('https://api.openai.com/v1/responses'),
-      headers: {
-        'Authorization': 'Bearer $apiKey',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'model': model,
-        'input': messages,
-        'store': false,
-      }),
-    );
+    final response = await http
+        .post(
+          Uri.parse('https://api.openai.com/v1/responses'),
+          headers: {
+            'Authorization': 'Bearer $apiKey',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'model': model,
+            'input': messages,
+            'store': false,
+          }),
+        )
+        .timeout(requestTimeout, onTimeout: () {
+          throw StateError('OpenAI request timed out.');
+        });
 
     if (response.statusCode >= 400) {
       throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');

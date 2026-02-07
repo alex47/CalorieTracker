@@ -184,6 +184,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     FutureBuilder<List<FoodItem>>(
                       future: _itemsForDate(pageDate),
                       builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting &&
+                            !snapshot.hasData) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              'Failed to load daily totals.',
+                              style: TextStyle(color: Theme.of(context).colorScheme.error),
+                            ),
+                          );
+                        }
                         final items = snapshot.data ?? const <FoodItem>[];
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

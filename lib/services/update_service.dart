@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
@@ -23,17 +24,22 @@ class UpdateCheckResult {
 class UpdateService {
   static const String _latestReleaseUrl =
       'https://api.github.com/repos/alex47/CalorieTracker/releases/latest';
+  static const Duration requestTimeout = Duration(seconds: 15);
 
   Future<UpdateCheckResult> checkForUpdate({
     required String currentVersion,
   }) async {
-    final response = await http.get(
-      Uri.parse(_latestReleaseUrl),
-      headers: const {
-        'Accept': 'application/vnd.github+json',
-        'User-Agent': 'CalorieTracker-App',
-      },
-    );
+    final response = await http
+        .get(
+          Uri.parse(_latestReleaseUrl),
+          headers: const {
+            'Accept': 'application/vnd.github+json',
+            'User-Agent': 'CalorieTracker-App',
+          },
+        )
+        .timeout(requestTimeout, onTimeout: () {
+          throw StateError('Update check timed out.');
+        });
 
     if (response.statusCode >= 400) {
       throw StateError('Update check failed: ${response.statusCode} ${response.body}');

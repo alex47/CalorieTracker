@@ -113,9 +113,13 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       setState(() => _errorMessage = 'Please request calories before saving.');
       return;
     }
+    final latestUserPrompt = _history.lastWhere(
+      (item) => item['role'] == 'user',
+      orElse: () => {'content': _inputController.text},
+    )['content'];
     await EntriesRepository.instance.createEntryGroup(
       date: _entryDate,
-      prompt: _history.isNotEmpty ? _history.last['content'] ?? '' : _inputController.text,
+      prompt: (latestUserPrompt ?? _inputController.text).trim(),
       response: jsonEncode({'items': _items}),
       items: _items,
     );
