@@ -105,6 +105,7 @@ class CalorieTrackerApp extends StatelessWidget {
         appBarTheme: AppBarTheme(
           backgroundColor: AppColors.boxBackground,
           foregroundColor: AppColors.text,
+          centerTitle: true,
           titleTextStyle: appTextTheme.titleLarge?.copyWith(
             color: AppColors.text,
             fontSize: textSizeLarge,
