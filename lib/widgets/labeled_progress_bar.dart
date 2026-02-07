@@ -11,6 +11,7 @@ class LabeledProgressBar extends StatelessWidget {
     required this.color,
     this.unit = 'g',
     this.height = 44,
+    this.animationDuration = const Duration(seconds: 15),
     this.overGoalColor = const Color(0xFF7F1D1D),
   });
 
@@ -20,6 +21,7 @@ class LabeledProgressBar extends StatelessWidget {
   final Color color;
   final String unit;
   final double height;
+  final Duration animationDuration;
   final Color overGoalColor;
 
   String _format(double v) {
@@ -45,16 +47,20 @@ class LabeledProgressBar extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       child: SizedBox(
         height: height,
-        child: Stack(
-          alignment: Alignment.centerLeft,
-          children: [
-            FractionallySizedBox(
-              widthFactor: progress,
-              child: Container(
-                height: height,
-                color: fillColor,
-              ),
-            ),
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                AnimatedFractionallySizedBox(
+                  duration: animationDuration,
+                  curve: Curves.easeOutCubic,
+                  widthFactor: progress,
+                  child: SizedBox(
+                    height: height,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(color: fillColor),
+                    ),
+                  ),
+                ),
             SizedBox(
               height: height,
               child: Center(

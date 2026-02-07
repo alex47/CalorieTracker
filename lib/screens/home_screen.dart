@@ -207,28 +207,33 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(color: Theme.of(context).colorScheme.error),
                               ),
                             );
-                          }
-                          final items = snapshot.data ?? const <FoodItem>[];
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildTotalCard(
-                                dailyGoal,
-                                _totalCalories(items),
-                              ),
-                              const SizedBox(height: 8),
-                              _DailyMacrosRow(
-                                fat: _totalFat(items),
-                                fatGoal: settings.dailyFatGoal.toDouble(),
-                                protein: _totalProtein(items),
-                                proteinGoal: settings.dailyProteinGoal.toDouble(),
-                                carbs: _totalCarbs(items),
-                                carbsGoal: settings.dailyCarbsGoal.toDouble(),
-                                height: _progressBarHeight,
-                              ),
-                            ],
-                          );
-                        },
+                        }
+                        final items = snapshot.data ?? const <FoodItem>[];
+                        final totalCalories = _totalCalories(items);
+                        final totalFat = _totalFat(items);
+                        final totalProtein = _totalProtein(items);
+                        final totalCarbs = _totalCarbs(items);
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTotalCard(
+                              dailyGoal,
+                              totalCalories,
+                            ),
+                            const SizedBox(height: 8),
+                            _DailyMacrosRow(
+                              fat: totalFat,
+                              fatGoal: settings.dailyFatGoal.toDouble(),
+                              protein: totalProtein,
+                              proteinGoal: settings.dailyProteinGoal.toDouble(),
+                              carbs: totalCarbs,
+                              carbsGoal: settings.dailyCarbsGoal.toDouble(),
+                              height: _progressBarHeight,
+                            ),
+                          ],
+                        );
+                      },
                       ),
                     ),
                     const SizedBox(height: 16),
