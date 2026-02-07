@@ -151,11 +151,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        floatingActionButton: FloatingActionButton.extended(
+        floatingActionButton: FilledButton.icon(
           onPressed: _navigateToAdd,
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          extendedPadding: const EdgeInsets.symmetric(horizontal: 36),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(130, 52),
+          ),
           icon: const Icon(Icons.add),
           label: const Text('Add'),
         ),

@@ -31,7 +31,7 @@ class LabeledGroupBox extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     const gapStart = 10.0;
     const gapHorizontalPadding = 4.0;
-    final labelStyle = textTheme.bodySmall?.copyWith(color: labelColor ?? borderColor);
+    final labelStyle = textTheme.bodySmall?.copyWith(color: borderColor);
     final labelPainter = TextPainter(
       text: TextSpan(text: label, style: labelStyle),
       textDirection: Directionality.of(context),
