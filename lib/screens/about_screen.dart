@@ -172,26 +172,31 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.info_outline),
-            SizedBox(width: 8),
-            Text('About'),
-          ],
+    final isBusy = _checkingUpdates || _installingUpdate;
+    return WillPopScope(
+      onWillPop: () async => !isBusy,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.info_outline),
+              SizedBox(width: 8),
+              Text('About'),
+            ],
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: FutureBuilder<PackageInfo>(
-          future: PackageInfo.fromPlatform(),
-          builder: (context, snapshot) {
-            final version = snapshot.data?.version ?? '...';
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        body: AbsorbPointer(
+          absorbing: isBusy,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final version = snapshot.data?.version ?? '...';
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 Text(
                   'Calorie Tracker helps you log meals and estimate calories using OpenAI.',
                   style: Theme.of(context).textTheme.bodyMedium,
@@ -203,19 +208,19 @@ class _AboutScreenState extends State<AboutScreen> {
                 ),
                 const SizedBox(height: 16),
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _checkingUpdates || _installingUpdate ? null : _checkForUpdates,
-                    child: _checkingUpdates
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Check for updates', textAlign: TextAlign.center),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: isBusy ? null : _checkForUpdates,
+                      child: _checkingUpdates
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Check for updates', textAlign: TextAlign.center),
+                    ),
                   ),
-                ),
                 if (_updateResult != null) ...[
                   const SizedBox(height: 10),
                   Text(
@@ -228,7 +233,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
-                        onPressed: _installingUpdate ? null : _downloadUpdate,
+                        onPressed: isBusy ? null : _downloadUpdate,
                         icon: const Icon(Icons.system_update),
                         label: _installingUpdate
                             ? const SizedBox(
@@ -253,17 +258,19 @@ class _AboutScreenState extends State<AboutScreen> {
                   ],
                 ],
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => _openRepo(context),
-                    icon: const Icon(Icons.open_in_new),
-                    label: const Text('GitHub repository', textAlign: TextAlign.center),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: isBusy ? null : () => _openRepo(context),
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('GitHub repository', textAlign: TextAlign.center),
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

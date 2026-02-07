@@ -115,31 +115,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.settings),
-            SizedBox(width: 8),
-            Text('Settings'),
-          ],
+    final isBusy = _saving || _testing;
+    return WillPopScope(
+      onWillPop: () async => !isBusy,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.settings),
+              SizedBox(width: 8),
+              Text('Settings'),
+            ],
+          ),
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _apiKeyController,
-            decoration: const InputDecoration(
-              labelText: 'OpenAI API key',
-              border: OutlineInputBorder(),
-            ),
-            obscureText: true,
+        body: AbsorbPointer(
+          absorbing: isBusy,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+            TextField(
+              controller: _apiKeyController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(
+                labelText: 'OpenAI API key',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
           ),
           const SizedBox(height: 12),
           FilledButton(
-            onPressed: _saving || _testing ? null : _testKey,
+            onPressed: isBusy ? null : _testKey,
             child: _testing
                 ? const SizedBox(
                     height: 16,
@@ -165,15 +171,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Text('GPT-5.2'),
               ),
             ],
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _selectedModel = value);
-              }
-            },
+            onChanged: isBusy
+                ? null
+                : (value) {
+                    if (value != null) {
+                      setState(() => _selectedModel = value);
+                    }
+                  },
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _calorieGoalController,
+            enabled: !isBusy,
             decoration: const InputDecoration(
               labelText: 'Daily calorie goal',
               border: OutlineInputBorder(),
@@ -183,6 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _fatGoalController,
+            enabled: !isBusy,
             decoration: const InputDecoration(
               labelText: 'Daily fat goal (g)',
               border: OutlineInputBorder(),
@@ -192,6 +202,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _proteinGoalController,
+            enabled: !isBusy,
             decoration: const InputDecoration(
               labelText: 'Daily protein goal (g)',
               border: OutlineInputBorder(),
@@ -201,6 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _carbsGoalController,
+            enabled: !isBusy,
             decoration: const InputDecoration(
               labelText: 'Daily carbs goal (g)',
               border: OutlineInputBorder(),
@@ -209,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _saving || _testing ? null : _save,
+            onPressed: isBusy ? null : _save,
             child: _saving
                 ? const SizedBox(
                     height: 16,
@@ -225,7 +237,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
-            onPressed: () {
+            onPressed: isBusy
+                ? null
+                : () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Export is coming soon.')),
               );
@@ -235,7 +249,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
-            onPressed: () {
+            onPressed: isBusy
+                ? null
+                : () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Import is coming soon.')),
               );
@@ -243,7 +259,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.upload),
             label: const Text('Import data', textAlign: TextAlign.center),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

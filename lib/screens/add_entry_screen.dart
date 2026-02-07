@@ -141,83 +141,90 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Add food')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _inputController,
-            enabled: !_loading,
-            focusNode: _inputFocusNode,
-            decoration: const InputDecoration(
-              labelText: 'Food and amounts',
-              floatingLabelBehavior: FloatingLabelBehavior.always,
-              border: OutlineInputBorder(),
-            ),
-            minLines: 5,
-            maxLines: 10,
-          ),
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: _loading
-                ? null
-                : () {
-                    final text = _inputController.text.trim();
-                    if (text.isEmpty) {
-                      setState(() => _errorMessage = 'Please enter food items.');
-                      return;
-                    }
-                    setState(() {
-                      _items = [];
-                      _errorMessage = null;
-                      _history.clear();
-                      _history.add({'role': 'user', 'content': text});
-                    });
-                    _submit(prompt: text);
-                  },
-            icon: const Icon(Icons.auto_awesome),
-            label: const Text('Estimate calories', textAlign: TextAlign.center),
-          ),
-          const SizedBox(height: 12),
-          if (_loading) const LinearProgressIndicator(),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+    final isBusy = _loading;
+    return WillPopScope(
+      onWillPop: () async => !isBusy,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Add food')),
+        body: AbsorbPointer(
+          absorbing: isBusy,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+            TextField(
+              controller: _inputController,
+              enabled: !isBusy,
+              focusNode: _inputFocusNode,
+              decoration: const InputDecoration(
+                labelText: 'Food and amounts',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                border: OutlineInputBorder(),
               ),
+              minLines: 5,
+              maxLines: 10,
             ),
-          const SizedBox(height: 16),
-          if (_items.isNotEmpty) _ResultsCard(items: _items),
-          const SizedBox(height: 12),
-          if (_items.isNotEmpty)
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _loading ? null : () => Navigator.pop(context),
-                    child: const Text('Cancel', textAlign: TextAlign.center),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _loading ? null : _reestimateResponse,
-                    child: const Text('Re-estimate', textAlign: TextAlign.center),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _loading ? null : _saveEntry,
-                    child: const Text('Accept', textAlign: TextAlign.center),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: isBusy
+                  ? null
+                  : () {
+                      final text = _inputController.text.trim();
+                      if (text.isEmpty) {
+                        setState(() => _errorMessage = 'Please enter food items.');
+                        return;
+                      }
+                      setState(() {
+                        _items = [];
+                        _errorMessage = null;
+                        _history.clear();
+                        _history.add({'role': 'user', 'content': text});
+                      });
+                      _submit(prompt: text);
+                    },
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('Estimate calories', textAlign: TextAlign.center),
             ),
-        ],
+            const SizedBox(height: 12),
+            if (isBusy) const LinearProgressIndicator(),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            const SizedBox(height: 16),
+            if (_items.isNotEmpty) _ResultsCard(items: _items),
+            const SizedBox(height: 12),
+            if (_items.isNotEmpty)
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: isBusy ? null : () => Navigator.pop(context),
+                      child: const Text('Cancel', textAlign: TextAlign.center),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: isBusy ? null : _reestimateResponse,
+                      child: const Text('Re-estimate', textAlign: TextAlign.center),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: isBusy ? null : _saveEntry,
+                      child: const Text('Accept', textAlign: TextAlign.center),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

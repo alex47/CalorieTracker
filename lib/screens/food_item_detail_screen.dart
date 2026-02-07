@@ -254,74 +254,81 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.restaurant_menu),
-            SizedBox(width: 8),
-            Text('Food details'),
-          ],
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          FoodBreakdownCard(
-            name: _item.name,
-            amount: _item.amount,
-            calories: _item.calories,
-            fat: _item.fat,
-            protein: _item.protein,
-            carbs: _item.carbs,
-            notes: _item.notes,
-          ),
-          const SizedBox(height: 10),
-          if (_loading || _saving) const LinearProgressIndicator(),
-          if (_errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          const SizedBox(height: 10),
-          Row(
+    final isBusy = _loading || _saving;
+    return WillPopScope(
+      onWillPop: () async => !isBusy,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (_canCopyToToday) ...[
+              Icon(Icons.restaurant_menu),
+              SizedBox(width: 8),
+              Text('Food details'),
+            ],
+          ),
+        ),
+        body: AbsorbPointer(
+          absorbing: isBusy,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+            FoodBreakdownCard(
+              name: _item.name,
+              amount: _item.amount,
+              calories: _item.calories,
+              fat: _item.fat,
+              protein: _item.protein,
+              carbs: _item.carbs,
+              notes: _item.notes,
+            ),
+            const SizedBox(height: 10),
+            if (isBusy) const LinearProgressIndicator(),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                if (_canCopyToToday) ...[
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: isBusy ? null : _copyToToday,
+                      child: const Text('Copy to today', textAlign: TextAlign.center),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: FilledButton(
-                    onPressed: _loading || _saving ? null : _copyToToday,
-                    child: const Text('Copy to today', textAlign: TextAlign.center),
+                    onPressed: isBusy ? null : _deleteItem,
+                    child: const Text('Delete', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: isBusy ? null : _reestimateItem,
+                    child: const Text('Re-estimate', textAlign: TextAlign.center),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: isBusy || !_dirty ? null : _saveChanges,
+                    child: const Text('Save', textAlign: TextAlign.center),
+                  ),
+                ),
               ],
-              Expanded(
-                child: FilledButton(
-                  onPressed: _loading || _saving ? null : _deleteItem,
-                  child: const Text('Delete', textAlign: TextAlign.center),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _loading || _saving ? null : _reestimateItem,
-                  child: const Text('Re-estimate', textAlign: TextAlign.center),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _loading || _saving || !_dirty ? null : _saveChanges,
-                  child: const Text('Save', textAlign: TextAlign.center),
-                ),
-              ),
+            ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
