@@ -331,8 +331,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: isBusy ? null : _saveChanges,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save', textAlign: TextAlign.center),
+                  icon: const Icon(Icons.check),
+                  label: const Text('Accept', textAlign: TextAlign.center),
                 ),
               ),
             ],

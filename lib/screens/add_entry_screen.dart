@@ -210,14 +210,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: isBusy ? null : _reestimateResponse,
-                      icon: const Icon(Icons.auto_awesome),
-                      label: const Text('Re-estimate', textAlign: TextAlign.center),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FilledButton.icon(
                       onPressed: isBusy ? null : _saveEntry,
                       icon: const Icon(Icons.check),
                       label: const Text('Accept', textAlign: TextAlign.center),
