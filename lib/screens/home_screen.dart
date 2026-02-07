@@ -126,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             PopupMenuButton<String>(
               iconSize: 30,
-              constraints: const BoxConstraints(minWidth: 220),
+              constraints: const BoxConstraints(minWidth: 250),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(color: Theme.of(context).colorScheme.outline),
@@ -138,26 +138,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.pushNamed(context, AboutScreen.routeName);
                 }
               },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
+              itemBuilder: (context) {
+                final menuTextStyle = Theme.of(context).popupMenuTheme.textStyle;
+                return [
+                  PopupMenuItem(
                   value: SettingsScreen.routeName,
                   child: ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.settings),
-                    title: Text('Settings'),
+                    leading: const Icon(Icons.settings),
+                    title: Text('Settings', style: menuTextStyle),
                   ),
                 ),
-                const PopupMenuItem(
+                  PopupMenuItem(
                   value: AboutScreen.routeName,
                   child: ListTile(
                     dense: true,
                     contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.info_outline),
-                    title: Text('About'),
+                    leading: const Icon(Icons.info_outline),
+                    title: Text('About', style: menuTextStyle),
                   ),
                 ),
-              ],
+                ];
+              },
             ),
           ],
         ),
