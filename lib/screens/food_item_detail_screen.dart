@@ -295,18 +295,19 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 ),
               ),
             const SizedBox(height: 10),
+            if (_canCopyToToday) ...[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: isBusy ? null : _copyToToday,
+                  icon: const Icon(Icons.copy),
+                  label: const Text('Copy to today', textAlign: TextAlign.center),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             Row(
               children: [
-                if (_canCopyToToday) ...[
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: isBusy ? null : _copyToToday,
-                      icon: const Icon(Icons.copy),
-                      label: const Text('Copy to today', textAlign: TextAlign.center),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _deleteItem,
