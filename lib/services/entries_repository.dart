@@ -91,4 +91,30 @@ class EntriesRepository {
       whereArgs: [itemId],
     );
   }
+
+  Future<void> copyItemToDate({
+    required FoodItem item,
+    required DateTime date,
+  }) async {
+    final db = await DatabaseService.instance.database;
+    final day = DateTime(date.year, date.month, date.day);
+    await db.transaction((txn) async {
+      final entryId = await txn.insert('entries', {
+        'entry_date': day.toIso8601String(),
+        'created_at': DateTime.now().toIso8601String(),
+        'prompt': 'Copied from another day',
+        'response': '',
+      });
+      await txn.insert('entry_items', {
+        'entry_id': entryId,
+        'name': item.name,
+        'amount': item.amount,
+        'calories': item.calories,
+        'fat': item.fat,
+        'protein': item.protein,
+        'carbs': item.carbs,
+        'notes': item.notes,
+      });
+    });
+  }
 }

@@ -26,6 +26,45 @@ class CalorieTrackerApp extends StatelessWidget {
     const textColor = Color(0xFFCBCBCB);
     const boxBackground = Color(0xFF181818);
     const borderColor = Color(0xFF343434);
+    // Single typography scale for the whole app.
+    const textSizeXSmall = 12.0;
+    const textSizeSmall = 14.0;
+    const textSizeMedium = 16.0;
+    const textSizeLarge = 22.0;
+
+    final baseTextTheme = ThemeData.dark().textTheme.apply(
+          bodyColor: textColor,
+          displayColor: textColor,
+        );
+    final appTextTheme = baseTextTheme.copyWith(
+      headlineSmall: baseTextTheme.headlineSmall?.copyWith(
+        fontSize: textSizeLarge,
+      ),
+      titleLarge: baseTextTheme.titleLarge?.copyWith(
+        fontSize: textSizeLarge,
+      ),
+      titleMedium: baseTextTheme.titleMedium?.copyWith(
+        fontSize: textSizeMedium,
+      ),
+      titleSmall: baseTextTheme.titleSmall?.copyWith(
+        fontSize: textSizeSmall,
+      ),
+      bodyLarge: baseTextTheme.bodyLarge?.copyWith(
+        fontSize: textSizeMedium,
+      ),
+      bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+        fontSize: textSizeSmall,
+      ),
+      bodySmall: baseTextTheme.bodySmall?.copyWith(
+        fontSize: textSizeXSmall,
+      ),
+      labelLarge: baseTextTheme.labelLarge?.copyWith(
+        fontSize: textSizeSmall,
+      ),
+      labelMedium: baseTextTheme.labelMedium?.copyWith(
+        fontSize: textSizeXSmall,
+      ),
+    );
 
     return MaterialApp(
       title: 'Calorie Tracker',
@@ -45,10 +84,6 @@ class CalorieTrackerApp extends StatelessWidget {
               outline: borderColor,
             ),
         scaffoldBackgroundColor: pageBackground,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: boxBackground,
-          foregroundColor: textColor,
-        ),
         cardTheme: const CardThemeData(
           color: boxBackground,
           shape: RoundedRectangleBorder(
@@ -60,10 +95,21 @@ class CalorieTrackerApp extends StatelessWidget {
           color: borderColor,
           thickness: 1,
         ),
-        textTheme: ThemeData.dark().textTheme.apply(
-              bodyColor: textColor,
-              displayColor: textColor,
-            ),
+        textTheme: appTextTheme,
+        appBarTheme: AppBarTheme(
+          backgroundColor: boxBackground,
+          foregroundColor: textColor,
+          titleTextStyle: appTextTheme.titleLarge?.copyWith(
+            color: textColor,
+            fontSize: textSizeLarge,
+          ),
+        ),
+        popupMenuTheme: PopupMenuThemeData(
+          textStyle: appTextTheme.bodyMedium?.copyWith(
+            fontSize: textSizeMedium,
+            color: textColor,
+          ),
+        ),
         inputDecorationTheme: InputDecorationTheme(
           enabledBorder: const OutlineInputBorder(
             borderSide: BorderSide(color: borderColor),
@@ -74,8 +120,14 @@ class CalorieTrackerApp extends StatelessWidget {
           border: const OutlineInputBorder(
             borderSide: BorderSide(color: borderColor),
           ),
-          labelStyle: const TextStyle(color: textColor),
-          floatingLabelStyle: const TextStyle(color: textColor),
+          labelStyle: appTextTheme.bodyLarge?.copyWith(
+            color: textColor,
+            fontSize: textSizeMedium,
+          ),
+          floatingLabelStyle: appTextTheme.bodyLarge?.copyWith(
+            color: textColor,
+            fontSize: textSizeMedium,
+          ),
         ),
         textSelectionTheme: const TextSelectionThemeData(
           cursorColor: textColor,
@@ -87,6 +139,7 @@ class CalorieTrackerApp extends StatelessWidget {
             foregroundColor: buttonForeground,
             minimumSize: const Size(0, 52),
             padding: const EdgeInsets.symmetric(horizontal: 16),
+            textStyle: appTextTheme.labelLarge,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),

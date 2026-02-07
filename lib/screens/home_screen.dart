@@ -122,6 +122,12 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Calorie Tracker'),
           actions: [
             PopupMenuButton<String>(
+              iconSize: 30,
+              constraints: const BoxConstraints(minWidth: 220),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Theme.of(context).colorScheme.outline),
+              ),
               onSelected: (value) {
                 if (value == SettingsScreen.routeName) {
                   Navigator.pushNamed(context, SettingsScreen.routeName);
@@ -225,14 +231,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         return _ItemsTable(
                           items: items,
                           onItemTap: (item) async {
-                            final changed = await Navigator.push<bool>(
+                            final result = await Navigator.push<dynamic>(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => FoodItemDetailScreen(item: item),
+                                builder: (_) =>
+                                    FoodItemDetailScreen(item: item, itemDate: pageDate),
                               ),
                             );
-                            if (changed == true) {
+                            if (result == true) {
                               await _reloadDate(pageDate);
+                              return;
+                            }
+                            if (result is Map && result['reloadToday'] == true) {
+                              await _reloadDate(DateTime.now());
+                              if (!_isTodaySelected()) {
+                                await _pageController.animateToPage(
+                                  _initialPage,
+                                  duration: const Duration(milliseconds: 260),
+                                  curve: Curves.easeOutCubic,
+                                );
+                              }
                             }
                           },
                         );

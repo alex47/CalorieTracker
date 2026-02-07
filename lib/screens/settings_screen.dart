@@ -223,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     width: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Test key'),
+                : const Text('Test key', textAlign: TextAlign.center),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
@@ -266,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     width: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save settings'),
+                : const Text('Save settings', textAlign: TextAlign.center),
           ),
           const SizedBox(height: 24),
           Text(
@@ -282,7 +282,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     width: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Check for updates'),
+                : const Text('Check for updates', textAlign: TextAlign.center),
           ),
           if (_updateResult != null) ...[
             const SizedBox(height: 10),
@@ -302,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         width: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Install latest APK'),
+                    : const Text('Install latest APK', textAlign: TextAlign.center),
               ),
             ],
           ],
@@ -319,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
             icon: const Icon(Icons.download),
-            label: const Text('Export data'),
+            label: const Text('Export data', textAlign: TextAlign.center),
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
@@ -329,7 +329,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
             icon: const Icon(Icons.upload),
-            label: const Text('Import data'),
+            label: const Text('Import data', textAlign: TextAlign.center),
           ),
         ],
       ),

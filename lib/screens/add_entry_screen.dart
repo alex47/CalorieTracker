@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../widgets/reestimate_dialog.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key, this.date});
@@ -129,56 +130,15 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
-  Future<void> _refineResponse() async {
-    final refinement = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController();
-        return AlertDialog(
-          title: const Text('Refine response'),
-          content: SizedBox(
-            width: 460,
-            height: 180,
-            child: TextField(
-              controller: controller,
-              autofocus: true,
-              textAlignVertical: TextAlignVertical.top,
-              decoration: const InputDecoration(
-                labelText: 'Food and amounts',
-                floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(),
-              ),
-              expands: true,
-              minLines: null,
-              maxLines: null,
-            ),
-          ),
-          actions: [
-            SizedBox(
-              width: 110,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-            ),
-            SizedBox(
-              width: 110,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(context, controller.text.trim()),
-                child: const Text('Send'),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _reestimateResponse() async {
+    final reestimateInput = await showReestimateDialog(context);
 
-    if (refinement == null || refinement.isEmpty) {
+    if (reestimateInput == null || reestimateInput.isEmpty) {
       return;
     }
 
-    _history.add({'role': 'user', 'content': refinement});
-    await _submit(prompt: refinement);
+    _history.add({'role': 'user', 'content': reestimateInput});
+    await _submit(prompt: reestimateInput);
   }
 
   @override
@@ -219,7 +179,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                     _submit(prompt: text);
                   },
             icon: const Icon(Icons.auto_awesome),
-            label: const Text('Estimate calories'),
+            label: const Text('Estimate calories', textAlign: TextAlign.center),
           ),
           const SizedBox(height: 12),
           if (_loading) const LinearProgressIndicator(),
@@ -240,21 +200,21 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 Expanded(
                   child: FilledButton(
                     onPressed: _loading ? null : () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: const Text('Cancel', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(
-                    onPressed: _loading ? null : _refineResponse,
-                    child: const Text('Refine'),
+                    onPressed: _loading ? null : _reestimateResponse,
+                    child: const Text('Re-estimate', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(
                     onPressed: _loading ? null : _saveEntry,
-                    child: const Text('Accept'),
+                    child: const Text('Accept', textAlign: TextAlign.center),
                   ),
                 ),
               ],

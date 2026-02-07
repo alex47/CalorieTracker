@@ -31,16 +31,24 @@ class AboutScreen extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Calorie Tracker helps you log meals and estimate calories using OpenAI.',
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 16),
-                Text('Version: $version'),
+                Text(
+                  'Version: $version',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
                 const SizedBox(height: 16),
                 FilledButton.icon(
                   onPressed: () => _openRepo(context),
                   icon: const Icon(Icons.open_in_new),
-                  label: const Text('GitHub repository'),
+                  label: Text(
+                    'GitHub repository',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
                 ),
               ],
             );

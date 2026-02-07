@@ -4,11 +4,17 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../widgets/reestimate_dialog.dart';
 
 class FoodItemDetailScreen extends StatefulWidget {
-  const FoodItemDetailScreen({super.key, required this.item});
+  const FoodItemDetailScreen({
+    super.key,
+    required this.item,
+    required this.itemDate,
+  });
 
   final FoodItem item;
+  final DateTime itemDate;
 
   @override
   State<FoodItemDetailScreen> createState() => _FoodItemDetailScreenState();
@@ -36,64 +42,24 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
   }
 
+  DateTime _dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+  bool get _canCopyToToday {
+    final today = _dayOnly(DateTime.now());
+    final itemDay = _dayOnly(widget.itemDate);
+    return itemDay.isBefore(today);
+  }
+
   @override
   void initState() {
     super.initState();
     _item = widget.item;
   }
 
-  Future<void> _refineItem() async {
-    final refinement = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        final controller = TextEditingController();
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text('Refine item'),
-              content: SizedBox(
-                width: 460,
-                height: 180,
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  onChanged: (_) => setDialogState(() {}),
-                  decoration: const InputDecoration(
-                    labelText: 'Food and amounts',
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    border: OutlineInputBorder(),
-                  ),
-                  expands: true,
-                  minLines: null,
-                  maxLines: null,
-                ),
-              ),
-              actions: [
-                SizedBox(
-                  width: 110,
-                  child: FilledButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                SizedBox(
-                  width: 110,
-                  child: FilledButton(
-                    onPressed: controller.text.trim().isEmpty
-                        ? null
-                        : () => Navigator.pop(context, controller.text.trim()),
-                    child: const Text('Send'),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
+  Future<void> _reestimateItem() async {
+    final reestimateInput = await showReestimateDialog(context);
 
-    if (refinement == null || refinement.isEmpty) {
+    if (reestimateInput == null || reestimateInput.isEmpty) {
       return;
     }
 
@@ -122,7 +88,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
       final response = await service.estimateCalories(
         model: settings.model,
-        userInput: refinement,
+        userInput: reestimateInput,
         history: history,
       );
 
@@ -149,7 +115,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           protein < 0 ||
           carbs == null ||
           carbs < 0) {
-        throw const FormatException('Invalid refined item in AI response.');
+        throw const FormatException('Invalid re-estimated item in AI response.');
       }
 
       setState(() {
@@ -168,7 +134,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       });
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to refine item. ${_displayError(error)}';
+        _errorMessage = 'Failed to re-estimate item. ${_displayError(error)}';
       });
     } finally {
       setState(() => _loading = false);
@@ -212,11 +178,11 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             actions: [
               FilledButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: const Text('Cancel', textAlign: TextAlign.center),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete'),
+                child: const Text('Delete', textAlign: TextAlign.center),
               ),
             ],
           ),
@@ -239,6 +205,28 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     } catch (error) {
       setState(() {
         _errorMessage = 'Failed to delete item. ${error.toString()}';
+      });
+    } finally {
+      setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _copyToToday() async {
+    setState(() {
+      _saving = true;
+      _errorMessage = null;
+    });
+    try {
+      await EntriesRepository.instance.copyItemToDate(
+        item: _item,
+        date: DateTime.now(),
+      );
+      if (mounted) {
+        Navigator.pop(context, {'reloadToday': true});
+      }
+    } catch (error) {
+      setState(() {
+        _errorMessage = 'Failed to copy item. ${error.toString()}';
       });
     } finally {
       setState(() => _saving = false);
@@ -299,24 +287,33 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
+              if (_canCopyToToday) ...[
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _loading || _saving ? null : _copyToToday,
+                    child: const Text('Copy to today', textAlign: TextAlign.center),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
               Expanded(
                 child: FilledButton(
                   onPressed: _loading || _saving ? null : _deleteItem,
-                  child: const Text('Delete'),
+                  child: const Text('Delete', textAlign: TextAlign.center),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: FilledButton(
-                  onPressed: _loading || _saving ? null : _refineItem,
-                  child: const Text('Refine'),
+                  onPressed: _loading || _saving ? null : _reestimateItem,
+                  child: const Text('Re-estimate', textAlign: TextAlign.center),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: FilledButton(
-                  onPressed: _saving || !_dirty ? null : _saveChanges,
-                  child: const Text('Save'),
+                  onPressed: _loading || _saving || !_dirty ? null : _saveChanges,
+                  child: const Text('Save', textAlign: TextAlign.center),
                 ),
               ),
             ],
