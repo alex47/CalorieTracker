@@ -24,6 +24,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Timer? _autosaveTimer;
   late String _selectedModel;
   bool _testing = false;
+  bool _loadingModels = false;
+  List<String> _availableModels = [];
 
   @override
   void initState() {
@@ -39,9 +41,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadApiKey() async {
     final apiKey = await SettingsService.instance.getApiKey();
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _apiKeyController.text = apiKey ?? '';
     });
+    if (apiKey != null && apiKey.trim().isNotEmpty) {
+      await _loadModelsForApiKey(apiKey.trim(), showError: false);
+    }
   }
 
   @override
@@ -57,6 +65,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveNonSensitiveSettings() async {
     final current = SettingsService.instance.settings;
+    final shouldSaveSelectedModel =
+        _availableModels.isNotEmpty && _availableModels.contains(_selectedModel);
     final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? current.dailyGoal;
     final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? current.dailyFatGoal;
     final dailyProteinGoal =
@@ -64,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final dailyCarbsGoal = int.tryParse(_carbsGoalController.text.trim()) ?? current.dailyCarbsGoal;
     await SettingsService.instance.updateSettings(
       AppSettings(
-        model: _selectedModel,
+        model: shouldSaveSelectedModel ? _selectedModel : current.model,
         dailyGoal: dailyGoal,
         dailyFatGoal: dailyFatGoal,
         dailyProteinGoal: dailyProteinGoal,
@@ -89,6 +99,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return raw;
   }
 
+  Future<void> _loadModelsForApiKey(String apiKey, {required bool showError}) async {
+    setState(() => _loadingModels = true);
+    try {
+      final service = OpenAIService(apiKey);
+      final models = await service.fetchAvailableModels();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _availableModels = models;
+        if (!_availableModels.contains(_selectedModel)) {
+          _selectedModel = _availableModels.first;
+          _scheduleSettingsAutosave();
+        }
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        if (_availableModels.isEmpty) {
+          _availableModels = [_selectedModel];
+        } else if (!_availableModels.contains(_selectedModel)) {
+          _selectedModel = _availableModels.first;
+          _scheduleSettingsAutosave();
+        }
+      });
+      if (showError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not load models dynamically. ${_displayError(error)}',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loadingModels = false);
+      }
+    }
+  }
+
   Future<void> _testKey() async {
     final apiKey = _apiKeyController.text.trim();
     if (apiKey.isEmpty) {
@@ -103,6 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final service = OpenAIService(apiKey);
       await service.testConnection(model: _selectedModel);
       await SettingsService.instance.setApiKey(apiKey);
+      await _loadModelsForApiKey(apiKey, showError: true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('API key test succeeded. Key saved.')),
@@ -123,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isBusy = _testing;
+    final isBusy = _testing || _loadingModels;
     const sectionSpacing = 24.0;
     const headerToContentSpacing = 12.0;
     const controlSpacing = 16.0;
@@ -173,21 +227,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: controlSpacing),
           DropdownButtonFormField<String>(
-            initialValue: _selectedModel,
-            decoration: const InputDecoration(
+            initialValue: _availableModels.contains(_selectedModel) ? _selectedModel : null,
+            decoration: InputDecoration(
               labelText: 'Model',
               border: OutlineInputBorder(),
+              suffixIcon: _loadingModels
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : null,
             ),
-            items: const [
-              DropdownMenuItem(
-                value: 'gpt-5-mini',
-                child: Text('GPT-5 mini'),
-              ),
-              DropdownMenuItem(
-                value: 'gpt-5.2',
-                child: Text('GPT-5.2'),
-              ),
-            ],
+            items: _availableModels
+                .map(
+                  (model) => DropdownMenuItem(
+                    value: model,
+                    child: Text(model),
+                  ),
+                )
+                .toList(),
             onChanged: isBusy
                 ? null
                 : (value) {

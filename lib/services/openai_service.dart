@@ -60,6 +60,39 @@ Rules:
     }
   }
 
+  Future<List<String>> fetchAvailableModels() async {
+    final response = await http
+        .get(
+          Uri.parse('https://api.openai.com/v1/models'),
+          headers: {
+            'Authorization': 'Bearer $apiKey',
+          },
+        )
+        .timeout(requestTimeout, onTimeout: () {
+          throw StateError('OpenAI request timed out.');
+        });
+
+    if (response.statusCode >= 400) {
+      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+    }
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = decoded['data'] as List<dynamic>? ?? const [];
+    final ids = data
+        .map((item) => item as Map<String, dynamic>)
+        .map((item) => item['id'] as String?)
+        .whereType<String>()
+        .toSet()
+        .toList();
+    ids.sort();
+
+    if (ids.isEmpty) {
+      throw StateError('No models were returned for this API key.');
+    }
+
+    return ids;
+  }
+
   Future<Map<String, dynamic>> estimateCalories({
     required String model,
     required String userInput,
