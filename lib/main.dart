@@ -7,6 +7,7 @@ import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/database_service.dart';
 import 'services/settings_service.dart';
+import 'theme/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,12 +21,6 @@ class CalorieTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const buttonBackground = Color(0xFF1E3A8A);
-    const buttonForeground = Color(0xFFF1F5FF);
-    const pageBackground = Color(0xFF212121);
-    const textColor = Color(0xFFCBCBCB);
-    const boxBackground = Color(0xFF181818);
-    const borderColor = Color(0xFF343434);
     // Single typography scale for the whole app.
     const textSizeXSmall = 12.0;
     const textSizeSmall = 14.0;
@@ -33,8 +28,8 @@ class CalorieTrackerApp extends StatelessWidget {
     const textSizeLarge = 22.0;
 
     final baseTextTheme = ThemeData.dark().textTheme.apply(
-          bodyColor: textColor,
-          displayColor: textColor,
+          bodyColor: AppColors.text,
+          displayColor: AppColors.text,
         );
     final appTextTheme = baseTextTheme.copyWith(
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
@@ -73,70 +68,73 @@ class CalorieTrackerApp extends StatelessWidget {
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: buttonBackground, brightness: Brightness.dark)
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.buttonBackground,
+          brightness: Brightness.dark,
+        )
             .copyWith(
-              primary: buttonBackground,
-              onPrimary: buttonForeground,
-              surface: boxBackground,
-              surfaceContainerHighest: boxBackground,
-              onSurface: textColor,
-              onSurfaceVariant: textColor,
-              outline: borderColor,
+              primary: AppColors.buttonBackground,
+              onPrimary: AppColors.buttonForeground,
+              surface: AppColors.boxBackground,
+              surfaceContainerHighest: AppColors.boxBackground,
+              onSurface: AppColors.text,
+              onSurfaceVariant: AppColors.text,
+              outline: AppColors.border,
             ),
-        scaffoldBackgroundColor: pageBackground,
+        scaffoldBackgroundColor: AppColors.pageBackground,
         cardTheme: const CardThemeData(
-          color: boxBackground,
+          color: AppColors.boxBackground,
           shape: RoundedRectangleBorder(
-            side: BorderSide(color: borderColor),
+            side: BorderSide(color: AppColors.border),
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
         ),
         dividerTheme: const DividerThemeData(
-          color: borderColor,
+          color: AppColors.border,
           thickness: 1,
         ),
         textTheme: appTextTheme,
         appBarTheme: AppBarTheme(
-          backgroundColor: boxBackground,
-          foregroundColor: textColor,
+          backgroundColor: AppColors.boxBackground,
+          foregroundColor: AppColors.text,
           titleTextStyle: appTextTheme.titleLarge?.copyWith(
-            color: textColor,
+            color: AppColors.text,
             fontSize: textSizeLarge,
           ),
         ),
         popupMenuTheme: PopupMenuThemeData(
           textStyle: appTextTheme.bodyMedium?.copyWith(
             fontSize: textSizeMedium,
-            color: textColor,
+            color: AppColors.text,
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor),
+            borderSide: BorderSide(color: AppColors.border),
           ),
           focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor, width: 2),
+            borderSide: BorderSide(color: AppColors.border, width: 2),
           ),
           border: const OutlineInputBorder(
-            borderSide: BorderSide(color: borderColor),
+            borderSide: BorderSide(color: AppColors.border),
           ),
           labelStyle: appTextTheme.bodyLarge?.copyWith(
-            color: textColor,
+            color: AppColors.text,
             fontSize: textSizeMedium,
           ),
           floatingLabelStyle: appTextTheme.bodyLarge?.copyWith(
-            color: textColor,
+            color: AppColors.text,
             fontSize: textSizeMedium,
           ),
         ),
         textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: textColor,
-          selectionHandleColor: textColor,
+          cursorColor: AppColors.text,
+          selectionHandleColor: AppColors.text,
         ),
         filledButtonTheme: FilledButtonThemeData(
           style: FilledButton.styleFrom(
-            backgroundColor: buttonBackground,
-            foregroundColor: buttonForeground,
+            backgroundColor: AppColors.buttonBackground,
+            foregroundColor: AppColors.buttonForeground,
             minimumSize: const Size(0, 52),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             textStyle: appTextTheme.labelLarge,
@@ -146,8 +144,8 @@ class CalorieTrackerApp extends StatelessWidget {
           ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: buttonBackground,
-          foregroundColor: buttonForeground,
+          backgroundColor: AppColors.buttonBackground,
+          foregroundColor: AppColors.buttonForeground,
         ),
         useMaterial3: true,
       ),
