@@ -15,7 +15,10 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _apiKeyController = TextEditingController();
-  final TextEditingController _goalController = TextEditingController();
+  final TextEditingController _calorieGoalController = TextEditingController();
+  final TextEditingController _fatGoalController = TextEditingController();
+  final TextEditingController _proteinGoalController = TextEditingController();
+  final TextEditingController _carbsGoalController = TextEditingController();
   late String _selectedModel;
   bool _saving = false;
   bool _testing = false;
@@ -25,7 +28,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     final settings = SettingsService.instance.settings;
     _selectedModel = settings.model;
-    _goalController.text = settings.dailyGoal.toString();
+    _calorieGoalController.text = settings.dailyGoal.toString();
+    _fatGoalController.text = settings.dailyFatGoal.toString();
+    _proteinGoalController.text = settings.dailyProteinGoal.toString();
+    _carbsGoalController.text = settings.dailyCarbsGoal.toString();
     _loadApiKey();
   }
 
@@ -39,16 +45,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _apiKeyController.dispose();
-    _goalController.dispose();
+    _calorieGoalController.dispose();
+    _fatGoalController.dispose();
+    _proteinGoalController.dispose();
+    _carbsGoalController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     setState(() => _saving = true);
-    final dailyGoal = int.tryParse(_goalController.text.trim()) ?? 2000;
+    final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? 2000;
+    final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? 70;
+    final dailyProteinGoal = int.tryParse(_proteinGoalController.text.trim()) ?? 150;
+    final dailyCarbsGoal = int.tryParse(_carbsGoalController.text.trim()) ?? 250;
     await SettingsService.instance.setApiKey(_apiKeyController.text.trim());
     await SettingsService.instance.updateSettings(
-      AppSettings(model: _selectedModel, dailyGoal: dailyGoal),
+      AppSettings(
+        model: _selectedModel,
+        dailyGoal: dailyGoal,
+        dailyFatGoal: dailyFatGoal,
+        dailyProteinGoal: dailyProteinGoal,
+        dailyCarbsGoal: dailyCarbsGoal,
+      ),
     );
     setState(() => _saving = false);
     if (mounted) {
@@ -148,9 +166,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: _goalController,
+            controller: _calorieGoalController,
             decoration: const InputDecoration(
               labelText: 'Daily calorie goal',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _fatGoalController,
+            decoration: const InputDecoration(
+              labelText: 'Daily fat goal (g)',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _proteinGoalController,
+            decoration: const InputDecoration(
+              labelText: 'Daily protein goal (g)',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _carbsGoalController,
+            decoration: const InputDecoration(
+              labelText: 'Daily carbs goal (g)',
               border: OutlineInputBorder(),
             ),
             keyboardType: TextInputType.number,

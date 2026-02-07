@@ -10,6 +10,9 @@ class SettingsService {
   static const _apiKeyKey = 'openai_api_key';
   static const _modelKey = 'model';
   static const _dailyGoalKey = 'daily_goal';
+  static const _dailyFatGoalKey = 'daily_fat_goal';
+  static const _dailyProteinGoalKey = 'daily_protein_goal';
+  static const _dailyCarbsGoalKey = 'daily_carbs_goal';
 
   static final SettingsService instance = SettingsService._();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
@@ -17,6 +20,9 @@ class SettingsService {
   AppSettings _settings = const AppSettings(
     model: 'gpt-5-mini',
     dailyGoal: 2000,
+    dailyFatGoal: 70,
+    dailyProteinGoal: 150,
+    dailyCarbsGoal: 250,
   );
 
   AppSettings get settings => _settings;
@@ -30,6 +36,9 @@ class SettingsService {
     _settings = AppSettings(
       model: settingsMap[_modelKey] ?? 'gpt-5-mini',
       dailyGoal: int.tryParse(settingsMap[_dailyGoalKey] ?? '') ?? 2000,
+      dailyFatGoal: int.tryParse(settingsMap[_dailyFatGoalKey] ?? '') ?? 70,
+      dailyProteinGoal: int.tryParse(settingsMap[_dailyProteinGoalKey] ?? '') ?? 150,
+      dailyCarbsGoal: int.tryParse(settingsMap[_dailyCarbsGoalKey] ?? '') ?? 250,
     );
   }
 
@@ -44,6 +53,21 @@ class SettingsService {
     await db.insert(
       'settings',
       {'key': _dailyGoalKey, 'value': settings.dailyGoal.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.insert(
+      'settings',
+      {'key': _dailyFatGoalKey, 'value': settings.dailyFatGoal.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.insert(
+      'settings',
+      {'key': _dailyProteinGoalKey, 'value': settings.dailyProteinGoal.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.insert(
+      'settings',
+      {'key': _dailyCarbsGoalKey, 'value': settings.dailyCarbsGoal.toString()},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }

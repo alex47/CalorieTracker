@@ -7,6 +7,9 @@ class LabeledGroupBox extends StatelessWidget {
     required this.value,
     required this.borderColor,
     required this.textStyle,
+    this.child,
+    this.contentPadding = const EdgeInsets.fromLTRB(12, 10, 12, 6),
+    this.contentHeight,
     this.minWidth,
     this.backgroundColor,
     this.labelColor,
@@ -16,6 +19,9 @@ class LabeledGroupBox extends StatelessWidget {
   final String value;
   final Color borderColor;
   final TextStyle? textStyle;
+  final Widget? child;
+  final EdgeInsetsGeometry contentPadding;
+  final double? contentHeight;
   final double? minWidth;
   final Color? backgroundColor;
   final Color? labelColor;
@@ -39,17 +45,23 @@ class LabeledGroupBox extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(top: 8),
           constraints: minWidth == null ? null : BoxConstraints(minWidth: minWidth!),
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+          height: contentHeight,
+          padding: contentPadding,
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(value, style: textStyle),
+          child: child == null
+              ? Text(value, style: textStyle)
+              : ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: child,
+                ),
         ),
         Positioned.fill(
           child: IgnorePointer(
             child: CustomPaint(
-              painter: _NotchedBorderPainter(
+              painter: NotchedBorderPainter(
                 color: borderColor,
                 radius: 8,
                 topInset: 8,
@@ -82,20 +94,30 @@ class MetricGroupBox extends StatelessWidget {
     required this.value,
     required this.color,
     this.minWidth = 100,
+    this.contentHeight = 36,
   });
 
   final String label;
   final String value;
   final Color color;
   final double minWidth;
+  final double contentHeight;
 
   @override
   Widget build(BuildContext context) {
+    final valueStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: color);
     return LabeledGroupBox(
       label: label,
-      value: value,
+      value: '',
       borderColor: color,
-      textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: color),
+      textStyle: valueStyle,
+      contentHeight: contentHeight,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        widthFactor: 1,
+        child: Text(value, style: valueStyle),
+      ),
       minWidth: minWidth,
       backgroundColor: color.withOpacity(0.14),
       labelColor: color,
@@ -103,8 +125,8 @@ class MetricGroupBox extends StatelessWidget {
   }
 }
 
-class _NotchedBorderPainter extends CustomPainter {
-  const _NotchedBorderPainter({
+class NotchedBorderPainter extends CustomPainter {
+  const NotchedBorderPainter({
     required this.color,
     required this.radius,
     required this.topInset,
@@ -184,7 +206,7 @@ class _NotchedBorderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _NotchedBorderPainter oldDelegate) {
+  bool shouldRepaint(covariant NotchedBorderPainter oldDelegate) {
     return oldDelegate.color != color ||
         oldDelegate.radius != radius ||
         oldDelegate.topInset != topInset ||

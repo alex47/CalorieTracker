@@ -6,7 +6,7 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
-import '../widgets/labeled_group_box.dart';
+import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
 import 'food_item_detail_screen.dart';
@@ -23,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   static const int _initialPage = 10000;
+  static const double _progressBarHeight = 36;
 
   late final DateTime _baseDate;
   late final PageController _pageController;
@@ -115,7 +116,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dailyGoal = SettingsService.instance.settings.dailyGoal;
+    final settings = SettingsService.instance.settings;
+    final dailyGoal = settings.dailyGoal;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -175,9 +177,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(
-                      formatDate(pageDate),
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    Center(
+                      child: Text(
+                        formatDate(pageDate),
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     FutureBuilder<List<FoodItem>>(
@@ -210,8 +214,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 8),
                             _DailyMacrosRow(
                               fat: _totalFat(items),
+                              fatGoal: settings.dailyFatGoal.toDouble(),
                               protein: _totalProtein(items),
+                              proteinGoal: settings.dailyProteinGoal.toDouble(),
                               carbs: _totalCarbs(items),
+                              carbsGoal: settings.dailyCarbsGoal.toDouble(),
+                              height: _progressBarHeight,
                             ),
                           ],
                         );
@@ -285,42 +293,14 @@ class _HomeScreenState extends State<HomeScreen> {
     int dailyGoal,
     int total,
   ) {
-    const barHeight = 48.0;
-    final progress = dailyGoal > 0 ? (total / dailyGoal).clamp(0.0, 1.0) : 0.0;
-    final isOverGoal = total > dailyGoal;
-    const overGoalColor = Color(0xFF7F1D1D);
-    final barColor = isOverGoal ? overGoalColor : Theme.of(context).colorScheme.primary;
-    return Card(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          alignment: Alignment.centerLeft,
-          children: [
-            Container(
-              height: barHeight,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            ),
-            FractionallySizedBox(
-              widthFactor: progress,
-              child: Container(
-                height: barHeight,
-                color: barColor,
-              ),
-            ),
-            SizedBox(
-              height: barHeight,
-              child: Center(
-                child: Text(
-                  '$total kcal',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return LabeledProgressBar(
+      label: 'Calories',
+      value: total.toDouble(),
+      goal: dailyGoal.toDouble(),
+      unit: 'kcal',
+      color: AppColors.calories,
+      overGoalColor: const Color(0xFF7F1D1D),
+      height: _progressBarHeight,
     );
   }
 }
@@ -356,38 +336,54 @@ class _ItemsTable extends StatelessWidget {
 class _DailyMacrosRow extends StatelessWidget {
   const _DailyMacrosRow({
     required this.fat,
+    required this.fatGoal,
     required this.protein,
+    required this.proteinGoal,
     required this.carbs,
+    required this.carbsGoal,
+    required this.height,
   });
 
   final double fat;
+  final double fatGoal;
   final double protein;
+  final double proteinGoal;
   final double carbs;
-
-  String _format(double value) {
-    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
-  }
+  final double carbsGoal;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return Row(
       children: [
-        MetricGroupBox(
-          label: 'Fat',
-          value: '${_format(fat)} g',
-          color: AppColors.fat,
+        Expanded(
+          child: LabeledProgressBar(
+            label: 'Fat',
+            value: fat,
+            goal: fatGoal,
+            color: AppColors.fat,
+            height: height,
+          ),
         ),
-        MetricGroupBox(
-          label: 'Protein',
-          value: '${_format(protein)} g',
-          color: AppColors.protein,
+        const SizedBox(width: 8),
+        Expanded(
+          child: LabeledProgressBar(
+            label: 'Protein',
+            value: protein,
+            goal: proteinGoal,
+            color: AppColors.protein,
+            height: height,
+          ),
         ),
-        MetricGroupBox(
-          label: 'Carbs',
-          value: '${_format(carbs)} g',
-          color: AppColors.carbs,
+        const SizedBox(width: 8),
+        Expanded(
+          child: LabeledProgressBar(
+            label: 'Carbs',
+            value: carbs,
+            goal: carbsGoal,
+            color: AppColors.carbs,
+            height: height,
+          ),
         ),
       ],
     );
