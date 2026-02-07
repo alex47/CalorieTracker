@@ -5,6 +5,8 @@ import '../main.dart';
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/settings_service.dart';
+import '../theme/app_colors.dart';
+import '../widgets/labeled_group_box.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
 import 'daily_macros_screen.dart';
@@ -183,22 +185,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       future: _itemsForDate(pageDate),
                       builder: (context, snapshot) {
                         final items = snapshot.data ?? const <FoodItem>[];
-                        return _buildTotalCard(
-                          dailyGoal,
-                          _totalCalories(items),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => DailyMacrosScreen(
-                                  date: pageDate,
-                                  fat: _totalFat(items),
-                                  protein: _totalProtein(items),
-                                  carbs: _totalCarbs(items),
-                                ),
-                              ),
-                            );
-                          },
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildTotalCard(
+                              dailyGoal,
+                              _totalCalories(items),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => DailyMacrosScreen(
+                                      date: pageDate,
+                                      fat: _totalFat(items),
+                                      protein: _totalProtein(items),
+                                      carbs: _totalCarbs(items),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _DailyMacrosRow(
+                              fat: _totalFat(items),
+                              protein: _totalProtein(items),
+                              carbs: _totalCarbs(items),
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -338,6 +351,47 @@ class _ItemsTable extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DailyMacrosRow extends StatelessWidget {
+  const _DailyMacrosRow({
+    required this.fat,
+    required this.protein,
+    required this.carbs,
+  });
+
+  final double fat;
+  final double protein;
+  final double carbs;
+
+  String _format(double value) {
+    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        MetricGroupBox(
+          label: 'Fat',
+          value: '${_format(fat)} g',
+          color: AppColors.fat,
+        ),
+        MetricGroupBox(
+          label: 'Protein',
+          value: '${_format(protein)} g',
+          color: AppColors.protein,
+        ),
+        MetricGroupBox(
+          label: 'Carbs',
+          value: '${_format(carbs)} g',
+          color: AppColors.carbs,
+        ),
+      ],
     );
   }
 }

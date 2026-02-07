@@ -174,16 +174,37 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+              ),
+            ),
             title: const Text('Delete item'),
             content: const Text('Are you sure you want to delete this food item?'),
             actions: [
-              FilledButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel', textAlign: TextAlign.center),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete', textAlign: TextAlign.center),
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    SizedBox(
+                      width: 110,
+                      child: FilledButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel', textAlign: TextAlign.center),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 110,
+                      child: FilledButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Delete', textAlign: TextAlign.center),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

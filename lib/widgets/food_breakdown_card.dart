@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'labeled_group_box.dart';
 
 class FoodBreakdownCard extends StatelessWidget {
   const FoodBreakdownCard({
@@ -56,7 +57,7 @@ class FoodBreakdownCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            _MetricGroupBox(
+            MetricGroupBox(
               label: 'Calories',
               value: '$calories kcal',
               color: AppColors.calories,
@@ -66,17 +67,17 @@ class FoodBreakdownCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _MetricGroupBox(
+                MetricGroupBox(
                   label: 'Fat',
                   value: '${_formatGrams(fat)} g',
                   color: AppColors.fat,
                 ),
-                _MetricGroupBox(
+                MetricGroupBox(
                   label: 'Protein',
                   value: '${_formatGrams(protein)} g',
                   color: AppColors.protein,
                 ),
-                _MetricGroupBox(
+                MetricGroupBox(
                   label: 'Carbs',
                   value: '${_formatGrams(carbs)} g',
                   color: AppColors.carbs,
@@ -84,7 +85,7 @@ class FoodBreakdownCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            _LabeledGroupBox(
+            LabeledGroupBox(
               label: 'Notes',
               value: trimmedNotes.isEmpty ? '-' : trimmedNotes,
               borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
@@ -94,86 +95,6 @@ class FoodBreakdownCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _MetricGroupBox extends StatelessWidget {
-  const _MetricGroupBox({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return _LabeledGroupBox(
-      label: label,
-      value: value,
-      borderColor: color,
-      textStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(color: color),
-      minWidth: 100,
-      backgroundColor: color.withOpacity(0.14),
-      labelColor: color,
-    );
-  }
-}
-
-class _LabeledGroupBox extends StatelessWidget {
-  const _LabeledGroupBox({
-    required this.label,
-    required this.value,
-    required this.borderColor,
-    required this.textStyle,
-    this.minWidth,
-    this.backgroundColor,
-    this.labelColor,
-  });
-
-  final String label;
-  final String value;
-  final Color borderColor;
-  final TextStyle? textStyle;
-  final double? minWidth;
-  final Color? backgroundColor;
-  final Color? labelColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final surface = Theme.of(context).colorScheme.surface;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(top: 8),
-          constraints: minWidth == null ? null : BoxConstraints(minWidth: minWidth!),
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(value, style: textStyle),
-        ),
-        Positioned(
-          left: 10,
-          top: 0,
-          child: Container(
-            color: surface,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              label,
-              style: textTheme.bodySmall?.copyWith(color: labelColor ?? borderColor),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

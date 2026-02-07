@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../theme/app_colors.dart';
+import '../widgets/labeled_group_box.dart';
 
 class DailyMacrosScreen extends StatelessWidget {
   const DailyMacrosScreen({
@@ -32,47 +34,28 @@ class DailyMacrosScreen extends StatelessWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          _MacroCard(
-            label: 'Fat',
-            value: '${_format(fat)} g',
-          ),
-          const SizedBox(height: 10),
-          _MacroCard(
-            label: 'Protein',
-            value: '${_format(protein)} g',
-          ),
-          const SizedBox(height: 10),
-          _MacroCard(
-            label: 'Carbs',
-            value: '${_format(carbs)} g',
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              MetricGroupBox(
+                label: 'Fat',
+                value: '${_format(fat)} g',
+                color: AppColors.fat,
+              ),
+              MetricGroupBox(
+                label: 'Protein',
+                value: '${_format(protein)} g',
+                color: AppColors.protein,
+              ),
+              MetricGroupBox(
+                label: 'Carbs',
+                value: '${_format(carbs)} g',
+                color: AppColors.carbs,
+              ),
+            ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _MacroCard extends StatelessWidget {
-  const _MacroCard({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.titleMedium),
-            Text(value, style: Theme.of(context).textTheme.titleMedium),
-          ],
-        ),
       ),
     );
   }
