@@ -13,7 +13,9 @@ Future<String?> showReestimateDialog(
           return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Theme.of(context).colorScheme.outline),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+              ),
             ),
             content: Padding(
               padding: const EdgeInsets.only(top: 12),
@@ -26,7 +28,7 @@ Future<String?> showReestimateDialog(
                   textAlignVertical: TextAlignVertical.top,
                   onChanged: (_) => setDialogState(() {}),
                   decoration: const InputDecoration(
-                    labelText: 'Corrections and details',
+                    labelText: 'Ask for follow-up changes',
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     border: OutlineInputBorder(),
                   ),
