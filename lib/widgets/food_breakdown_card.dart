@@ -33,6 +33,8 @@ class FoodBreakdownCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final trimmedNotes = notes.trim();
+    final displayName = name.trim().isEmpty ? '-' : name;
+    final displayAmount = amount.trim().isEmpty ? '-' : amount;
     return Card(
       margin: margin ?? EdgeInsets.zero,
       child: Padding(
@@ -40,21 +42,52 @@ class FoodBreakdownCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    name.trim().isEmpty ? '-' : name,
-                    style: textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  amount.trim().isEmpty ? '-' : amount,
-                  style: textTheme.bodyMedium,
-                ),
-              ],
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final shouldStack = constraints.maxWidth < 360 ||
+                    (displayName.length > 26 && displayAmount.length > 18);
+                if (shouldStack) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        displayAmount,
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text(
+                        displayName,
+                        style: textTheme.titleMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        displayAmount,
+                        style: textTheme.bodyMedium,
+                        textAlign: TextAlign.end,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 8),
             MetricGroupBox(

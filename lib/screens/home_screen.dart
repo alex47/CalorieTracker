@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(color: Theme.of(context).colorScheme.outline),
               ),
-              onSelected: (value) {
+              onSelected: (value) async {
                 if (value == SettingsScreen.routeName) {
                   Navigator.pushNamed(context, SettingsScreen.routeName);
                 } else if (value == AboutScreen.routeName) {
