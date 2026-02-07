@@ -22,10 +22,10 @@ class CalorieTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Single typography scale for the whole app.
-    const textSizeXSmall = 12.0;
-    const textSizeSmall = 14.0;
-    const textSizeMedium = 16.0;
-    const textSizeLarge = 22.0;
+    const textSizeXSmall = 13.0;
+    const textSizeSmall = 15.0;
+    const textSizeMedium = 17.0;
+    const textSizeLarge = 23.0;
 
     final baseTextTheme = ThemeData.dark().textTheme.apply(
           bodyColor: AppColors.text,
