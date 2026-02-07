@@ -46,9 +46,10 @@ Future<String?> showReestimateDialog(
                 items: [
                   DialogActionItem(
                     width: 110,
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.close),
+                      label: const Text('Cancel', textAlign: TextAlign.center),
                     ),
                   ),
                   DialogActionItem(

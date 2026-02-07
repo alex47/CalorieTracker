@@ -144,9 +144,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               obscureText: true,
           ),
           const SizedBox(height: 12),
-          FilledButton(
+          FilledButton.icon(
             onPressed: isBusy ? null : _testKey,
-            child: _testing
+            icon: const Icon(Icons.vpn_key),
+            label: _testing
                 ? const SizedBox(
                     height: 16,
                     width: 16,
@@ -220,9 +221,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             keyboardType: TextInputType.number,
           ),
           const SizedBox(height: 24),
-          FilledButton(
+          FilledButton.icon(
             onPressed: isBusy ? null : _save,
-            child: _saving
+            icon: const Icon(Icons.save),
+            label: _saving
                 ? const SizedBox(
                     height: 16,
                     width: 16,

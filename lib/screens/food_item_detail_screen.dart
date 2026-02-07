@@ -189,16 +189,18 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 items: [
                   DialogActionItem(
                     width: 110,
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.close),
+                      label: const Text('Cancel', textAlign: TextAlign.center),
                     ),
                   ),
                   DialogActionItem(
                     width: 110,
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context, true),
-                      child: const Text('Delete', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Delete', textAlign: TextAlign.center),
                     ),
                   ),
                 ],
@@ -297,35 +299,42 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               children: [
                 if (_canCopyToToday) ...[
                   Expanded(
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: isBusy ? null : _copyToToday,
-                      child: const Text('Copy to today', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.copy),
+                      label: const Text('Copy to today', textAlign: TextAlign.center),
                     ),
                   ),
                   const SizedBox(width: 8),
                 ],
                 Expanded(
-                  child: FilledButton(
+                  child: FilledButton.icon(
                     onPressed: isBusy ? null : _deleteItem,
-                    child: const Text('Delete', textAlign: TextAlign.center),
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Delete', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: FilledButton(
+                  child: FilledButton.icon(
                     onPressed: isBusy ? null : _reestimateItem,
-                    child: const Text('Re-estimate', textAlign: TextAlign.center),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: isBusy || !_dirty ? null : _saveChanges,
-                    child: const Text('Save', textAlign: TextAlign.center),
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('Re-estimate', textAlign: TextAlign.center),
                   ),
                 ),
               ],
             ),
+            if (_dirty) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: isBusy ? null : _saveChanges,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Save', textAlign: TextAlign.center),
+                ),
+              ),
+            ],
             ],
           ),
         ),

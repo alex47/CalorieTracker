@@ -201,23 +201,26 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: isBusy ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.close),
+                      label: const Text('Cancel', textAlign: TextAlign.center),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: isBusy ? null : _reestimateResponse,
-                      child: const Text('Re-estimate', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.auto_awesome),
+                      label: const Text('Re-estimate', textAlign: TextAlign.center),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: isBusy ? null : _saveEntry,
-                      child: const Text('Accept', textAlign: TextAlign.center),
+                      icon: const Icon(Icons.check),
+                      label: const Text('Accept', textAlign: TextAlign.center),
                     ),
                   ),
                 ],
