@@ -9,7 +9,6 @@ import '../theme/app_colors.dart';
 import '../widgets/labeled_group_box.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
-import 'daily_macros_screen.dart';
 import 'food_item_detail_screen.dart';
 import 'settings_screen.dart';
 
@@ -207,19 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             _buildTotalCard(
                               dailyGoal,
                               _totalCalories(items),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => DailyMacrosScreen(
-                                      date: pageDate,
-                                      fat: _totalFat(items),
-                                      protein: _totalProtein(items),
-                                      carbs: _totalCarbs(items),
-                                    ),
-                                  ),
-                                );
-                              },
                             ),
                             const SizedBox(height: 8),
                             _DailyMacrosRow(
@@ -297,46 +283,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildTotalCard(
     int dailyGoal,
-    int total, {
-    required VoidCallback onTap,
-  }) {
+    int total,
+  ) {
     final progress = dailyGoal > 0 ? (total / dailyGoal).clamp(0.0, 1.0) : 0.0;
     final isOverGoal = total > dailyGoal;
     const overGoalColor = Color(0xFF7F1D1D);
     final barColor = isOverGoal ? overGoalColor : Theme.of(context).colorScheme.primary;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Card(
-        margin: EdgeInsets.zero,
-        clipBehavior: Clip.antiAlias,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              Container(
+    return Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            Container(
+              height: 76,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            ),
+            FractionallySizedBox(
+              widthFactor: progress,
+              child: Container(
                 height: 76,
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: barColor,
               ),
-              FractionallySizedBox(
-                widthFactor: progress,
-                child: Container(
-                  height: 76,
-                  color: barColor,
+            ),
+            SizedBox(
+              height: 76,
+              child: Center(
+                child: Text(
+                  '$total kcal',
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
-              SizedBox(
-                height: 76,
-                child: Center(
-                  child: Text(
-                    '$total kcal',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
