@@ -84,10 +84,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get languageLabel => 'Nyelv';
 
   @override
-  String get languageEnglish => 'Angol';
+  String get languageNameNative => 'Magyar';
 
   @override
-  String get languageHungarian => 'Magyar';
+  String get languageNameEnglish => 'Hungarian';
 
   @override
   String get openAiApiKeyLabel => 'OpenAI API kulcs';

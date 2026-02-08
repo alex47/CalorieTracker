@@ -83,10 +83,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageLabel => 'Language';
 
   @override
-  String get languageEnglish => 'English';
+  String get languageNameNative => 'English';
 
   @override
-  String get languageHungarian => 'Hungarian';
+  String get languageNameEnglish => 'English';
 
   @override
   String get openAiApiKeyLabel => 'OpenAI API key';

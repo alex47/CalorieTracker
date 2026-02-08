@@ -82,6 +82,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       final service = OpenAIService(apiKey);
       final response = await service.estimateCalories(
         model: settings.model,
+        languageCode: settings.languageCode,
         reasoningEffort: settings.reasoningEffort,
         maxOutputTokens: settings.maxOutputTokens,
         userInput: prompt,

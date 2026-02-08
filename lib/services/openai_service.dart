@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
+import 'package:flutter/widgets.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 
@@ -122,6 +124,7 @@ Rules:
 
   Future<Map<String, dynamic>> estimateCalories({
     required String model,
+    required String languageCode,
     required String reasoningEffort,
     required int maxOutputTokens,
     required String userInput,
@@ -134,6 +137,7 @@ Rules:
       try {
         final response = await _sendRequest(
           model: model,
+          languageCode: languageCode,
           reasoningEffort: reasoningEffort,
           maxOutputTokens: maxOutputTokens,
           userInput: userInput,
@@ -164,6 +168,7 @@ Rules:
 
   Future<Map<String, dynamic>> _sendRequest({
     required String model,
+    required String languageCode,
     required String reasoningEffort,
     required int maxOutputTokens,
     required String userInput,
@@ -176,8 +181,12 @@ Rules:
     final outputTokens = maxOutputTokens < AppDefaults.minOutputTokens
         ? defaultEstimateMaxOutputTokens
         : maxOutputTokens;
+    final languageName = _languageNameEnglish(languageCode);
+    final localizedSystemPrompt =
+        '$systemPrompt\n- Write all natural-language output fields ("notes" and "error") in $languageName.';
+
     final messages = <Map<String, String>>[
-      {'role': 'system', 'content': systemPrompt},
+      {'role': 'system', 'content': localizedSystemPrompt},
       ...history,
       {
         'role': 'user',
@@ -219,6 +228,15 @@ Rules:
     }
 
     return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  String _languageNameEnglish(String languageCode) {
+    for (final locale in AppLocalizations.supportedLocales) {
+      if (locale.languageCode == languageCode) {
+        return lookupAppLocalizations(locale).languageNameEnglish;
+      }
+    }
+    return lookupAppLocalizations(const Locale('en')).languageNameEnglish;
   }
 
   Map<String, dynamic> _parseResponse(Map<String, dynamic> response) {

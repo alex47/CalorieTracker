@@ -236,17 +236,17 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get languageLabel;
 
-  /// No description provided for @languageEnglish.
+  /// No description provided for @languageNameNative.
   ///
   /// In en, this message translates to:
   /// **'English'**
-  String get languageEnglish;
+  String get languageNameNative;
 
-  /// No description provided for @languageHungarian.
+  /// No description provided for @languageNameEnglish.
   ///
   /// In en, this message translates to:
-  /// **'Hungarian'**
-  String get languageHungarian;
+  /// **'English'**
+  String get languageNameEnglish;
 
   /// No description provided for @openAiApiKeyLabel.
   ///

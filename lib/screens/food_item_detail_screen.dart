@@ -84,6 +84,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
       final response = await service.estimateCalories(
         model: settings.model,
+        languageCode: settings.languageCode,
         reasoningEffort: settings.reasoningEffort,
         maxOutputTokens: settings.maxOutputTokens,
         userInput: reestimateInput,

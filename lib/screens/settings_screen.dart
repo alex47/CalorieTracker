@@ -228,11 +228,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   (locale) => DropdownMenuItem(
                     value: locale.languageCode,
                     child: Text(
-                      locale.languageCode == 'hu'
-                          ? l10n.languageHungarian
-                          : locale.languageCode == 'en'
-                              ? l10n.languageEnglish
-                              : locale.languageCode,
+                      lookupAppLocalizations(locale).languageNameNative,
                     ),
                   ),
                 )
