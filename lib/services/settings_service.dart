@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import 'database_service.dart';
 
@@ -9,6 +10,8 @@ class SettingsService {
 
   static const _apiKeyKey = 'openai_api_key';
   static const _modelKey = 'model';
+  static const _reasoningEffortKey = 'reasoning_effort';
+  static const _maxOutputTokensKey = 'max_output_tokens';
   static const _dailyGoalKey = 'daily_goal';
   static const _dailyFatGoalKey = 'daily_fat_goal';
   static const _dailyProteinGoalKey = 'daily_protein_goal';
@@ -18,11 +21,13 @@ class SettingsService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   AppSettings _settings = const AppSettings(
-    model: 'gpt-5-mini',
-    dailyGoal: 2000,
-    dailyFatGoal: 70,
-    dailyProteinGoal: 150,
-    dailyCarbsGoal: 250,
+    model: AppDefaults.model,
+    reasoningEffort: AppDefaults.reasoningEffort,
+    maxOutputTokens: AppDefaults.maxOutputTokens,
+    dailyGoal: AppDefaults.dailyCalories,
+    dailyFatGoal: AppDefaults.dailyFatGrams,
+    dailyProteinGoal: AppDefaults.dailyProteinGrams,
+    dailyCarbsGoal: AppDefaults.dailyCarbsGrams,
   );
 
   AppSettings get settings => _settings;
@@ -34,11 +39,17 @@ class SettingsService {
       for (final row in rows) row['key'] as String: row['value'] as String,
     };
     _settings = AppSettings(
-      model: settingsMap[_modelKey] ?? 'gpt-5-mini',
-      dailyGoal: int.tryParse(settingsMap[_dailyGoalKey] ?? '') ?? 2000,
-      dailyFatGoal: int.tryParse(settingsMap[_dailyFatGoalKey] ?? '') ?? 70,
-      dailyProteinGoal: int.tryParse(settingsMap[_dailyProteinGoalKey] ?? '') ?? 150,
-      dailyCarbsGoal: int.tryParse(settingsMap[_dailyCarbsGoalKey] ?? '') ?? 250,
+      model: settingsMap[_modelKey] ?? AppDefaults.model,
+      reasoningEffort: AppDefaults.reasoningEffortOptions.contains(settingsMap[_reasoningEffortKey])
+          ? settingsMap[_reasoningEffortKey]!
+          : AppDefaults.reasoningEffort,
+      maxOutputTokens: _parseMaxOutputTokens(settingsMap[_maxOutputTokensKey]),
+      dailyGoal: int.tryParse(settingsMap[_dailyGoalKey] ?? '') ?? AppDefaults.dailyCalories,
+      dailyFatGoal: int.tryParse(settingsMap[_dailyFatGoalKey] ?? '') ?? AppDefaults.dailyFatGrams,
+      dailyProteinGoal:
+          int.tryParse(settingsMap[_dailyProteinGoalKey] ?? '') ?? AppDefaults.dailyProteinGrams,
+      dailyCarbsGoal:
+          int.tryParse(settingsMap[_dailyCarbsGoalKey] ?? '') ?? AppDefaults.dailyCarbsGrams,
     );
   }
 
@@ -48,6 +59,16 @@ class SettingsService {
     await db.insert(
       'settings',
       {'key': _modelKey, 'value': settings.model},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.insert(
+      'settings',
+      {'key': _reasoningEffortKey, 'value': settings.reasoningEffort},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.insert(
+      'settings',
+      {'key': _maxOutputTokensKey, 'value': settings.maxOutputTokens.toString()},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     await db.insert(
@@ -78,5 +99,13 @@ class SettingsService {
 
   Future<void> setApiKey(String value) async {
     await _secureStorage.write(key: _apiKeyKey, value: value);
+  }
+
+  int _parseMaxOutputTokens(String? rawValue) {
+    final parsed = int.tryParse(rawValue ?? '');
+    if (parsed == null || parsed < AppDefaults.minOutputTokens) {
+      return AppDefaults.maxOutputTokens;
+    }
+    return parsed;
   }
 }

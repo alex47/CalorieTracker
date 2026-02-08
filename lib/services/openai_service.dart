@@ -3,18 +3,46 @@ import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
+import '../models/app_defaults.dart';
+
 class OpenAIService {
   OpenAIService(this.apiKey);
 
   static const int maxAttempts = 3;
-  static const Duration requestTimeout = Duration(seconds: 20);
+  static const Duration requestTimeout = Duration(seconds: 10);
+  static const int defaultEstimateMaxOutputTokens = AppDefaults.maxOutputTokens;
+  static const List<String> reasoningEffortOptions = AppDefaults.reasoningEffortOptions;
 
   final String apiKey;
 
+  static const Map<String, dynamic> estimateSchema = {
+    'type': 'object',
+    'additionalProperties': false,
+    'properties': {
+      'items': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'additionalProperties': false,
+          'properties': {
+            'name': {'type': 'string'},
+            'amount': {'type': 'string'},
+            'calories': {'type': 'number'},
+            'fat': {'type': 'number'},
+            'protein': {'type': 'number'},
+            'carbs': {'type': 'number'},
+            'notes': {'type': 'string'},
+          },
+          'required': ['name', 'amount', 'calories', 'fat', 'protein', 'carbs', 'notes'],
+        },
+      },
+      'error': {'type': 'string'},
+    },
+    'required': ['items', 'error'],
+  };
+
   static const String systemPrompt = '''
 You are a nutrition estimation assistant.
-Return ONLY JSON with this schema:
-{ "items": [ { "name": "", "amount": "", "calories": 0, "fat": 0, "protein": 0, "carbs": 0, "notes": "" } ], "error": "" }
 Rules:
 - Parse each food and its amount from the user text.
 - If units are unclear, make a reasonable assumption and note it in "notes".
@@ -33,7 +61,6 @@ Rules:
 - If you cannot extract at least one valid food name + amount pair, return:
   { "items": [], "error": "<a short natural-language explanation of what is missing and what the user should clarify>" }
 - The "error" text must sound natural and helpful, not templated.
-- Do not add any extra text outside JSON.
 ''';
 
   Future<void> testConnection({required String model}) async {
@@ -48,7 +75,7 @@ Rules:
             'model': model,
             'input': 'Reply with OK.',
             'store': false,
-            'max_output_tokens': 16,
+            'max_output_tokens': AppDefaults.minOutputTokens,
           }),
         )
         .timeout(requestTimeout, onTimeout: () {
@@ -95,6 +122,8 @@ Rules:
 
   Future<Map<String, dynamic>> estimateCalories({
     required String model,
+    required String reasoningEffort,
+    required int maxOutputTokens,
     required String userInput,
     required List<Map<String, String>> history,
   }) async {
@@ -105,6 +134,8 @@ Rules:
       try {
         final response = await _sendRequest(
           model: model,
+          reasoningEffort: reasoningEffort,
+          maxOutputTokens: maxOutputTokens,
           userInput: userInput,
           history: history,
           includeReminder: attempt > 0,
@@ -133,17 +164,25 @@ Rules:
 
   Future<Map<String, dynamic>> _sendRequest({
     required String model,
+    required String reasoningEffort,
+    required int maxOutputTokens,
     required String userInput,
     required List<Map<String, String>> history,
     required bool includeReminder,
   }) async {
+    final effort = reasoningEffortOptions.contains(reasoningEffort)
+        ? reasoningEffort
+        : AppDefaults.reasoningEffort;
+    final outputTokens = maxOutputTokens < AppDefaults.minOutputTokens
+        ? defaultEstimateMaxOutputTokens
+        : maxOutputTokens;
     final messages = <Map<String, String>>[
       {'role': 'system', 'content': systemPrompt},
       ...history,
       {
         'role': 'user',
         'content': includeReminder
-            ? '$userInput\n\nReminder: respond ONLY with valid JSON, include calories/fat/protein/carbs, and use metric units for amounts.'
+            ? '$userInput\n\nReminder: include calories/fat/protein/carbs and use metric units for amounts.'
             : userInput,
       },
     ];
@@ -159,6 +198,16 @@ Rules:
             'model': model,
             'input': messages,
             'store': false,
+            'max_output_tokens': outputTokens,
+            'reasoning': {'effort': effort},
+            'text': {
+              'format': {
+                'type': 'json_schema',
+                'name': 'calorie_estimate',
+                'strict': true,
+                'schema': estimateSchema,
+              },
+            },
           }),
         )
         .timeout(requestTimeout, onTimeout: () {
@@ -218,11 +267,6 @@ Rules:
   }
 
   String? _extractResponseText(Map<String, dynamic> response) {
-    final direct = response['output_text'] as String?;
-    if (direct != null && direct.trim().isNotEmpty) {
-      return direct.trim();
-    }
-
     final output = response['output'] as List<dynamic>?;
     if (output == null || output.isEmpty) {
       return null;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
@@ -17,12 +18,14 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _apiKeyController = TextEditingController();
+  final TextEditingController _maxOutputTokensController = TextEditingController();
   final TextEditingController _calorieGoalController = TextEditingController();
   final TextEditingController _fatGoalController = TextEditingController();
   final TextEditingController _proteinGoalController = TextEditingController();
   final TextEditingController _carbsGoalController = TextEditingController();
   Timer? _autosaveTimer;
   late String _selectedModel;
+  late String _selectedReasoningEffort;
   bool _testing = false;
   bool _loadingModels = false;
   List<String> _availableModels = [];
@@ -32,6 +35,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     final settings = SettingsService.instance.settings;
     _selectedModel = settings.model;
+    _selectedReasoningEffort = settings.reasoningEffort;
+    _maxOutputTokensController.text = settings.maxOutputTokens.toString();
     _calorieGoalController.text = settings.dailyGoal.toString();
     _fatGoalController.text = settings.dailyFatGoal.toString();
     _proteinGoalController.text = settings.dailyProteinGoal.toString();
@@ -56,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     _autosaveTimer?.cancel();
     _apiKeyController.dispose();
+    _maxOutputTokensController.dispose();
     _calorieGoalController.dispose();
     _fatGoalController.dispose();
     _proteinGoalController.dispose();
@@ -67,6 +73,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final current = SettingsService.instance.settings;
     final shouldSaveSelectedModel =
         _availableModels.isNotEmpty && _availableModels.contains(_selectedModel);
+    final maxOutputTokens =
+        int.tryParse(_maxOutputTokensController.text.trim()) ?? current.maxOutputTokens;
     final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? current.dailyGoal;
     final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? current.dailyFatGoal;
     final dailyProteinGoal =
@@ -75,6 +83,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await SettingsService.instance.updateSettings(
       AppSettings(
         model: shouldSaveSelectedModel ? _selectedModel : current.model,
+        reasoningEffort: _selectedReasoningEffort,
+        maxOutputTokens: maxOutputTokens < AppDefaults.minOutputTokens
+            ? current.maxOutputTokens
+            : maxOutputTokens,
         dailyGoal: dailyGoal,
         dailyFatGoal: dailyFatGoal,
         dailyProteinGoal: dailyProteinGoal,
@@ -258,6 +270,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _scheduleSettingsAutosave();
                     }
                   },
+          ),
+          const SizedBox(height: controlSpacing),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedReasoningEffort,
+            decoration: const InputDecoration(
+              labelText: 'Reasoning effort',
+              border: OutlineInputBorder(),
+            ),
+            items: AppDefaults.reasoningEffortOptions
+                .map(
+                  (effort) => DropdownMenuItem(
+                    value: effort,
+                    child: Text(effort),
+                  ),
+                )
+                .toList(),
+            onChanged: isBusy
+                ? null
+                : (value) {
+                    if (value != null) {
+                      setState(() => _selectedReasoningEffort = value);
+                      _scheduleSettingsAutosave();
+                    }
+                  },
+          ),
+          const SizedBox(height: controlSpacing),
+          TextField(
+            controller: _maxOutputTokensController,
+            enabled: !isBusy,
+            decoration: const InputDecoration(
+              labelText: 'Max output tokens',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.number,
+            onChanged: (_) => _scheduleSettingsAutosave(),
           ),
           const SizedBox(height: sectionSpacing),
           Text(
