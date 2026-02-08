@@ -6,6 +6,7 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
+import '../theme/ui_constants.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
@@ -23,7 +24,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   static const int _initialPage = 10000;
-  static const double _progressBarHeight = 36;
+  static const double _progressBarHeight = UiConstants.progressBarHeight;
 
   late final DateTime _baseDate;
   late final PageController _pageController;
@@ -106,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!_isTodaySelected()) {
       await _pageController.animateToPage(
         _initialPage,
-        duration: const Duration(milliseconds: 260),
+        duration: UiConstants.homePageSnapDuration,
         curve: Curves.easeOutCubic,
       );
       return false;
@@ -125,10 +126,10 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Calorie Tracker'),
           actions: [
             PopupMenuButton<String>(
-              iconSize: 30,
-              constraints: const BoxConstraints(minWidth: 250),
+              iconSize: UiConstants.menuIconSize,
+              constraints: const BoxConstraints(minWidth: UiConstants.popupMenuMinWidth),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
                 side: BorderSide(color: Theme.of(context).colorScheme.outline),
               ),
               onSelected: (value) async {
@@ -171,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         floatingActionButton: SizedBox(
-          width: 130,
+          width: UiConstants.addButtonWidth,
           child: FilledButton.icon(
             onPressed: _navigateToAdd,
             icon: const Icon(Icons.add),
@@ -194,10 +195,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 onRefresh: () => _reloadDate(pageDate),
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                       child: Center(
                         child: Text(
                           formatDate(pageDate),
@@ -205,22 +206,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: UiConstants.mediumSpacing),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                       child: FutureBuilder<List<FoodItem>>(
                         future: _itemsForDate(pageDate),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting &&
                               !snapshot.hasData) {
                             return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
+                              padding: EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
                               child: Center(child: CircularProgressIndicator()),
                             );
                           }
                           if (snapshot.hasError) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
                               child: Text(
                                 'Failed to load daily totals.',
                                 style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -240,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               dailyGoal,
                               totalCalories,
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: UiConstants.smallSpacing),
                             _DailyMacrosRow(
                               fat: totalFat,
                               fatGoal: settings.dailyFatGoal.toDouble(),
@@ -255,28 +256,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: UiConstants.largeSpacing),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                       child: Text(
                         'Tracked foods',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UiConstants.smallSpacing),
                     FutureBuilder<List<FoodItem>>(
                       future: _itemsForDate(pageDate),
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting &&
                             !snapshot.hasData) {
                           return const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                             child: Center(child: CircularProgressIndicator()),
                           );
                         }
                         if (snapshot.hasError) {
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: UiConstants.pagePadding,
+                              vertical: UiConstants.largeSpacing,
+                            ),
                             child: Text(
                               'Failed to load entries.',
                               style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -286,12 +290,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         final items = snapshot.data ?? const <FoodItem>[];
                         if (items.isEmpty) {
                           return const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            padding: EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                             child: _EmptyState(),
                           );
                         }
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                           child: _ItemsTable(
                             items: items,
                             onItemTap: (item) async {
@@ -311,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (!_isTodaySelected()) {
                                   await _pageController.animateToPage(
                                     _initialPage,
-                                    duration: const Duration(milliseconds: 260),
+                                    duration: UiConstants.homePageSnapDuration,
                                     curve: Curves.easeOutCubic,
                                   );
                                 }
@@ -408,7 +412,7 @@ class _DailyMacrosRow extends StatelessWidget {
             height: height,
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: UiConstants.smallSpacing),
         Expanded(
           child: LabeledProgressBar(
             label: 'Protein',
@@ -418,7 +422,7 @@ class _DailyMacrosRow extends StatelessWidget {
             height: height,
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: UiConstants.smallSpacing),
         Expanded(
           child: LabeledProgressBar(
             label: 'Carbs',
@@ -441,7 +445,10 @@ class _ItemsHeaderRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: UiConstants.tableRowHorizontalPadding,
+        vertical: UiConstants.tableRowVerticalPadding,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -474,7 +481,10 @@ class _ItemsDataRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: UiConstants.tableRowHorizontalPadding,
+        vertical: UiConstants.tableRowVerticalPadding,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -512,7 +522,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 24),
+      padding: EdgeInsets.symmetric(vertical: UiConstants.sectionSpacing),
       child: Center(
         child: Text('No entries for this day yet. Tap Add to log food.'),
       ),

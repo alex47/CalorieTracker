@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/ui_constants.dart';
+
 class LabeledGroupBox extends StatelessWidget {
   const LabeledGroupBox({
     super.key,
@@ -29,8 +31,8 @@ class LabeledGroupBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    const gapStart = 10.0;
-    const gapHorizontalPadding = 4.0;
+    const gapStart = UiConstants.groupBoxHeaderGapStart;
+    const gapHorizontalPadding = UiConstants.groupBoxHeaderGapHorizontalPadding;
     final labelStyle = textTheme.bodySmall?.copyWith(color: borderColor);
     final labelPainter = TextPainter(
       text: TextSpan(text: label, style: labelStyle),
@@ -43,18 +45,18 @@ class LabeledGroupBox extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Container(
-          margin: const EdgeInsets.only(top: 8),
+          margin: const EdgeInsets.only(top: UiConstants.groupBoxHeaderTopInset),
           constraints: minWidth == null ? null : BoxConstraints(minWidth: minWidth!),
           height: contentHeight,
           padding: contentPadding,
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(UiConstants.smallSpacing),
           ),
           child: child == null
               ? Text(value, style: textStyle)
               : ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(UiConstants.smallSpacing),
                   child: child,
                 ),
         ),
@@ -63,8 +65,8 @@ class LabeledGroupBox extends StatelessWidget {
             child: CustomPaint(
               painter: NotchedBorderPainter(
                 color: borderColor,
-                radius: 8,
-                topInset: 8,
+                radius: UiConstants.smallSpacing,
+                topInset: UiConstants.groupBoxHeaderTopInset,
                 gapStart: gapStart,
                 gapWidth: labelGapWidth,
               ),
@@ -93,8 +95,8 @@ class MetricGroupBox extends StatelessWidget {
     required this.label,
     required this.value,
     required this.color,
-    this.minWidth = 100,
-    this.contentHeight = 36,
+    this.minWidth = UiConstants.metricGroupMinWidth,
+    this.contentHeight = UiConstants.progressBarHeight,
   });
 
   final String label;
@@ -112,7 +114,7 @@ class MetricGroupBox extends StatelessWidget {
       borderColor: color,
       textStyle: valueStyle,
       contentHeight: contentHeight,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: UiConstants.tableRowHorizontalPadding),
       child: Align(
         alignment: Alignment.centerLeft,
         widthFactor: 1,

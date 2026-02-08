@@ -6,6 +6,7 @@ import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../theme/ui_constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -98,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _scheduleSettingsAutosave() {
     _autosaveTimer?.cancel();
     _autosaveTimer = Timer(
-      const Duration(milliseconds: 350),
+      AppDefaults.settingsAutosaveDebounce,
       () => _saveNonSensitiveSettings(),
     );
   }
@@ -190,9 +191,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isBusy = _testing || _loadingModels;
-    const sectionSpacing = 24.0;
-    const headerToContentSpacing = 12.0;
-    const controlSpacing = 16.0;
+    const sectionSpacing = UiConstants.sectionSpacing;
+    const headerToContentSpacing = UiConstants.mediumSpacing;
+    const controlSpacing = UiConstants.largeSpacing;
     return WillPopScope(
       onWillPop: () async => !isBusy,
       child: Scaffold(
@@ -201,7 +202,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.settings),
-              SizedBox(width: 8),
+              SizedBox(width: UiConstants.appBarIconTextSpacing),
               Text('Settings'),
             ],
           ),
@@ -209,7 +210,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         body: AbsorbPointer(
           absorbing: isBusy,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
           Text(
             'OpenAI',
@@ -225,15 +226,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             obscureText: true,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: UiConstants.mediumSpacing),
           FilledButton.icon(
             onPressed: isBusy ? null : _testKey,
             icon: const Icon(Icons.vpn_key),
             label: _testing
                 ? const SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    height: UiConstants.loadingIndicatorSize,
+                    width: UiConstants.loadingIndicatorSize,
+                    child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                   )
                 : const Text('Test key', textAlign: TextAlign.center),
           ),
@@ -245,11 +246,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               border: OutlineInputBorder(),
               suffixIcon: _loadingModels
                   ? const Padding(
-                      padding: EdgeInsets.all(12),
+                      padding: EdgeInsets.all(UiConstants.mediumSpacing),
                       child: SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        height: UiConstants.loadingIndicatorSize,
+                        width: UiConstants.loadingIndicatorSize,
+                        child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                       ),
                     )
                   : null,
@@ -372,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.download),
             label: const Text('Export data', textAlign: TextAlign.center),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: UiConstants.smallSpacing),
           FilledButton.icon(
             onPressed: isBusy
                 ? null

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
 
 class FoodBreakdownCard extends StatelessWidget {
@@ -38,7 +39,7 @@ class FoodBreakdownCard extends StatelessWidget {
     return Card(
       margin: margin ?? EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(UiConstants.mediumSpacing),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,7 +75,7 @@ class FoodBreakdownCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: UiConstants.smallSpacing),
                     Expanded(
                       flex: 2,
                       child: Text(
@@ -89,16 +90,16 @@ class FoodBreakdownCard extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UiConstants.smallSpacing),
             MetricGroupBox(
               label: 'Calories',
               value: '$calories kcal',
               color: AppColors.calories,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: UiConstants.smallSpacing),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: UiConstants.smallSpacing,
+              runSpacing: UiConstants.smallSpacing,
               children: [
                 MetricGroupBox(
                   label: 'Fat',
@@ -117,7 +118,7 @@ class FoodBreakdownCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: UiConstants.mediumSpacing),
             LabeledGroupBox(
               label: 'Notes',
               value: trimmedNotes.isEmpty ? '-' : trimmedNotes,

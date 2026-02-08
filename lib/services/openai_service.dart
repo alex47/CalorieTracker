@@ -8,8 +8,8 @@ import '../models/app_defaults.dart';
 class OpenAIService {
   OpenAIService(this.apiKey);
 
-  static const int maxAttempts = 3;
-  static const Duration requestTimeout = Duration(seconds: 10);
+  static const int maxAttempts = AppDefaults.openAiMaxAttempts;
+  static const Duration requestTimeout = AppDefaults.openAiRequestTimeout;
   static const int defaultEstimateMaxOutputTokens = AppDefaults.maxOutputTokens;
   static const List<String> reasoningEffortOptions = AppDefaults.reasoningEffortOptions;
 

@@ -4,6 +4,7 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../theme/ui_constants.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
@@ -178,7 +179,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           context: context,
           builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
               ),
@@ -190,7 +191,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 alignment: MainAxisAlignment.end,
                 items: [
                   DialogActionItem(
-                    width: 110,
+                    width: UiConstants.buttonMinWidth,
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context, false),
                       icon: const Icon(Icons.close),
@@ -198,7 +199,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     ),
                   ),
                   DialogActionItem(
-                    width: 110,
+                    width: UiConstants.buttonMinWidth,
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context, true),
                       icon: const Icon(Icons.delete),
@@ -267,7 +268,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.restaurant_menu),
-              SizedBox(width: 8),
+              SizedBox(width: UiConstants.smallSpacing),
               Text('Food details'),
             ],
           ),
@@ -275,7 +276,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
         body: AbsorbPointer(
           absorbing: isBusy,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
             FoodBreakdownCard(
               name: _item.name,
@@ -286,17 +287,17 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               carbs: _item.carbs,
               notes: _item.notes,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: UiConstants.mediumSpacing),
             if (isBusy) const LinearProgressIndicator(),
             if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: UiConstants.smallSpacing),
                 child: Text(
                   _errorMessage!,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            const SizedBox(height: 10),
+            const SizedBox(height: UiConstants.mediumSpacing),
             if (_canCopyToToday) ...[
               SizedBox(
                 width: double.infinity,
@@ -306,7 +307,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                   label: const Text('Copy to today', textAlign: TextAlign.center),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: UiConstants.smallSpacing),
             ],
             Row(
               children: [
@@ -317,7 +318,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     label: const Text('Delete', textAlign: TextAlign.center),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: UiConstants.smallSpacing),
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _reestimateItem,
@@ -328,7 +329,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               ],
             ),
             if (_dirty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: UiConstants.smallSpacing),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(

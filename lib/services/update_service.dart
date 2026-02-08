@@ -3,6 +3,8 @@ import 'dart:async';
 
 import 'package:http/http.dart' as http;
 
+import '../models/app_defaults.dart';
+
 class UpdateCheckResult {
   const UpdateCheckResult({
     required this.currentVersion,
@@ -24,7 +26,7 @@ class UpdateCheckResult {
 class UpdateService {
   static const String _latestReleaseUrl =
       'https://api.github.com/repos/alex47/CalorieTracker/releases/latest';
-  static const Duration requestTimeout = Duration(seconds: 15);
+  static const Duration requestTimeout = AppDefaults.updateRequestTimeout;
 
   Future<UpdateCheckResult> checkForUpdate({
     required String currentVersion,

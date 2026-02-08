@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
 
 class LabeledProgressBar extends StatelessWidget {
@@ -10,8 +11,8 @@ class LabeledProgressBar extends StatelessWidget {
     required this.goal,
     required this.color,
     this.unit = 'g',
-    this.height = 44,
-    this.animationDuration = const Duration(seconds: 1),
+    this.height = UiConstants.progressBarHeight,
+    this.animationDuration = UiConstants.progressBarAnimationDuration,
     this.overGoalColor = const Color(0xFF7F1D1D),
   });
 

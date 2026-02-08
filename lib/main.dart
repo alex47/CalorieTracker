@@ -8,6 +8,7 @@ import 'screens/settings_screen.dart';
 import 'services/database_service.dart';
 import 'services/settings_service.dart';
 import 'theme/app_colors.dart';
+import 'theme/ui_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,43 +22,37 @@ class CalorieTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Single typography scale for the whole app.
-    const textSizeXSmall = 13.0;
-    const textSizeSmall = 15.0;
-    const textSizeMedium = 17.0;
-    const textSizeLarge = 23.0;
-
     final baseTextTheme = ThemeData.dark().textTheme.apply(
           bodyColor: AppColors.text,
           displayColor: AppColors.text,
         );
     final appTextTheme = baseTextTheme.copyWith(
       headlineSmall: baseTextTheme.headlineSmall?.copyWith(
-        fontSize: textSizeLarge,
+        fontSize: UiConstants.textLarge,
       ),
       titleLarge: baseTextTheme.titleLarge?.copyWith(
-        fontSize: textSizeLarge,
+        fontSize: UiConstants.textLarge,
       ),
       titleMedium: baseTextTheme.titleMedium?.copyWith(
-        fontSize: textSizeMedium,
+        fontSize: UiConstants.textMedium,
       ),
       titleSmall: baseTextTheme.titleSmall?.copyWith(
-        fontSize: textSizeSmall,
+        fontSize: UiConstants.textSmall,
       ),
       bodyLarge: baseTextTheme.bodyLarge?.copyWith(
-        fontSize: textSizeMedium,
+        fontSize: UiConstants.textMedium,
       ),
       bodyMedium: baseTextTheme.bodyMedium?.copyWith(
-        fontSize: textSizeSmall,
+        fontSize: UiConstants.textSmall,
       ),
       bodySmall: baseTextTheme.bodySmall?.copyWith(
-        fontSize: textSizeXSmall,
+        fontSize: UiConstants.textXSmall,
       ),
       labelLarge: baseTextTheme.labelLarge?.copyWith(
-        fontSize: textSizeSmall,
+        fontSize: UiConstants.textSmall,
       ),
       labelMedium: baseTextTheme.labelMedium?.copyWith(
-        fontSize: textSizeXSmall,
+        fontSize: UiConstants.textXSmall,
       ),
     );
     final buttonBaseHsl = HSLColor.fromColor(AppColors.buttonBackground);
@@ -94,7 +89,7 @@ class CalorieTrackerApp extends StatelessWidget {
           color: AppColors.boxBackground,
           shape: RoundedRectangleBorder(
             side: BorderSide(color: AppColors.border),
-            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderRadius: BorderRadius.all(Radius.circular(UiConstants.cornerRadius)),
           ),
         ),
         dividerTheme: const DividerThemeData(
@@ -108,13 +103,13 @@ class CalorieTrackerApp extends StatelessWidget {
           centerTitle: true,
           titleTextStyle: appTextTheme.titleLarge?.copyWith(
             color: AppColors.text,
-            fontSize: textSizeLarge,
+            fontSize: UiConstants.textLarge,
           ),
         ),
         popupMenuTheme: PopupMenuThemeData(
           color: AppColors.boxBackground,
           textStyle: appTextTheme.bodyMedium?.copyWith(
-            fontSize: textSizeMedium,
+            fontSize: UiConstants.textMedium,
             color: AppColors.text,
           ),
         ),
@@ -130,11 +125,11 @@ class CalorieTrackerApp extends StatelessWidget {
           ),
           labelStyle: appTextTheme.bodyLarge?.copyWith(
             color: AppColors.text,
-            fontSize: textSizeMedium,
+            fontSize: UiConstants.textMedium,
           ),
           floatingLabelStyle: appTextTheme.bodyLarge?.copyWith(
             color: AppColors.text,
-            fontSize: textSizeMedium,
+            fontSize: UiConstants.textMedium,
           ),
         ),
         textSelectionTheme: const TextSelectionThemeData(
@@ -146,10 +141,10 @@ class CalorieTrackerApp extends StatelessWidget {
             backgroundColor: AppColors.buttonBackground,
             foregroundColor: AppColors.buttonForeground,
             minimumSize: const Size(0, 52),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
             textStyle: appTextTheme.labelLarge,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(UiConstants.buttonCornerRadius),
             ),
           ).copyWith(
             side: WidgetStateProperty.resolveWith<BorderSide>((states) {
@@ -165,7 +160,7 @@ class CalorieTrackerApp extends StatelessWidget {
           foregroundColor: AppColors.buttonForeground,
         ).copyWith(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(UiConstants.fabCornerRadius),
             side: BorderSide(
               color: buttonBorderColor,
               width: 1,

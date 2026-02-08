@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../services/update_service.dart';
+import '../theme/ui_constants.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -181,7 +182,7 @@ class _AboutScreenState extends State<AboutScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.info_outline),
-              SizedBox(width: 8),
+              SizedBox(width: UiConstants.appBarIconTextSpacing),
               Text('About'),
             ],
           ),
@@ -189,7 +190,7 @@ class _AboutScreenState extends State<AboutScreen> {
         body: AbsorbPointer(
           absorbing: isBusy,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UiConstants.pagePadding),
             child: FutureBuilder<PackageInfo>(
               future: PackageInfo.fromPlatform(),
               builder: (context, snapshot) {
@@ -201,13 +202,13 @@ class _AboutScreenState extends State<AboutScreen> {
                   'Calorie Tracker helps you log meals and estimate calories using OpenAI.',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: UiConstants.largeSpacing),
                 Text(
                   'Version: $version',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 16),
-                const SizedBox(height: 8),
+                const SizedBox(height: UiConstants.largeSpacing),
+                const SizedBox(height: UiConstants.smallSpacing),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -215,22 +216,22 @@ class _AboutScreenState extends State<AboutScreen> {
                     icon: const Icon(Icons.update),
                     label: _checkingUpdates
                         ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            height: UiConstants.loadingIndicatorSize,
+                            width: UiConstants.loadingIndicatorSize,
+                            child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                           )
                           : const Text('Check for updates', textAlign: TextAlign.center),
                     ),
                   ),
                 if (_updateResult != null) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: UiConstants.mediumSpacing),
                   Text(
                     _updateResult!.updateAvailable
                         ? 'Update available: ${_updateResult!.latestVersion} (current: ${_updateResult!.currentVersion})'
                         : 'You are up to date (${_updateResult!.currentVersion}).',
                   ),
                   if (_updateResult!.updateAvailable) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: UiConstants.smallSpacing),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
@@ -238,17 +239,17 @@ class _AboutScreenState extends State<AboutScreen> {
                         icon: const Icon(Icons.system_update),
                         label: _installingUpdate
                             ? const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                height: UiConstants.loadingIndicatorSize,
+                                width: UiConstants.loadingIndicatorSize,
+                                child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                               )
                             : const Text('Install latest APK', textAlign: TextAlign.center),
                       ),
                     ),
                     if (_installingUpdate) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: UiConstants.smallSpacing),
                       LinearProgressIndicator(value: _downloadProgress),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: UiConstants.xxSmallSpacing),
                       Text(
                         _downloadProgress == null
                             ? 'Downloading update...'
@@ -258,7 +259,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     ],
                   ],
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: UiConstants.largeSpacing),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(

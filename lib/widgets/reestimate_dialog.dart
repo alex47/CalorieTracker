@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/ui_constants.dart';
 import 'dialog_action_row.dart';
 
 Future<String?> showReestimateDialog(
@@ -14,16 +15,16 @@ Future<String?> showReestimateDialog(
           final trimmed = controller.text.trim();
           return AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
               side: BorderSide(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
               ),
             ),
             content: Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: UiConstants.mediumSpacing),
               child: SizedBox(
-                width: 460,
-                height: 180,
+                width: UiConstants.reestimateDialogWidth,
+                height: UiConstants.reestimateDialogHeight,
                 child: TextField(
                   controller: controller,
                   autofocus: true,
@@ -45,7 +46,7 @@ Future<String?> showReestimateDialog(
                 alignment: MainAxisAlignment.start,
                 items: [
                   DialogActionItem(
-                    width: 110,
+                    width: UiConstants.buttonMinWidth,
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),

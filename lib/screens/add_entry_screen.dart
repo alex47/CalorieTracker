@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../theme/ui_constants.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
 
@@ -151,7 +152,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         body: AbsorbPointer(
           absorbing: isBusy,
           child: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
             TextField(
               controller: _inputController,
@@ -165,7 +166,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               minLines: 5,
               maxLines: 10,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UiConstants.mediumSpacing),
             FilledButton.icon(
               onPressed: isBusy
                   ? null
@@ -186,19 +187,19 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               icon: const Icon(Icons.auto_awesome),
               label: const Text('Estimate calories', textAlign: TextAlign.center),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: UiConstants.mediumSpacing),
             if (isBusy) const LinearProgressIndicator(),
             if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.only(top: UiConstants.mediumSpacing),
                 child: Text(
                   _errorMessage!,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            const SizedBox(height: 16),
+            const SizedBox(height: UiConstants.largeSpacing),
             if (_items.isNotEmpty) _ResultsCard(items: _items),
-            const SizedBox(height: 12),
+            const SizedBox(height: UiConstants.mediumSpacing),
             if (_items.isNotEmpty)
               Row(
                 children: [
@@ -209,7 +210,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       label: const Text('Cancel', textAlign: TextAlign.center),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: UiConstants.smallSpacing),
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: isBusy ? null : _saveEntry,
@@ -239,7 +240,7 @@ class _ResultsCard extends StatelessWidget {
       children: [
         ...items.map((item) {
           return FoodBreakdownCard(
-            margin: const EdgeInsets.only(bottom: 10),
+            margin: const EdgeInsets.only(bottom: UiConstants.tableRowVerticalPadding),
             name: (item['name'] as String?) ?? '',
             amount: (item['amount'] as String?) ?? '',
             calories: (item['calories'] as num?)?.round() ?? 0,
