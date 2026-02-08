@@ -14,6 +14,8 @@ class LabeledInputBox extends StatelessWidget {
     this.keyboardType,
     this.onChanged,
     this.contentHeight = UiConstants.progressBarHeight,
+    this.borderColor,
+    this.textColor,
   });
 
   final String label;
@@ -23,15 +25,18 @@ class LabeledInputBox extends StatelessWidget {
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
   final double contentHeight;
+  final Color? borderColor;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = Theme.of(context).textTheme.bodyMedium;
-    final borderColor = AppColors.subtleBorder;
+    final resolvedTextColor = textColor;
+    final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: resolvedTextColor);
+    final resolvedBorderColor = borderColor ?? AppColors.subtleBorder;
     return LabeledGroupBox(
       label: label,
       value: '',
-      borderColor: borderColor,
+      borderColor: resolvedBorderColor,
       textStyle: textStyle,
       backgroundColor: Colors.transparent,
       contentHeight: contentHeight,
@@ -76,6 +81,8 @@ class LabeledDropdownBox<T> extends StatelessWidget {
     this.enabled = true,
     this.trailing,
     this.contentHeight = UiConstants.progressBarHeight,
+    this.borderColor,
+    this.textColor,
   });
 
   final String label;
@@ -85,15 +92,18 @@ class LabeledDropdownBox<T> extends StatelessWidget {
   final bool enabled;
   final Widget? trailing;
   final double contentHeight;
+  final Color? borderColor;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = Theme.of(context).textTheme.bodyMedium;
-    final borderColor = AppColors.subtleBorder;
+    final resolvedTextColor = textColor;
+    final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: resolvedTextColor);
+    final resolvedBorderColor = borderColor ?? AppColors.subtleBorder;
     return LabeledGroupBox(
       label: label,
       value: '',
-      borderColor: borderColor,
+      borderColor: resolvedBorderColor,
       textStyle: textStyle,
       backgroundColor: Colors.transparent,
       contentHeight: contentHeight,

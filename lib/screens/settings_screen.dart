@@ -6,6 +6,7 @@ import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/labeled_input_box.dart';
 
@@ -312,6 +313,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _calorieGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
+            borderColor: AppColors.calories,
+            textColor: AppColors.calories,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -321,6 +324,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _fatGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
+            borderColor: AppColors.fat,
+            textColor: AppColors.fat,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -330,6 +335,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _proteinGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
+            borderColor: AppColors.protein,
+            textColor: AppColors.protein,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -339,6 +346,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _carbsGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
+            borderColor: AppColors.carbs,
+            textColor: AppColors.carbs,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
