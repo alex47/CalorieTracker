@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'database_service.dart';
@@ -47,6 +48,14 @@ class DataTransferService {
       label: 'JSON',
       extensions: ['json'],
     );
+    final encoded = const JsonEncoder.withIndent('  ').convert(payload);
+    if (Platform.isAndroid || Platform.isIOS) {
+      return _exportWithAndroidSaveDialog(
+        fileName: fileName,
+        encodedJson: encoded,
+      );
+    }
+
     String? targetPath;
     final location = await getSaveLocation(
       suggestedName: fileName,
@@ -58,7 +67,6 @@ class DataTransferService {
     targetPath = location.path;
 
     final file = File(targetPath!);
-    final encoded = const JsonEncoder.withIndent('  ').convert(payload);
     await file.writeAsString(encoded);
     return targetPath;
   }
@@ -185,5 +193,22 @@ class DataTransferService {
 
   String _exportFileName() {
     return 'calorie_tracker_export_${DateTime.now().toIso8601String().replaceAll(':', '-')}.json';
+  }
+
+  Future<String?> _exportWithAndroidSaveDialog({
+    required String fileName,
+    required String encodedJson,
+  }) async {
+    final tempDir = await getTemporaryDirectory();
+    final sourceFile = File('${tempDir.path}/$fileName');
+    await sourceFile.writeAsString(encodedJson);
+
+    final savedPath = await FlutterFileDialog.saveFile(
+      params: SaveFileDialogParams(
+        sourceFilePath: sourceFile.path,
+        mimeTypesFilter: const ['application/json'],
+      ),
+    );
+    return savedPath;
   }
 }
