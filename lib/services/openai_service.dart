@@ -225,7 +225,7 @@ Rules:
         : maxOutputTokens;
     final languageName = _languageNameEnglish(languageCode);
     final localizedSystemPrompt =
-        '$systemPrompt\n- Write all natural-language output fields ("name", "amount", "notes", and "error") in $languageName.';
+        '$systemPrompt\n- Always output "name", "amount", "notes", and "error" in $languageName. Do not use any other language in these fields, even if the user input or previous messages use another language.';
 
     final messages = <Map<String, String>>[
       {'role': 'system', 'content': localizedSystemPrompt},
