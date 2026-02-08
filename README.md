@@ -64,15 +64,6 @@ This app was built using a vibe-coding workflow.
 - OpenAI Responses API (`/v1/responses`) with JSON schema output
 - `flutter_secure_storage` for sensitive settings (API key)
 
-## Project structure
-
-- `lib/screens/` UI pages
-- `lib/widgets/` reusable UI components
-- `lib/services/` data, AI, update, settings, import/export services
-- `lib/models/` app/domain models and defaults
-- `lib/theme/` centralized colors and UI constants
-- `lib/l10n/` localization resources
-
 ## Local setup
 
 ### Prerequisites
@@ -105,42 +96,6 @@ GTK_USE_PORTAL=1 flutter run -d linux
 flutter analyze
 ```
 
-## OpenAI configuration
-
-Set in **Settings**:
-
-- API key (saved only after successful key test)
-- Model
-- Reasoning effort (`minimal | low | medium | high`)
-- Max output tokens
-- Timeout (seconds)
-- App language used for localized UI and AI output language instructions
-
-## Data storage and transfer
-
-- Data is stored locally in SQLite.
-- Export includes:
-  - settings
-  - goal history
-  - entries
-  - entry items
-- Import restores those datasets into local DB.
-
-## Android release automation
-
-GitHub Actions workflow: `.github/workflows/android-release.yml`
-
-Triggered by tags (`v*`) and builds signed release APKs.
-
-Required repository secrets:
-
-- `ANDROID_KEYSTORE_BASE64`
-- `ANDROID_KEY_ALIAS`
-- `ANDROID_KEY_PASSWORD`
-- `ANDROID_STORE_PASSWORD`
-
-The workflow publishes APK assets to GitHub Releases.
-
 ## In-app updates
 
 The app checks GitHub Releases for latest version (`alex47/CalorieTracker`) and compares semantic version parts.
@@ -150,7 +105,3 @@ On supported platforms, users can download/install latest APK from the About pag
 
 - Primary: Android
 - Local dev/testing: Linux desktop
-
-## License
-
-See `LICENSE`.
