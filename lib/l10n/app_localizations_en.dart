@@ -104,6 +104,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get maxOutputTokensLabel => 'Max output tokens';
 
   @override
+  String get openAiTimeoutSecondsLabel => 'Timeout (seconds)';
+
+  @override
   String get goalsSectionTitle => 'Goals';
 
   @override

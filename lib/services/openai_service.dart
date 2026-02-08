@@ -8,14 +8,17 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/app_defaults.dart';
 
 class OpenAIService {
-  OpenAIService(this.apiKey);
+  OpenAIService(
+    this.apiKey, {
+    Duration? requestTimeout,
+  }) : requestTimeout = requestTimeout ?? AppDefaults.openAiRequestTimeout;
 
   static const int maxAttempts = AppDefaults.openAiMaxAttempts;
-  static const Duration requestTimeout = AppDefaults.openAiRequestTimeout;
   static const int defaultEstimateMaxOutputTokens = AppDefaults.maxOutputTokens;
   static const List<String> reasoningEffortOptions = AppDefaults.reasoningEffortOptions;
 
   final String apiKey;
+  final Duration requestTimeout;
 
   static const Map<String, dynamic> estimateSchema = {
     'type': 'object',

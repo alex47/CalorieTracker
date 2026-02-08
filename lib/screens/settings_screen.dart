@@ -25,6 +25,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _apiKeyController = TextEditingController();
   final TextEditingController _maxOutputTokensController = TextEditingController();
+  final TextEditingController _openAiTimeoutController = TextEditingController();
   final TextEditingController _calorieGoalController = TextEditingController();
   final TextEditingController _fatGoalController = TextEditingController();
   final TextEditingController _proteinGoalController = TextEditingController();
@@ -45,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _selectedModel = settings.model;
     _selectedReasoningEffort = settings.reasoningEffort;
     _maxOutputTokensController.text = settings.maxOutputTokens.toString();
+    _openAiTimeoutController.text = settings.openAiTimeoutSeconds.toString();
     _calorieGoalController.text = settings.dailyGoal.toString();
     _fatGoalController.text = settings.dailyFatGoal.toString();
     _proteinGoalController.text = settings.dailyProteinGoal.toString();
@@ -70,6 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _autosaveTimer?.cancel();
     _apiKeyController.dispose();
     _maxOutputTokensController.dispose();
+    _openAiTimeoutController.dispose();
     _calorieGoalController.dispose();
     _fatGoalController.dispose();
     _proteinGoalController.dispose();
@@ -83,6 +86,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _availableModels.isNotEmpty && _availableModels.contains(_selectedModel);
     final maxOutputTokens =
         int.tryParse(_maxOutputTokensController.text.trim()) ?? current.maxOutputTokens;
+    final openAiTimeoutSeconds =
+        int.tryParse(_openAiTimeoutController.text.trim()) ?? current.openAiTimeoutSeconds;
     final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? current.dailyGoal;
     final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? current.dailyFatGoal;
     final dailyProteinGoal =
@@ -96,6 +101,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         maxOutputTokens: maxOutputTokens < AppDefaults.minOutputTokens
             ? current.maxOutputTokens
             : maxOutputTokens,
+        openAiTimeoutSeconds:
+            openAiTimeoutSeconds <= 0 ? current.openAiTimeoutSeconds : openAiTimeoutSeconds,
         dailyGoal: dailyGoal,
         dailyFatGoal: dailyFatGoal,
         dailyProteinGoal: dailyProteinGoal,
@@ -115,7 +122,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadModelsForApiKey(String apiKey, {required bool showError}) async {
     setState(() => _loadingModels = true);
     try {
-      final service = OpenAIService(apiKey);
+      final service = OpenAIService(
+        apiKey,
+        requestTimeout: Duration(seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
+      );
       final models = await service.fetchAvailableModels();
       if (!mounted) {
         return;
@@ -168,7 +178,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() => _testing = true);
     try {
-      final service = OpenAIService(apiKey);
+      final service = OpenAIService(
+        apiKey,
+        requestTimeout: Duration(seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
+      );
       await service.testConnection(model: _selectedModel);
       await SettingsService.instance.setApiKey(apiKey);
       await _loadModelsForApiKey(apiKey, showError: true);
@@ -323,6 +336,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.maxOutputTokensLabel,
             controller: _maxOutputTokensController,
+            enabled: !isBusy,
+            contentHeight: UiConstants.settingsFieldHeight,
+            keyboardType: TextInputType.number,
+            onChanged: (_) => _scheduleSettingsAutosave(),
+          ),
+          const SizedBox(height: controlSpacing),
+          LabeledInputBox(
+            label: l10n.openAiTimeoutSecondsLabel,
+            controller: _openAiTimeoutController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,

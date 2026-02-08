@@ -8,7 +8,10 @@ class AppDefaults {
   static const List<String> reasoningEffortOptions = ['minimal', 'low', 'medium', 'high'];
 
   static const int openAiMaxAttempts = 3;
-  static const Duration openAiRequestTimeout = Duration(seconds: 10);
+  static const int openAiRequestTimeoutSeconds = 10;
+  static const Duration openAiRequestTimeout = Duration(
+    seconds: openAiRequestTimeoutSeconds,
+  );
   static const Duration updateRequestTimeout = Duration(seconds: 15);
   static const Duration settingsAutosaveDebounce = Duration(milliseconds: 350);
 

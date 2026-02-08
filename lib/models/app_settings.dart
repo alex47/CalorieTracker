@@ -4,6 +4,7 @@ class AppSettings {
     required this.model,
     required this.reasoningEffort,
     required this.maxOutputTokens,
+    required this.openAiTimeoutSeconds,
     required this.dailyGoal,
     required this.dailyFatGoal,
     required this.dailyProteinGoal,
@@ -14,6 +15,7 @@ class AppSettings {
   final String model;
   final String reasoningEffort;
   final int maxOutputTokens;
+  final int openAiTimeoutSeconds;
   final int dailyGoal;
   final int dailyFatGoal;
   final int dailyProteinGoal;

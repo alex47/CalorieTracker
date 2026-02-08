@@ -278,6 +278,12 @@ abstract class AppLocalizations {
   /// **'Max output tokens'**
   String get maxOutputTokensLabel;
 
+  /// No description provided for @openAiTimeoutSecondsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeout (seconds)'**
+  String get openAiTimeoutSecondsLabel;
+
   /// No description provided for @goalsSectionTitle.
   ///
   /// In en, this message translates to:

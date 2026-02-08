@@ -40,6 +40,7 @@
   "modelLabel": "Model",
   "reasoningEffortLabel": "Reasoning effort",
   "maxOutputTokensLabel": "Max output tokens",
+  "openAiTimeoutSecondsLabel": "Timeout (seconds)",
   "goalsSectionTitle": "Goals",
   "dailyCalorieGoalLabel": "Daily calorie goal (kcal)",
   "dailyFatGoalLabel": "Daily fat goal (g)",

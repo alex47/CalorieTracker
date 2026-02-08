@@ -79,7 +79,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
     try {
       final settings = SettingsService.instance.settings;
-      final service = OpenAIService(apiKey);
+      final service = OpenAIService(
+        apiKey,
+        requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
+      );
       final response = await service.estimateCalories(
         model: settings.model,
         languageCode: settings.languageCode,

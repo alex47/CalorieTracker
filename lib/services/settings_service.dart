@@ -15,6 +15,7 @@ class SettingsService extends ChangeNotifier {
   static const _modelKey = 'model';
   static const _reasoningEffortKey = 'reasoning_effort';
   static const _maxOutputTokensKey = 'max_output_tokens';
+  static const _openAiTimeoutSecondsKey = 'openai_timeout_seconds';
   static const _dailyGoalKey = 'daily_goal';
   static const _dailyFatGoalKey = 'daily_fat_goal';
   static const _dailyProteinGoalKey = 'daily_protein_goal';
@@ -28,6 +29,7 @@ class SettingsService extends ChangeNotifier {
     model: AppDefaults.model,
     reasoningEffort: AppDefaults.reasoningEffort,
     maxOutputTokens: AppDefaults.maxOutputTokens,
+    openAiTimeoutSeconds: AppDefaults.openAiRequestTimeoutSeconds,
     dailyGoal: AppDefaults.dailyCalories,
     dailyFatGoal: AppDefaults.dailyFatGrams,
     dailyProteinGoal: AppDefaults.dailyProteinGrams,
@@ -49,6 +51,7 @@ class SettingsService extends ChangeNotifier {
           ? settingsMap[_reasoningEffortKey]!
           : AppDefaults.reasoningEffort,
       maxOutputTokens: _parseMaxOutputTokens(settingsMap[_maxOutputTokensKey]),
+      openAiTimeoutSeconds: _parseOpenAiTimeoutSeconds(settingsMap[_openAiTimeoutSecondsKey]),
       dailyGoal: int.tryParse(settingsMap[_dailyGoalKey] ?? '') ?? AppDefaults.dailyCalories,
       dailyFatGoal: int.tryParse(settingsMap[_dailyFatGoalKey] ?? '') ?? AppDefaults.dailyFatGrams,
       dailyProteinGoal:
@@ -80,6 +83,11 @@ class SettingsService extends ChangeNotifier {
     await db.insert(
       'settings',
       {'key': _maxOutputTokensKey, 'value': settings.maxOutputTokens.toString()},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    await db.insert(
+      'settings',
+      {'key': _openAiTimeoutSecondsKey, 'value': settings.openAiTimeoutSeconds.toString()},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     await db.insert(
@@ -117,6 +125,14 @@ class SettingsService extends ChangeNotifier {
     final parsed = int.tryParse(rawValue ?? '');
     if (parsed == null || parsed < AppDefaults.minOutputTokens) {
       return AppDefaults.maxOutputTokens;
+    }
+    return parsed;
+  }
+
+  int _parseOpenAiTimeoutSeconds(String? rawValue) {
+    final parsed = int.tryParse(rawValue ?? '');
+    if (parsed == null || parsed <= 0) {
+      return AppDefaults.openAiRequestTimeoutSeconds;
     }
     return parsed;
   }

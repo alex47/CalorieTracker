@@ -72,7 +72,10 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
     try {
       final settings = SettingsService.instance.settings;
-      final service = OpenAIService(apiKey);
+      final service = OpenAIService(
+        apiKey,
+        requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
+      );
 
       final history = <Map<String, String>>[
         {
