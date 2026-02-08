@@ -316,7 +316,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get updateAvailableDialogLater => 'Később';
 
   @override
-  String get updateAvailableDialogView => 'Frissítés megnyitása';
+  String get updateAvailableDialogView => 'Frissítés';
 
   @override
   String updateAvailableStatus(Object latestVersion, Object currentVersion) {

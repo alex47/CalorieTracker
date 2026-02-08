@@ -312,7 +312,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateAvailableDialogLater => 'Later';
 
   @override
-  String get updateAvailableDialogView => 'View update';
+  String get updateAvailableDialogView => 'Update';
 
   @override
   String updateAvailableStatus(Object latestVersion, Object currentVersion) {

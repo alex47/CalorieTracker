@@ -174,7 +174,7 @@
     }
   },
   "updateAvailableDialogLater": "Később",
-  "updateAvailableDialogView": "Frissítés megnyitása",
+  "updateAvailableDialogView": "Frissítés",
   "updateAvailableStatus": "Frissítés elérhető: {latestVersion} (jelenlegi: {currentVersion})",
   "@updateAvailableStatus": {
     "placeholders": {
