@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_item.dart';
@@ -32,6 +33,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   bool _saving = false;
   bool _dirty = false;
   String? _errorMessage;
+  String? _rawAiResponseText;
 
   String _formatGrams(double value) {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
@@ -68,6 +70,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     setState(() {
       _loading = true;
       _errorMessage = null;
+      _rawAiResponseText = null;
     });
 
     try {
@@ -133,14 +136,56 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           notes: notes,
         );
         _dirty = true;
+        _rawAiResponseText = null;
       });
     } catch (error) {
+      final rawResponse = error is AiParseException ? error.rawResponseText : null;
       setState(() {
         _errorMessage = l10n.failedToReestimateItem(localizeError(error, l10n));
+        _rawAiResponseText = rawResponse;
       });
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _showRawAiResponseDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final responseText = _rawAiResponseText;
+    if (responseText == null || responseText.trim().isEmpty) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.aiResponseDialogTitle),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 320),
+          child: SingleChildScrollView(
+            child: SelectableText(responseText),
+          ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: responseText));
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l10n.aiResponseCopiedMessage)),
+                );
+              }
+            },
+            icon: const Icon(Icons.copy),
+            label: Text(l10n.copyAiResponseButton),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancelButton),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _saveChanges() async {
@@ -293,9 +338,22 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: UiConstants.smallSpacing),
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _errorMessage!,
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                    if (_rawAiResponseText != null && _rawAiResponseText!.trim().isNotEmpty) ...[
+                      const SizedBox(height: UiConstants.smallSpacing),
+                      TextButton.icon(
+                        onPressed: _showRawAiResponseDialog,
+                        icon: const Icon(Icons.article_outlined),
+                        label: Text(l10n.showAiResponseButton),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             const SizedBox(height: UiConstants.mediumSpacing),

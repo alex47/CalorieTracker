@@ -470,6 +470,30 @@ abstract class AppLocalizations {
   /// **'Copy to today'**
   String get copyToTodayButton;
 
+  /// No description provided for @showAiResponseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show AI response'**
+  String get showAiResponseButton;
+
+  /// No description provided for @aiResponseDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI response'**
+  String get aiResponseDialogTitle;
+
+  /// No description provided for @copyAiResponseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy response'**
+  String get copyAiResponseButton;
+
+  /// No description provided for @aiResponseCopiedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'AI response copied.'**
+  String get aiResponseCopiedMessage;
+
   /// No description provided for @askFollowupChangesLabel.
   ///
   /// In en, this message translates to:

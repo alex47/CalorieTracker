@@ -7,6 +7,19 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 
+class AiParseException implements Exception {
+  const AiParseException(
+    this.message, {
+    this.rawResponseText,
+  });
+
+  final String message;
+  final String? rawResponseText;
+
+  @override
+  String toString() => message;
+}
+
 class OpenAIService {
   OpenAIService(
     this.apiKey, {
@@ -135,6 +148,7 @@ Rules:
   }) async {
     var attempt = 0;
     Object? lastError;
+    AiParseException? lastParseError;
 
     while (attempt < maxAttempts) {
       try {
@@ -152,9 +166,19 @@ Rules:
         if (_isNonRetriableRequestError(error)) {
           rethrow;
         }
+        if (error is AiParseException) {
+          lastParseError = error;
+        }
         lastError = error;
         attempt += 1;
       }
+    }
+
+    if (lastParseError != null) {
+      throw AiParseException(
+        'Failed to parse AI response after $maxAttempts attempts: ${lastParseError.message}',
+        rawResponseText: lastParseError.rawResponseText,
+      );
     }
 
     throw StateError('Failed to parse AI response after $maxAttempts attempts: $lastError');
@@ -245,10 +269,18 @@ Rules:
   Map<String, dynamic> _parseResponse(Map<String, dynamic> response) {
     final content = _extractResponseText(response);
     if (content == null || content.isEmpty) {
-      throw const FormatException('Empty content in response.');
+      throw const AiParseException('Empty content in response.');
     }
 
-    final parsed = jsonDecode(content) as Map<String, dynamic>;
+    Map<String, dynamic> parsed;
+    try {
+      parsed = jsonDecode(content) as Map<String, dynamic>;
+    } catch (_) {
+      throw AiParseException(
+        'Failed to parse AI response.',
+        rawResponseText: content,
+      );
+    }
     final errorMessage = (parsed['error'] as String?)?.trim();
     if (errorMessage != null && errorMessage.isNotEmpty) {
       throw StateError('The AI says: $errorMessage');
@@ -256,7 +288,10 @@ Rules:
 
     final items = parsed['items'] as List<dynamic>?;
     if (items == null || items.isEmpty) {
-      throw const FormatException('AI returned no items and no explanation.');
+      throw AiParseException(
+        'AI returned no items and no explanation.',
+        rawResponseText: content,
+      );
     }
 
     for (final item in items) {
@@ -268,19 +303,34 @@ Rules:
       final protein = map['protein'];
       final carbs = map['carbs'];
       if (name.trim().isEmpty || amount.trim().isEmpty) {
-        throw const FormatException('Missing name or amount.');
+        throw AiParseException(
+          'Missing name or amount.',
+          rawResponseText: content,
+        );
       }
       if (calories is! num || calories <= 0) {
-        throw const FormatException('Missing or invalid calories.');
+        throw AiParseException(
+          'Missing or invalid calories.',
+          rawResponseText: content,
+        );
       }
       if (fat is! num || fat < 0) {
-        throw const FormatException('Missing or invalid fat.');
+        throw AiParseException(
+          'Missing or invalid fat.',
+          rawResponseText: content,
+        );
       }
       if (protein is! num || protein < 0) {
-        throw const FormatException('Missing or invalid protein.');
+        throw AiParseException(
+          'Missing or invalid protein.',
+          rawResponseText: content,
+        );
       }
       if (carbs is! num || carbs < 0) {
-        throw const FormatException('Missing or invalid carbs.');
+        throw AiParseException(
+          'Missing or invalid carbs.',
+          rawResponseText: content,
+        );
       }
     }
 

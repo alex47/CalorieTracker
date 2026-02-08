@@ -220,6 +220,18 @@ class AppLocalizationsHu extends AppLocalizations {
   String get copyToTodayButton => 'Másolás mára';
 
   @override
+  String get showAiResponseButton => 'AI válasz megjelenítése';
+
+  @override
+  String get aiResponseDialogTitle => 'AI válasz';
+
+  @override
+  String get copyAiResponseButton => 'Válasz másolása';
+
+  @override
+  String get aiResponseCopiedMessage => 'Az AI válasz másolva.';
+
+  @override
   String get askFollowupChangesLabel => 'Kérj további módosításokat';
 
   @override

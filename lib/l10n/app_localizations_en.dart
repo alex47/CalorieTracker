@@ -218,6 +218,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyToTodayButton => 'Copy to today';
 
   @override
+  String get showAiResponseButton => 'Show AI response';
+
+  @override
+  String get aiResponseDialogTitle => 'AI response';
+
+  @override
+  String get copyAiResponseButton => 'Copy response';
+
+  @override
+  String get aiResponseCopiedMessage => 'AI response copied.';
+
+  @override
   String get askFollowupChangesLabel => 'Ask for follow-up changes';
 
   @override
