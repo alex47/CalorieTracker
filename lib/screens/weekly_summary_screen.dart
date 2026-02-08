@@ -244,45 +244,59 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     ),
                   ];
 
-                  return ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: UiConstants.smallSpacing,
-                              vertical: UiConstants.xxSmallSpacing,
-                            ),
-                            child: Text(
-                              _formatWeekRange(languageCode, weekStart, weekEnd),
-                              style: Theme.of(context).textTheme.headlineSmall,
-                              textAlign: TextAlign.center,
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      const headerHeightEstimate = 90.0;
+                      final chartHeight =
+                          (constraints.maxHeight - headerHeightEstimate).clamp(220.0, 10000.0)
+                              as double;
+
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: UiConstants.smallSpacing,
+                                  vertical: UiConstants.xxSmallSpacing,
+                                ),
+                                child: Text(
+                                  _formatWeekRange(languageCode, weekStart, weekEnd),
+                                  style: Theme.of(context).textTheme.headlineSmall,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: UiConstants.mediumSpacing),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                        child: _CombinedMetricWeekChart(
-                          specs: specs,
-                          days: dailyTotals,
-                          languageCode: languageCode,
-                        ),
-                      ),
-                      if (dailyTotals.every((day) => day.itemCount == 0))
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: UiConstants.largeSpacing,
-                            left: UiConstants.pagePadding,
-                            right: UiConstants.pagePadding,
+                          const SizedBox(height: UiConstants.mediumSpacing),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                            child: SizedBox(
+                              height: chartHeight,
+                              child: _CombinedMetricWeekChart(
+                                specs: specs,
+                                days: dailyTotals,
+                                languageCode: languageCode,
+                              ),
+                            ),
                           ),
-                          child: Text(l10n.noEntriesForWeek),
-                        ),
-                    ],
+                          if (dailyTotals.every((day) => day.itemCount == 0))
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: UiConstants.largeSpacing,
+                                left: UiConstants.pagePadding,
+                                right: UiConstants.pagePadding,
+                              ),
+                              child: Text(l10n.noEntriesForWeek),
+                            ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
@@ -328,79 +342,73 @@ class _CombinedMetricWeekChart extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(UiConstants.mediumSpacing),
-        child: SizedBox(
-          height: 132,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: days.map((day) {
-              return Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                                children: specs.map((spec) {
-                                  final value = spec.valueForDay(day);
-                                  final isOverGoal =
-                                      spec.dailyGoal > 0 && value > spec.dailyGoal;
-                                  final stripedFillColor = spec.color.withOpacity(0.42);
-                                  final fillColor =
-                                      isOverGoal ? Colors.transparent : stripedFillColor;
-                                  final max = spec.dailyGoal > 0 ? spec.dailyGoal : 1.0;
-                                  return Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 1),
-                                  child: Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: FractionallySizedBox(
-                                      heightFactor: (value / max).clamp(0.0, 1.0),
-                                      widthFactor: 0.9,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(3),
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            DecoratedBox(
-                                              decoration: BoxDecoration(
-                                                color: fillColor,
-                                                border: Border.all(color: spec.color),
-                                                borderRadius: BorderRadius.circular(3),
-                                              ),
-                                            ),
-                                            if (isOverGoal)
-                                              CustomPaint(
-                                                painter: _DiagonalStripePainter(
-                                                  stripeColor: stripedFillColor,
-                                                ),
-                                              ),
-                                          ],
+        child: Column(
+          children: [
+            for (int i = 0; i < days.length; i++) ...[
+              Expanded(
+                flex: specs.length,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 44,
+                      child: Text(
+                        DateFormat.E(languageCode).format(days[i].date),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: specs.map((spec) {
+                          final value = spec.valueForDay(days[i]);
+                          final isOverGoal = spec.dailyGoal > 0 && value > spec.dailyGoal;
+                          final stripedFillColor = spec.color.withOpacity(0.42);
+                          final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
+                          final max = spec.dailyGoal > 0 ? spec.dailyGoal : 1.0;
+
+                          return Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 1.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: FractionallySizedBox(
+                                  widthFactor: (value / max).clamp(0.0, 1.0),
+                                  heightFactor: 1.0,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color: fillColor,
+                                            border: Border.all(color: spec.color),
+                                            borderRadius: BorderRadius.circular(3),
+                                          ),
                                         ),
-                                      ),
+                                        if (isOverGoal)
+                                          CustomPaint(
+                                            painter: _DiagonalStripePainter(
+                                              stripeColor: stripedFillColor,
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                      const SizedBox(height: UiConstants.xxSmallSpacing),
-                      Text(
-                        DateFormat.E(languageCode).format(day.date),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+              if (i < days.length - 1) const Spacer(flex: 1),
+            ],
+          ],
         ),
       ),
     );
