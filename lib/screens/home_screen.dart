@@ -11,6 +11,7 @@ import '../theme/ui_constants.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
+import 'daily_metric_detail_screen.dart';
 import 'food_item_detail_screen.dart';
 import 'settings_screen.dart';
 
@@ -23,7 +24,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with RouteAware {
   static const int _initialPage = 10000;
   static const double _progressBarHeight = UiConstants.progressBarHeight;
 
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late final PageController _pageController;
   late DateTime _selectedDate;
   final Map<String, Future<List<FoodItem>>> _dayFutures = {};
+  PageRoute<dynamic>? _route;
 
   @override
   void initState() {
@@ -41,9 +43,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute && route != _route) {
+      if (_route != null) {
+        routeObserver.unsubscribe(this);
+      }
+      _route = route;
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
   void dispose() {
+    if (_route != null) {
+      routeObserver.unsubscribe(this);
+      _route = null;
+    }
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _reloadDate(_selectedDate);
   }
 
   DateTime _dayOnly(DateTime date) {
@@ -97,6 +121,21 @@ class _HomeScreenState extends State<HomeScreen> {
       arguments: _selectedDate,
     );
     await _reloadDate(_selectedDate);
+  }
+
+  Future<void> _openMetricDetails(
+    DateTime date,
+    DailyMetricType metricType,
+  ) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DailyMetricDetailScreen(
+          date: date,
+          metricType: metricType,
+        ),
+      ),
+    );
   }
 
   bool _isTodaySelected() {
@@ -243,6 +282,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               l10n,
                               dailyGoal,
                               totalCalories,
+                              onTap: () => _openMetricDetails(
+                                pageDate,
+                                DailyMetricType.calories,
+                              ),
                             ),
                             const SizedBox(height: UiConstants.smallSpacing),
                             _DailyMacrosRow(
@@ -254,6 +297,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               carbs: totalCarbs,
                               carbsGoal: settings.dailyCarbsGoal.toDouble(),
                               height: _progressBarHeight,
+                              onFatTap: () => _openMetricDetails(pageDate, DailyMetricType.fat),
+                              onProteinTap: () =>
+                                  _openMetricDetails(pageDate, DailyMetricType.protein),
+                              onCarbsTap: () => _openMetricDetails(pageDate, DailyMetricType.carbs),
                             ),
                           ],
                         );
@@ -344,6 +391,9 @@ class _HomeScreenState extends State<HomeScreen> {
     AppLocalizations l10n,
     int dailyGoal,
     int total,
+    {
+    VoidCallback? onTap,
+  }
   ) {
     return LabeledProgressBar(
       label: l10n.caloriesLabel,
@@ -353,6 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
       color: AppColors.calories,
       overGoalColor: AppColors.overGoal,
       height: _progressBarHeight,
+      onTap: onTap,
     );
   }
 }
@@ -401,6 +452,9 @@ class _DailyMacrosRow extends StatelessWidget {
     required this.carbs,
     required this.carbsGoal,
     required this.height,
+    this.onFatTap,
+    this.onProteinTap,
+    this.onCarbsTap,
   });
 
   final AppLocalizations l10n;
@@ -411,6 +465,9 @@ class _DailyMacrosRow extends StatelessWidget {
   final double carbs;
   final double carbsGoal;
   final double height;
+  final VoidCallback? onFatTap;
+  final VoidCallback? onProteinTap;
+  final VoidCallback? onCarbsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -423,6 +480,7 @@ class _DailyMacrosRow extends StatelessWidget {
             goal: fatGoal,
             color: AppColors.fat,
             height: height,
+            onTap: onFatTap,
           ),
         ),
         const SizedBox(width: UiConstants.smallSpacing),
@@ -433,6 +491,7 @@ class _DailyMacrosRow extends StatelessWidget {
             goal: proteinGoal,
             color: AppColors.protein,
             height: height,
+            onTap: onProteinTap,
           ),
         ),
         const SizedBox(width: UiConstants.smallSpacing),
@@ -443,6 +502,7 @@ class _DailyMacrosRow extends StatelessWidget {
             goal: carbsGoal,
             color: AppColors.carbs,
             height: height,
+            onTap: onCarbsTap,
           ),
         ),
       ],

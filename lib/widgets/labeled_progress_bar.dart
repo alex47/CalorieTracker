@@ -15,6 +15,7 @@ class LabeledProgressBar extends StatelessWidget {
     this.height = UiConstants.progressBarHeight,
     this.animationDuration = UiConstants.progressBarAnimationDuration,
     this.overGoalColor = AppColors.overGoal,
+    this.onTap,
   });
 
   final String label;
@@ -25,6 +26,7 @@ class LabeledProgressBar extends StatelessWidget {
   final double height;
   final Duration animationDuration;
   final Color overGoalColor;
+  final VoidCallback? onTap;
 
   String _format(double v) {
     return v % 1 == 0 ? v.toInt().toString() : v.toStringAsFixed(1);
@@ -38,7 +40,7 @@ class LabeledProgressBar extends StatelessWidget {
     final fillColor = baseColor.withOpacity(0.28);
     final borderColor = baseColor;
 
-    return LabeledGroupBox(
+    final content = LabeledGroupBox(
       label: label,
       value: '',
       borderColor: borderColor,
@@ -73,6 +75,19 @@ class LabeledProgressBar extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+
+    if (onTap == null) {
+      return content;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+        child: content,
       ),
     );
   }

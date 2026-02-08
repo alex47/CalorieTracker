@@ -12,6 +12,8 @@ import 'services/settings_service.dart';
 import 'theme/app_colors.dart';
 import 'theme/ui_constants.dart';
 
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseService.instance.initialize();
@@ -207,6 +209,7 @@ class CalorieTrackerApp extends StatelessWidget {
         return null;
       },
       home: const HomeScreen(),
+      navigatorObservers: [routeObserver],
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
