@@ -205,6 +205,15 @@ class _AboutScreenState extends State<AboutScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: UiConstants.largeSpacing),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : () => _openRepo(context),
+                    icon: const Icon(Icons.open_in_new),
+                    label: Text(l10n.githubRepositoryButton, textAlign: TextAlign.center),
+                  ),
+                ),
+                const SizedBox(height: UiConstants.largeSpacing),
                 const SizedBox(height: UiConstants.smallSpacing),
                 SizedBox(
                   width: double.infinity,
@@ -261,15 +270,6 @@ class _AboutScreenState extends State<AboutScreen> {
                     ],
                   ],
                 ],
-                const SizedBox(height: UiConstants.largeSpacing),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: isBusy ? null : () => _openRepo(context),
-                      icon: const Icon(Icons.open_in_new),
-                      label: Text(l10n.githubRepositoryButton, textAlign: TextAlign.center),
-                    ),
-                  ),
                   ],
                 );
               },
