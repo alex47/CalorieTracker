@@ -17,7 +17,7 @@ class AppColors {
 
   static const overGoal = Color(0xFF7F1D1D);
 
-  static const subtleBorder = Color(0x59CBCBCB);
+  static const subtleBorder = Color(0x80CBCBCB);
   static const dialogBorder = Color(0x33CBCBCB);
   static const progressFillOverlay = Color(0x47FFFFFF);
   static const progressTrackOverlay = Color(0x99FFFFFF);
