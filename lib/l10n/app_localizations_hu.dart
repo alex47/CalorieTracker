@@ -138,6 +138,32 @@ class AppLocalizationsHu extends AppLocalizations {
   String get importDataButton => 'Adatok importálása';
 
   @override
+  String get exportCancelled => 'Az export megszakítva.';
+
+  @override
+  String exportSuccess(Object path) {
+    return 'Adatok exportálva: $path';
+  }
+
+  @override
+  String exportFailed(Object error) {
+    return 'Az export sikertelen: $error';
+  }
+
+  @override
+  String get importCancelled => 'Az import megszakítva.';
+
+  @override
+  String importSuccess(Object entriesCount, Object itemsCount) {
+    return 'Adatok importálva: $entriesCount bejegyzés, $itemsCount étel tétel.';
+  }
+
+  @override
+  String importFailed(Object error) {
+    return 'Az import sikertelen: $error';
+  }
+
+  @override
   String get exportComingSoon => 'Az export hamarosan elérhető.';
 
   @override

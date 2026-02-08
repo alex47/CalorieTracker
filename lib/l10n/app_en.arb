@@ -51,6 +51,33 @@
   "dataToolsSectionTitle": "Data tools",
   "exportDataButton": "Export data",
   "importDataButton": "Import data",
+  "exportCancelled": "Export cancelled.",
+  "exportSuccess": "Data exported: {path}",
+  "@exportSuccess": {
+    "placeholders": {
+      "path": {}
+    }
+  },
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "importCancelled": "Import cancelled.",
+  "importSuccess": "Data imported: {entriesCount} entries, {itemsCount} food items.",
+  "@importSuccess": {
+    "placeholders": {
+      "entriesCount": {},
+      "itemsCount": {}
+    }
+  },
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "exportComingSoon": "Export is coming soon.",
   "importComingSoon": "Import is coming soon.",
   "couldNotLoadModels": "Could not load models dynamically. {error}",

@@ -344,6 +344,42 @@ abstract class AppLocalizations {
   /// **'Import data'**
   String get importDataButton;
 
+  /// No description provided for @exportCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Export cancelled.'**
+  String get exportCancelled;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data exported: {path}'**
+  String exportSuccess(Object path);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String exportFailed(Object error);
+
+  /// No description provided for @importCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Import cancelled.'**
+  String get importCancelled;
+
+  /// No description provided for @importSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data imported: {entriesCount} entries, {itemsCount} food items.'**
+  String importSuccess(Object entriesCount, Object itemsCount);
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: {error}'**
+  String importFailed(Object error);
+
   /// No description provided for @exportComingSoon.
   ///
   /// In en, this message translates to:

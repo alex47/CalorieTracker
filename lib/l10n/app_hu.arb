@@ -51,6 +51,33 @@
   "dataToolsSectionTitle": "Adateszközök",
   "exportDataButton": "Adatok exportálása",
   "importDataButton": "Adatok importálása",
+  "exportCancelled": "Az export megszakítva.",
+  "exportSuccess": "Adatok exportálva: {path}",
+  "@exportSuccess": {
+    "placeholders": {
+      "path": {}
+    }
+  },
+  "exportFailed": "Az export sikertelen: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "importCancelled": "Az import megszakítva.",
+  "importSuccess": "Adatok importálva: {entriesCount} bejegyzés, {itemsCount} étel tétel.",
+  "@importSuccess": {
+    "placeholders": {
+      "entriesCount": {},
+      "itemsCount": {}
+    }
+  },
+  "importFailed": "Az import sikertelen: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "exportComingSoon": "Az export hamarosan elérhető.",
   "importComingSoon": "Az import hamarosan elérhető.",
   "couldNotLoadModels": "A modellek dinamikus betöltése nem sikerült. {error}",

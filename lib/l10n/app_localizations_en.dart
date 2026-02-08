@@ -137,6 +137,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importDataButton => 'Import data';
 
   @override
+  String get exportCancelled => 'Export cancelled.';
+
+  @override
+  String exportSuccess(Object path) {
+    return 'Data exported: $path';
+  }
+
+  @override
+  String exportFailed(Object error) {
+    return 'Export failed: $error';
+  }
+
+  @override
+  String get importCancelled => 'Import cancelled.';
+
+  @override
+  String importSuccess(Object entriesCount, Object itemsCount) {
+    return 'Data imported: $entriesCount entries, $itemsCount food items.';
+  }
+
+  @override
+  String importFailed(Object error) {
+    return 'Import failed: $error';
+  }
+
+  @override
   String get exportComingSoon => 'Export is coming soon.';
 
   @override
