@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'dialog_action_row.dart';
 
@@ -17,7 +18,7 @@ Future<String?> showReestimateDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
               side: BorderSide(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                color: AppColors.dialogBorder,
               ),
             ),
             content: Padding(

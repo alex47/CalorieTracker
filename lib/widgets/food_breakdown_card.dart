@@ -55,7 +55,7 @@ class FoodBreakdownCard extends StatelessWidget {
                         displayName,
                         style: textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: UiConstants.xSmallSpacing),
                       Text(
                         displayAmount,
                         style: textTheme.bodyMedium,
@@ -122,7 +122,7 @@ class FoodBreakdownCard extends StatelessWidget {
             LabeledGroupBox(
               label: 'Notes',
               value: trimmedNotes.isEmpty ? '-' : trimmedNotes,
-              borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
+              borderColor: AppColors.subtleBorder,
               textStyle: textTheme.bodyMedium,
               backgroundColor: Colors.transparent,
             ),

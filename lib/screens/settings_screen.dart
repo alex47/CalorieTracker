@@ -7,6 +7,7 @@ import '../models/app_settings.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/labeled_input_box.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -217,13 +218,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
-          TextField(
+          LabeledInputBox(
+            label: 'OpenAI API key',
             controller: _apiKeyController,
             enabled: !isBusy,
-            decoration: const InputDecoration(
-              labelText: 'OpenAI API key',
-              border: OutlineInputBorder(),
-            ),
             obscureText: true,
           ),
           const SizedBox(height: UiConstants.mediumSpacing),
@@ -239,22 +237,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : const Text('Test key', textAlign: TextAlign.center),
           ),
           const SizedBox(height: controlSpacing),
-          DropdownButtonFormField<String>(
-            initialValue: _availableModels.contains(_selectedModel) ? _selectedModel : null,
-            decoration: InputDecoration(
-              labelText: 'Model',
-              border: OutlineInputBorder(),
-              suffixIcon: _loadingModels
-                  ? const Padding(
-                      padding: EdgeInsets.all(UiConstants.mediumSpacing),
-                      child: SizedBox(
-                        height: UiConstants.loadingIndicatorSize,
-                        width: UiConstants.loadingIndicatorSize,
-                        child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
-                      ),
-                    )
-                  : null,
-            ),
+          LabeledDropdownBox<String>(
+            label: 'Model',
+            value: _availableModels.contains(_selectedModel) ? _selectedModel : null,
             items: _availableModels
                 .map(
                   (model) => DropdownMenuItem(
@@ -263,6 +248,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                 .toList(),
+            enabled: !isBusy,
             onChanged: isBusy
                 ? null
                 : (value) {
@@ -271,14 +257,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _scheduleSettingsAutosave();
                     }
                   },
+            trailing: _loadingModels
+                ? const SizedBox(
+                    height: UiConstants.loadingIndicatorSize,
+                    width: UiConstants.loadingIndicatorSize,
+                    child: CircularProgressIndicator(
+                      strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                    ),
+                  )
+                : null,
           ),
           const SizedBox(height: controlSpacing),
-          DropdownButtonFormField<String>(
-            initialValue: _selectedReasoningEffort,
-            decoration: const InputDecoration(
-              labelText: 'Reasoning effort',
-              border: OutlineInputBorder(),
-            ),
+          LabeledDropdownBox<String>(
+            label: 'Reasoning effort',
+            value: _selectedReasoningEffort,
             items: AppDefaults.reasoningEffortOptions
                 .map(
                   (effort) => DropdownMenuItem(
@@ -287,6 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                 .toList(),
+            enabled: !isBusy,
             onChanged: isBusy
                 ? null
                 : (value) {
@@ -297,13 +290,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
           ),
           const SizedBox(height: controlSpacing),
-          TextField(
+          LabeledInputBox(
+            label: 'Max output tokens',
             controller: _maxOutputTokensController,
             enabled: !isBusy,
-            decoration: const InputDecoration(
-              labelText: 'Max output tokens',
-              border: OutlineInputBorder(),
-            ),
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -313,46 +303,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
-          TextField(
+          LabeledInputBox(
+            label: 'Daily calorie goal (kcal)',
             controller: _calorieGoalController,
             enabled: !isBusy,
-            decoration: const InputDecoration(
-              labelText: 'Daily calorie goal (kcal)',
-              border: OutlineInputBorder(),
-            ),
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
           const SizedBox(height: controlSpacing),
-          TextField(
+          LabeledInputBox(
+            label: 'Daily fat goal (g)',
             controller: _fatGoalController,
             enabled: !isBusy,
-            decoration: const InputDecoration(
-              labelText: 'Daily fat goal (g)',
-              border: OutlineInputBorder(),
-            ),
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
           const SizedBox(height: controlSpacing),
-          TextField(
+          LabeledInputBox(
+            label: 'Daily protein goal (g)',
             controller: _proteinGoalController,
             enabled: !isBusy,
-            decoration: const InputDecoration(
-              labelText: 'Daily protein goal (g)',
-              border: OutlineInputBorder(),
-            ),
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
           const SizedBox(height: controlSpacing),
-          TextField(
+          LabeledInputBox(
+            label: 'Daily carbs goal (g)',
             controller: _carbsGoalController,
             enabled: !isBusy,
-            decoration: const InputDecoration(
-              labelText: 'Daily carbs goal (g)',
-              border: OutlineInputBorder(),
-            ),
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),

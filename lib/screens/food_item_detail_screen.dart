@@ -4,6 +4,7 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
@@ -181,7 +182,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
               side: BorderSide(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                color: AppColors.dialogBorder,
               ),
             ),
             title: const Text('Delete item'),

@@ -345,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
       goal: dailyGoal.toDouble(),
       unit: 'kcal',
       color: AppColors.calories,
-      overGoalColor: const Color(0xFF7F1D1D),
+      overGoalColor: AppColors.overGoal,
       height: _progressBarHeight,
     );
   }

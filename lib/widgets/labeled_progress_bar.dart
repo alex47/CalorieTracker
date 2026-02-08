@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
 
@@ -13,7 +14,7 @@ class LabeledProgressBar extends StatelessWidget {
     this.unit = 'g',
     this.height = UiConstants.progressBarHeight,
     this.animationDuration = UiConstants.progressBarAnimationDuration,
-    this.overGoalColor = const Color(0xFF7F1D1D),
+    this.overGoalColor = AppColors.overGoal,
   });
 
   final String label;
@@ -36,7 +37,6 @@ class LabeledProgressBar extends StatelessWidget {
     final baseColor = isOverGoal ? overGoalColor : color;
     final fillColor = baseColor.withOpacity(0.28);
     final borderColor = baseColor;
-    final trackColor = Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.6);
 
     return LabeledGroupBox(
       label: label,
@@ -44,7 +44,7 @@ class LabeledProgressBar extends StatelessWidget {
       borderColor: borderColor,
       labelColor: borderColor,
       textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: borderColor),
-      backgroundColor: trackColor,
+      backgroundColor: Colors.transparent,
       contentPadding: EdgeInsets.zero,
       child: SizedBox(
         height: height,
