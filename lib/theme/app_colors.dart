@@ -11,9 +11,9 @@ class AppColors {
   static const border = Color(0x66909090);
 
   static const calories = Color(0xFF6F8FB8);
-  static const fat = Color(0xFFB06A6A);
-  static const protein = Color(0xFFB0893B);
-  static const carbs = Color(0xFF5E9A84);
+  static const fat = Color(0xFFB0893B);
+  static const protein = Color(0xFF5E9A84);
+  static const carbs = Color(0xFFB06A6A);
 
   static const overGoal = Color(0xFFB44A4A);
 
