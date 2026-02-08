@@ -206,12 +206,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isBusy = _testing || _loadingModels;
+    final isTesting = _testing;
     const sectionSpacing = UiConstants.sectionSpacing;
     const headerToContentSpacing = UiConstants.mediumSpacing;
     const controlSpacing = UiConstants.largeSpacing;
     return WillPopScope(
-      onWillPop: () async => !isBusy,
+      onWillPop: () async => !isTesting,
       child: Scaffold(
         appBar: AppBar(
           title: Row(
@@ -224,7 +224,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         body: AbsorbPointer(
-          absorbing: isBusy,
+          absorbing: isTesting,
           child: ListView(
             padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
@@ -247,8 +247,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                 .toList(),
-            enabled: !isBusy,
-            onChanged: isBusy
+            enabled: !isTesting,
+            onChanged: isTesting
                 ? null
                 : (value) {
                     if (value != null) {
@@ -261,13 +261,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.openAiApiKeyLabel,
             controller: _apiKeyController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             obscureText: true,
             contentHeight: UiConstants.settingsFieldHeight,
           ),
           const SizedBox(height: UiConstants.mediumSpacing),
           FilledButton.icon(
-            onPressed: isBusy ? null : _testKey,
+            onPressed: isTesting ? null : _testKey,
             icon: const Icon(Icons.vpn_key),
             label: _testing
                 ? const SizedBox(
@@ -290,8 +290,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                 .toList(),
-            enabled: !isBusy,
-            onChanged: isBusy
+            enabled: !isTesting && !_loadingModels,
+            onChanged: isTesting || _loadingModels
                 ? null
                 : (value) {
                     if (value != null) {
@@ -322,8 +322,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 )
                 .toList(),
-            enabled: !isBusy,
-            onChanged: isBusy
+            enabled: !isTesting,
+            onChanged: isTesting
                 ? null
                 : (value) {
                     if (value != null) {
@@ -336,7 +336,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.maxOutputTokensLabel,
             controller: _maxOutputTokensController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
@@ -345,7 +345,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.openAiTimeoutSecondsLabel,
             controller: _openAiTimeoutController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
@@ -359,7 +359,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.dailyCalorieGoalLabel,
             controller: _calorieGoalController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             contentHeight: UiConstants.settingsFieldHeight,
             borderColor: AppColors.calories,
             textColor: AppColors.calories,
@@ -370,7 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.dailyFatGoalLabel,
             controller: _fatGoalController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             contentHeight: UiConstants.settingsFieldHeight,
             borderColor: AppColors.fat,
             textColor: AppColors.fat,
@@ -381,7 +381,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.dailyProteinGoalLabel,
             controller: _proteinGoalController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             contentHeight: UiConstants.settingsFieldHeight,
             borderColor: AppColors.protein,
             textColor: AppColors.protein,
@@ -392,7 +392,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledInputBox(
             label: l10n.dailyCarbsGoalLabel,
             controller: _carbsGoalController,
-            enabled: !isBusy,
+            enabled: !isTesting,
             contentHeight: UiConstants.settingsFieldHeight,
             borderColor: AppColors.carbs,
             textColor: AppColors.carbs,
@@ -406,7 +406,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: headerToContentSpacing),
           FilledButton.icon(
-            onPressed: isBusy
+            onPressed: isTesting
                 ? null
                 : () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -418,7 +418,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: UiConstants.smallSpacing),
           FilledButton.icon(
-            onPressed: isBusy
+            onPressed: isTesting
                 ? null
                 : () {
                     ScaffoldMessenger.of(context).showSnackBar(
