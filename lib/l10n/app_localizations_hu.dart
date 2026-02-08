@@ -18,6 +18,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get aboutTitle => 'Névjegy';
 
   @override
+  String get weeklySummaryTitle => 'Heti összesítés';
+
+  @override
   String get addButton => 'Hozzáadás';
 
   @override
@@ -76,6 +79,9 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String get emptyEntriesHint =>
       'Erre a napra még nincs bejegyzés. Koppints a Hozzáadás gombra.';
+
+  @override
+  String get noEntriesForWeek => 'Erre a hétre nincs bejegyzés.';
 
   @override
   String get openAiSectionTitle => 'OpenAI';

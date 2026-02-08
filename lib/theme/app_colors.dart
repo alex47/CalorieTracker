@@ -15,7 +15,7 @@ class AppColors {
   static const protein = Color(0xFFB0893B);
   static const carbs = Color(0xFF5E9A84);
 
-  static const overGoal = Color(0xFF7F1D1D);
+  static const overGoal = Color(0xFFB44A4A);
 
   static const subtleBorder = Color(0x80CBCBCB);
   static const dialogBorder = Color(0x33CBCBCB);

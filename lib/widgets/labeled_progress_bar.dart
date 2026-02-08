@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
 
@@ -14,7 +13,6 @@ class LabeledProgressBar extends StatelessWidget {
     this.unit = 'g',
     this.height = UiConstants.progressBarHeight,
     this.animationDuration = UiConstants.progressBarAnimationDuration,
-    this.overGoalColor = AppColors.overGoal,
     this.onTap,
   });
 
@@ -25,7 +23,6 @@ class LabeledProgressBar extends StatelessWidget {
   final String unit;
   final double height;
   final Duration animationDuration;
-  final Color overGoalColor;
   final VoidCallback? onTap;
 
   String _format(double v) {
@@ -36,9 +33,9 @@ class LabeledProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = goal > 0 ? (value / goal).clamp(0.0, 1.0) : 0.0;
     final isOverGoal = value > goal;
-    final baseColor = isOverGoal ? overGoalColor : color;
-    final fillColor = baseColor.withOpacity(0.28);
-    final borderColor = baseColor;
+    final stripedFillColor = color.withOpacity(0.42);
+    final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
+    final borderColor = color;
 
     final content = LabeledGroupBox(
       label: label,
@@ -59,8 +56,22 @@ class LabeledProgressBar extends StatelessWidget {
                   widthFactor: progress,
                   child: SizedBox(
                     height: height,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(color: fillColor),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(color: fillColor),
+                          ),
+                          if (isOverGoal)
+                            CustomPaint(
+                              painter: _DiagonalStripePainter(
+                                stripeColor: stripedFillColor,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -90,5 +101,35 @@ class LabeledProgressBar extends StatelessWidget {
         child: content,
       ),
     );
+  }
+}
+
+class _DiagonalStripePainter extends CustomPainter {
+  const _DiagonalStripePainter({
+    required this.stripeColor,
+  });
+
+  final Color stripeColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double spacing = 12;
+    const double strokeWidth = 1.2;
+    final paint = Paint()
+      ..color = stripeColor
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.square;
+
+    for (double x = -size.height; x < size.width; x += spacing) {
+      final start = Offset(x, size.height);
+      final end = Offset(x + size.height, 0);
+      canvas.drawLine(start, end, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DiagonalStripePainter oldDelegate) {
+    return oldDelegate.stripeColor != stripeColor;
   }
 }

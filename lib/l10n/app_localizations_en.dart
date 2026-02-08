@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutTitle => 'About';
 
   @override
+  String get weeklySummaryTitle => 'Weekly summary';
+
+  @override
   String get addButton => 'Add';
 
   @override
@@ -75,6 +78,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get emptyEntriesHint =>
       'No entries for this day yet. Tap Add to log food.';
+
+  @override
+  String get noEntriesForWeek => 'No entries for this week.';
 
   @override
   String get openAiSectionTitle => 'OpenAI';

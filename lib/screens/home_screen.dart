@@ -14,6 +14,7 @@ import 'add_entry_screen.dart';
 import 'daily_metric_detail_screen.dart';
 import 'food_item_detail_screen.dart';
 import 'settings_screen.dart';
+import 'weekly_summary_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -138,6 +139,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  Future<void> _openWeeklySummary() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WeeklySummaryScreen(anchorDate: _selectedDate),
+      ),
+    );
+    await _reloadDate(_selectedDate);
+  }
+
   bool _isTodaySelected() {
     final today = _dayOnly(DateTime.now());
     return _selectedDate == today;
@@ -241,12 +252,22 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                       child: Center(
-                        child: Text(
-                          formatDate(
-                            pageDate,
-                            languageCode: settings.languageCode,
+                        child: InkWell(
+                          onTap: _openWeeklySummary,
+                          borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: UiConstants.smallSpacing,
+                              vertical: UiConstants.xxSmallSpacing,
+                            ),
+                            child: Text(
+                              formatDate(
+                                pageDate,
+                                languageCode: settings.languageCode,
+                              ),
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
                           ),
-                          style: Theme.of(context).textTheme.headlineSmall,
                         ),
                       ),
                     ),
@@ -404,7 +425,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
       goal: dailyGoal.toDouble(),
       unit: 'kcal',
       color: AppColors.calories,
-      overGoalColor: AppColors.overGoal,
       height: _progressBarHeight,
       onTap: onTap,
     );

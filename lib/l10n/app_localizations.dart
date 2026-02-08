@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'About'**
   String get aboutTitle;
 
+  /// No description provided for @weeklySummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly summary'**
+  String get weeklySummaryTitle;
+
   /// No description provided for @addButton.
   ///
   /// In en, this message translates to:
@@ -223,6 +229,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No entries for this day yet. Tap Add to log food.'**
   String get emptyEntriesHint;
+
+  /// No description provided for @noEntriesForWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries for this week.'**
+  String get noEntriesForWeek;
 
   /// No description provided for @openAiSectionTitle.
   ///
