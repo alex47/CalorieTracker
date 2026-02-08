@@ -124,7 +124,7 @@ class FoodBreakdownCard extends StatelessWidget {
               value: trimmedNotes.isEmpty ? '-' : trimmedNotes,
               borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.35),
               textStyle: textTheme.bodyMedium,
-              backgroundColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.06),
+              backgroundColor: Colors.transparent,
             ),
           ],
         ),
