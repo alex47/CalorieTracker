@@ -300,6 +300,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get checkForUpdatesButton => 'Check for updates';
 
   @override
+  String get updateAvailableDialogTitle => 'Update available';
+
+  @override
+  String updateAvailableDialogBody(
+      Object latestVersion, Object currentVersion) {
+    return 'Version $latestVersion is available (current: $currentVersion).';
+  }
+
+  @override
+  String get updateAvailableDialogLater => 'Later';
+
+  @override
+  String get updateAvailableDialogView => 'View update';
+
+  @override
   String updateAvailableStatus(Object latestVersion, Object currentVersion) {
     return 'Update available: $latestVersion (current: $currentVersion)';
   }

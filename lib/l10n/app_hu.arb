@@ -165,6 +165,16 @@
     }
   },
   "checkForUpdatesButton": "Frissítések keresése",
+  "updateAvailableDialogTitle": "Frissítés érhető el",
+  "updateAvailableDialogBody": "A(z) {latestVersion} verzió elérhető (jelenlegi: {currentVersion}).",
+  "@updateAvailableDialogBody": {
+    "placeholders": {
+      "latestVersion": {},
+      "currentVersion": {}
+    }
+  },
+  "updateAvailableDialogLater": "Később",
+  "updateAvailableDialogView": "Frissítés megnyitása",
   "updateAvailableStatus": "Frissítés elérhető: {latestVersion} (jelenlegi: {currentVersion})",
   "@updateAvailableStatus": {
     "placeholders": {

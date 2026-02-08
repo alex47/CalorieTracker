@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'screens/about_screen.dart';
 import 'screens/add_entry_screen.dart';
@@ -9,10 +10,12 @@ import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/database_service.dart';
 import 'services/settings_service.dart';
+import 'services/update_coordinator.dart';
 import 'theme/app_colors.dart';
 import 'theme/ui_constants.dart';
 
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,8 +24,15 @@ void main() async {
   runApp(const CalorieTrackerApp());
 }
 
-class CalorieTrackerApp extends StatelessWidget {
+class CalorieTrackerApp extends StatefulWidget {
   const CalorieTrackerApp({super.key});
+
+  @override
+  State<CalorieTrackerApp> createState() => _CalorieTrackerAppState();
+}
+
+class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
+  bool _startupUpdateCheckScheduled = false;
 
   Locale? _resolveLocale(String languageCode) {
     for (final locale in AppLocalizations.supportedLocales) {
@@ -31,6 +41,71 @@ class CalorieTrackerApp extends StatelessWidget {
       }
     }
     return AppLocalizations.supportedLocales.first;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_startupUpdateCheckScheduled) {
+      return;
+    }
+    _startupUpdateCheckScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _runStartupUpdateCheck();
+    });
+  }
+
+  Future<void> _runStartupUpdateCheck() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final result = await UpdateCoordinator.instance.checkForUpdates(
+        currentVersion: packageInfo.version,
+      );
+      if (!mounted || !result.updateAvailable) {
+        return;
+      }
+      final popupContext = navigatorKey.currentContext;
+      if (popupContext == null || !popupContext.mounted) {
+        return;
+      }
+      final l10n = AppLocalizations.of(popupContext)!;
+      final openAbout = await showDialog<bool>(
+            context: popupContext,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: Text(l10n.updateAvailableDialogTitle),
+                content: Text(
+                  l10n.updateAvailableDialogBody(
+                    result.latestVersion,
+                    result.currentVersion,
+                  ),
+                ),
+                actions: [
+                  FilledButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: Text(l10n.updateAvailableDialogLater),
+                  ),
+                  FilledButton.icon(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    icon: const Icon(Icons.info_outline),
+                    label: Text(l10n.updateAvailableDialogView),
+                  ),
+                ],
+              );
+            },
+          ) ??
+          false;
+      if (!mounted || !openAbout) {
+        return;
+      }
+      await navigatorKey.currentState?.push(
+        MaterialPageRoute<void>(
+          builder: (_) => AboutScreen(initialUpdateResult: result),
+        ),
+      );
+    } catch (_) {
+      // Startup update check is best-effort and should stay silent on failure.
+    }
   }
 
   @override
@@ -81,6 +156,7 @@ class CalorieTrackerApp extends StatelessWidget {
     return AnimatedBuilder(
       animation: settingsService,
       builder: (context, _) => MaterialApp(
+        navigatorKey: navigatorKey,
         locale: _resolveLocale(settingsService.settings.languageCode),
         onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: ThemeData(

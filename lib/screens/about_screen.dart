@@ -9,15 +9,20 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../services/update_coordinator.dart';
 import '../services/update_service.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
 
 class AboutScreen extends StatefulWidget {
-  const AboutScreen({super.key});
+  const AboutScreen({
+    super.key,
+    this.initialUpdateResult,
+  });
 
   static const routeName = '/about';
   static const _repoUrl = 'https://github.com/alex47/CalorieTracker';
+  final UpdateCheckResult? initialUpdateResult;
 
   @override
   State<AboutScreen> createState() => _AboutScreenState();
@@ -28,6 +33,12 @@ class _AboutScreenState extends State<AboutScreen> {
   bool _installingUpdate = false;
   double? _downloadProgress;
   UpdateCheckResult? _updateResult;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateResult = widget.initialUpdateResult ?? UpdateCoordinator.instance.latestResult;
+  }
 
   Future<void> _openRepo(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
@@ -45,9 +56,9 @@ class _AboutScreenState extends State<AboutScreen> {
     setState(() => _checkingUpdates = true);
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final service = UpdateService();
-      final result = await service.checkForUpdate(
+      final result = await UpdateCoordinator.instance.checkForUpdates(
         currentVersion: packageInfo.version,
+        forceRefresh: true,
       );
       if (mounted) {
         setState(() => _updateResult = result);

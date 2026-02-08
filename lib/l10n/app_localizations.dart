@@ -602,6 +602,30 @@ abstract class AppLocalizations {
   /// **'Check for updates'**
   String get checkForUpdatesButton;
 
+  /// No description provided for @updateAvailableDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailableDialogTitle;
+
+  /// No description provided for @updateAvailableDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {latestVersion} is available (current: {currentVersion}).'**
+  String updateAvailableDialogBody(Object latestVersion, Object currentVersion);
+
+  /// No description provided for @updateAvailableDialogLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateAvailableDialogLater;
+
+  /// No description provided for @updateAvailableDialogView.
+  ///
+  /// In en, this message translates to:
+  /// **'View update'**
+  String get updateAvailableDialogView;
+
   /// No description provided for @updateAvailableStatus.
   ///
   /// In en, this message translates to:

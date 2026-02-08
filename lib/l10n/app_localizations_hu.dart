@@ -304,6 +304,21 @@ class AppLocalizationsHu extends AppLocalizations {
   String get checkForUpdatesButton => 'Frissítések keresése';
 
   @override
+  String get updateAvailableDialogTitle => 'Frissítés érhető el';
+
+  @override
+  String updateAvailableDialogBody(
+      Object latestVersion, Object currentVersion) {
+    return 'A(z) $latestVersion verzió elérhető (jelenlegi: $currentVersion).';
+  }
+
+  @override
+  String get updateAvailableDialogLater => 'Később';
+
+  @override
+  String get updateAvailableDialogView => 'Frissítés megnyitása';
+
+  @override
   String updateAvailableStatus(Object latestVersion, Object currentVersion) {
     return 'Frissítés elérhető: $latestVersion (jelenlegi: $currentVersion)';
   }
