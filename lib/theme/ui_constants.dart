@@ -24,7 +24,7 @@ class UiConstants {
   static const double reestimateDialogWidth = 460;
   static const double reestimateDialogHeight = 180;
 
-  static const double addButtonWidth = 130;
+  static const double addButtonWidth = 150;
   static const double popupMenuMinWidth = 250;
   static const double progressBarHeight = 36;
   static const double settingsFieldHeight = 44;
