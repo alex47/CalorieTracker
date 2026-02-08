@@ -251,6 +251,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
       await SettingsService.instance.initialize();
+      if (!mounted) {
+        return;
+      }
       final current = SettingsService.instance.settings;
       setState(() {
         _selectedLanguageCode = current.languageCode;
@@ -293,8 +296,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     const sectionSpacing = UiConstants.sectionSpacing;
     const headerToContentSpacing = UiConstants.mediumSpacing;
     const controlSpacing = UiConstants.largeSpacing;
-    return WillPopScope(
-      onWillPop: () async => !isAnyBusy,
+    return PopScope(
+      canPop: !isAnyBusy,
       child: Scaffold(
         appBar: AppBar(
           title: Row(

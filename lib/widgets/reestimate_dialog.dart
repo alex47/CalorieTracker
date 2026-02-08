@@ -19,7 +19,7 @@ Future<String?> showReestimateDialog(
           return AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-              side: BorderSide(
+              side: const BorderSide(
                 color: AppColors.dialogBorder,
               ),
             ),

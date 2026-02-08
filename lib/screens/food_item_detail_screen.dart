@@ -169,9 +169,10 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
         actions: [
           TextButton.icon(
             onPressed: () async {
+              final messenger = ScaffoldMessenger.of(this.context);
               await Clipboard.setData(ClipboardData(text: responseText));
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text(l10n.aiResponseCopiedMessage)),
                 );
               }
@@ -224,7 +225,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-              side: BorderSide(
+              side: const BorderSide(
                 color: AppColors.dialogBorder,
               ),
             ),
@@ -306,15 +307,15 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isBusy = _loading || _saving;
-    return WillPopScope(
-      onWillPop: () async => !isBusy,
+    return PopScope(
+      canPop: !isBusy,
       child: Scaffold(
         appBar: AppBar(
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.restaurant_menu),
-              SizedBox(width: UiConstants.smallSpacing),
+              const Icon(Icons.restaurant_menu),
+              const SizedBox(width: UiConstants.smallSpacing),
               Text(l10n.foodDetailsTitle),
             ],
           ),

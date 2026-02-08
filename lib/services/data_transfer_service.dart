@@ -57,7 +57,6 @@ class DataTransferService {
       );
     }
 
-    String? targetPath;
     final location = await getSaveLocation(
       suggestedName: fileName,
       acceptedTypeGroups: [jsonTypeGroup],
@@ -65,9 +64,8 @@ class DataTransferService {
     if (location == null) {
       return null;
     }
-    targetPath = location.path;
-
-    final file = File(targetPath!);
+    final targetPath = location.path;
+    final file = File(targetPath);
     await file.writeAsString(encoded);
     return targetPath;
   }

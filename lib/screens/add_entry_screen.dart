@@ -10,7 +10,6 @@ import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
 import '../widgets/food_breakdown_card.dart';
-import '../widgets/reestimate_dialog.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key, this.date});
@@ -133,9 +132,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         actions: [
           TextButton.icon(
             onPressed: () async {
+              final messenger = ScaffoldMessenger.of(this.context);
               await Clipboard.setData(ClipboardData(text: responseText));
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text(l10n.aiResponseCopiedMessage)),
                 );
               }
@@ -173,23 +173,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
-  Future<void> _reestimateResponse() async {
-    final reestimateInput = await showReestimateDialog(context);
-
-    if (reestimateInput == null || reestimateInput.isEmpty) {
-      return;
-    }
-
-    _history.add({'role': 'user', 'content': reestimateInput});
-    await _submit(prompt: reestimateInput);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isBusy = _loading;
-    return WillPopScope(
-      onWillPop: () async => !isBusy,
+    return PopScope(
+      canPop: !isBusy,
       child: Scaffold(
         appBar: AppBar(title: Text(l10n.addFoodTitle)),
         body: AbsorbPointer(

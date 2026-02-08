@@ -162,7 +162,7 @@ class SettingsService extends ChangeNotifier {
         .map((locale) => locale.languageCode)
         .toSet();
     if (rawValue != null && supportedLanguageCodes.contains(rawValue)) {
-      return rawValue!;
+      return rawValue;
     }
     return AppDefaults.languageCode;
   }

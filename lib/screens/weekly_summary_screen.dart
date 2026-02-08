@@ -123,30 +123,6 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     }
   }
 
-  String _metricLabel(AppLocalizations l10n, WeeklyMetricType metric) {
-    switch (metric) {
-      case WeeklyMetricType.calories:
-        return l10n.caloriesLabel;
-      case WeeklyMetricType.fat:
-        return l10n.fatLabel;
-      case WeeklyMetricType.protein:
-        return l10n.proteinLabel;
-      case WeeklyMetricType.carbs:
-        return l10n.carbsLabel;
-    }
-  }
-
-  String _metricUnit(WeeklyMetricType metric) {
-    switch (metric) {
-      case WeeklyMetricType.calories:
-        return 'kcal';
-      case WeeklyMetricType.fat:
-      case WeeklyMetricType.protein:
-      case WeeklyMetricType.carbs:
-        return 'g';
-    }
-  }
-
   Color _metricColor(WeeklyMetricType metric) {
     switch (metric) {
       case WeeklyMetricType.calories:
@@ -160,35 +136,24 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     }
   }
 
-  String _formatMetricValue(WeeklyMetricType metric, num value) {
-    if (metric == WeeklyMetricType.calories) {
-      return value.toInt().toString();
-    }
-    final doubleValue = value.toDouble();
-    return doubleValue % 1 == 0 ? doubleValue.toInt().toString() : doubleValue.toStringAsFixed(1);
-  }
-
   bool _isCurrentWeekSelected() => _selectedPage == _maxPage;
-
-  Future<bool> _onWillPop() async {
-    if (!_isCurrentWeekSelected()) {
-      await _pageController.animateToPage(
-        _maxPage,
-        duration: UiConstants.homePageSnapDuration,
-        curve: Curves.easeOutCubic,
-      );
-      return false;
-    }
-    return true;
-  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final languageCode = SettingsService.instance.settings.languageCode;
 
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: _isCurrentWeekSelected(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_isCurrentWeekSelected()) {
+          _pageController.animateToPage(
+            _maxPage,
+            duration: UiConstants.homePageSnapDuration,
+            curve: Curves.easeOutCubic,
+          );
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Row(
@@ -262,9 +227,9 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                   return LayoutBuilder(
                     builder: (context, constraints) {
                       const headerHeightEstimate = 90.0;
-                      final chartHeight =
-                          (constraints.maxHeight - headerHeightEstimate).clamp(220.0, 10000.0)
-                              as double;
+                      final chartHeight = (constraints.maxHeight - headerHeightEstimate)
+                          .clamp(220.0, 10000.0)
+                          .toDouble();
 
                       return ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -379,7 +344,7 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                           final value = spec.valueForDay(days[i]);
                           final goal = spec.goalForDay(days[i]);
                           final isOverGoal = goal > 0 && value > goal;
-                          final stripedFillColor = spec.color.withOpacity(0.42);
+                          final stripedFillColor = spec.color.withValues(alpha: 0.42);
                           final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
                           final max = goal > 0 ? goal : 1.0;
 

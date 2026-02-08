@@ -124,7 +124,7 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: enabled
                                         ? (widget.textColor ?? AppColors.text)
-                                        : AppColors.text.withOpacity(0.45),
+                                        : AppColors.text.withValues(alpha: 0.45),
                                   ),
                               child: item.child,
                             ),
@@ -209,7 +209,7 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
                       Icon(
                         Icons.arrow_drop_down,
                         color: (textStyle?.color ?? Theme.of(context).textTheme.bodyMedium?.color)
-                            ?.withOpacity(widget.enabled ? 1 : 0.45),
+                            ?.withValues(alpha: widget.enabled ? 1 : 0.45),
                       ),
                     ],
                   ),

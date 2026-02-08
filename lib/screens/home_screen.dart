@@ -170,24 +170,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     return _selectedDate == today;
   }
 
-  Future<bool> _onWillPop() async {
-    if (!_isTodaySelected()) {
-      await _pageController.animateToPage(
-        _initialPage,
-        duration: UiConstants.homePageSnapDuration,
-        curve: Curves.easeOutCubic,
-      );
-      return false;
-    }
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = SettingsService.instance.settings;
-    return WillPopScope(
-      onWillPop: _onWillPop,
+    return PopScope(
+      canPop: _isTodaySelected(),
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_isTodaySelected()) {
+          _pageController.animateToPage(
+            _initialPage,
+            duration: UiConstants.homePageSnapDuration,
+            curve: Curves.easeOutCubic,
+          );
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Text(l10n.appTitle),

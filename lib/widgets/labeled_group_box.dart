@@ -115,14 +115,14 @@ class MetricGroupBox extends StatelessWidget {
       textStyle: valueStyle,
       contentHeight: contentHeight,
       contentPadding: const EdgeInsets.symmetric(horizontal: UiConstants.tableRowHorizontalPadding),
+      minWidth: minWidth,
+      backgroundColor: Colors.transparent,
+      labelColor: color,
       child: Align(
         alignment: Alignment.centerLeft,
         widthFactor: 1,
         child: Text(value, style: valueStyle),
       ),
-      minWidth: minWidth,
-      backgroundColor: Colors.transparent,
-      labelColor: color,
     );
   }
 }

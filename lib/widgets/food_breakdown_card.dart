@@ -63,7 +63,7 @@ class FoodBreakdownCard extends StatelessWidget {
                 final nameStyle = textTheme.titleMedium;
                 final amountStyle = textTheme.bodyMedium;
                 final maxWidth = constraints.maxWidth;
-                final spacing = UiConstants.smallSpacing;
+                const spacing = UiConstants.smallSpacing;
                 final nameWidth = _measureTextWidth(
                   context,
                   text: displayName,

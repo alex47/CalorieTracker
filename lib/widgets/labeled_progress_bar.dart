@@ -33,7 +33,7 @@ class LabeledProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = goal > 0 ? (value / goal).clamp(0.0, 1.0) : 0.0;
     final isOverGoal = value > goal;
-    final stripedFillColor = color.withOpacity(0.42);
+    final stripedFillColor = color.withValues(alpha: 0.42);
     final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
     final borderColor = color;
 

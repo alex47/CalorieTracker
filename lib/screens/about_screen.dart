@@ -182,15 +182,15 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isBusy = _checkingUpdates || _installingUpdate;
-    return WillPopScope(
-      onWillPop: () async => !isBusy,
+    return PopScope(
+      canPop: !isBusy,
       child: Scaffold(
         appBar: AppBar(
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.info_outline),
-              SizedBox(width: UiConstants.appBarIconTextSpacing),
+              const Icon(Icons.info_outline),
+              const SizedBox(width: UiConstants.appBarIconTextSpacing),
               Text(l10n.aboutTitle),
             ],
           ),
