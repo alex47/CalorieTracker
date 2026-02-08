@@ -349,6 +349,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'No models were returned for this API key.';
 
   @override
+  String aiSaysPrefix(Object message) {
+    return 'The AI says: $message';
+  }
+
+  @override
   String get errorFailedParseAiResponse => 'Failed to parse AI response.';
 
   @override
@@ -387,4 +392,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorCouldNotOpenInstaller => 'Could not open installer.';
+
+  @override
+  String get errorInvalidBackupFormat => 'Invalid backup file format.';
+
+  @override
+  String get errorUnsupportedBackupFormatVersion =>
+      'Unsupported backup file version.';
+
+  @override
+  String get errorInvalidSettingsPayload => 'Invalid settings data in backup.';
+
+  @override
+  String get errorInvalidRowPayload => 'Invalid row data in backup.';
+
+  @override
+  String get errorInvalidRowPayloadItem => 'Invalid backup row item.';
 }

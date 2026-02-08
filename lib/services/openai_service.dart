@@ -32,6 +32,7 @@ class OpenAIService {
 
   final String apiKey;
   final Duration requestTimeout;
+  static const String aiSaysErrorPrefix = '__AI_SAYS__:';
 
   static const Map<String, dynamic> estimateSchema = {
     'type': 'object',
@@ -204,7 +205,7 @@ Rules:
     }
     final message = error.message.toString();
     return message.contains('OpenAI request failed: 4') ||
-        message.startsWith('The AI says:');
+        message.startsWith(aiSaysErrorPrefix);
   }
 
   Future<Map<String, dynamic>> _sendRequest({
@@ -297,7 +298,7 @@ Rules:
     }
     final errorMessage = (parsed['error'] as String?)?.trim();
     if (errorMessage != null && errorMessage.isNotEmpty) {
-      throw StateError('The AI says: $errorMessage');
+      throw StateError('$aiSaysErrorPrefix$errorMessage');
     }
 
     final items = parsed['items'] as List<dynamic>?;

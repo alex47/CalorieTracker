@@ -1,4 +1,5 @@
 import 'package:calorie_tracker/l10n/app_localizations.dart';
+import '../services/openai_service.dart';
 
 String localizeError(Object error, AppLocalizations l10n) {
   var raw = error.toString().trim();
@@ -11,9 +12,9 @@ String localizeError(Object error, AppLocalizations l10n) {
   if (raw.startsWith('OpenAI request timed out.')) {
     return l10n.errorOpenAiRequestTimedOut;
   }
-  // Preserve model-authored content verbatim.
-  if (raw.startsWith('The AI says:')) {
-    return raw;
+  if (raw.startsWith(OpenAIService.aiSaysErrorPrefix)) {
+    final aiMessage = raw.substring(OpenAIService.aiSaysErrorPrefix.length).trim();
+    return l10n.aiSaysPrefix(aiMessage);
   }
   if (raw.startsWith('OpenAI request failed:')) {
     return l10n.errorOpenAiRequestFailed;
@@ -62,6 +63,21 @@ String localizeError(Object error, AppLocalizations l10n) {
   }
   if (raw.startsWith('Could not open installer:')) {
     return l10n.errorCouldNotOpenInstaller;
+  }
+  if (raw.startsWith('Invalid backup format.')) {
+    return l10n.errorInvalidBackupFormat;
+  }
+  if (raw.startsWith('Unsupported backup format version.')) {
+    return l10n.errorUnsupportedBackupFormatVersion;
+  }
+  if (raw.startsWith('Invalid settings payload.')) {
+    return l10n.errorInvalidSettingsPayload;
+  }
+  if (raw.startsWith('Invalid row payload.')) {
+    return l10n.errorInvalidRowPayload;
+  }
+  if (raw.startsWith('Invalid row payload item.')) {
+    return l10n.errorInvalidRowPayloadItem;
   }
 
   return raw;

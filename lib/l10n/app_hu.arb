@@ -200,6 +200,12 @@
   "errorOpenAiRequestTimedOut": "Az OpenAI kérés időtúllépett.",
   "errorOpenAiRequestFailed": "Az OpenAI kérés sikertelen.",
   "errorNoModelsReturned": "Ehhez az API kulcshoz nem érkezett modell.",
+  "aiSaysPrefix": "Az AI ezt üzeni: {message}",
+  "@aiSaysPrefix": {
+    "placeholders": {
+      "message": {}
+    }
+  },
   "errorFailedParseAiResponse": "Az AI válasz feldolgozása sikertelen.",
   "errorEmptyAiContent": "Az AI üres választ adott.",
   "errorAiNoItemsNoExplanation": "Az AI nem adott tételeket és magyarázatot sem.",
@@ -213,4 +219,10 @@
   "errorLatestReleaseTagMissing": "Hiányzik a legfrissebb kiadás címkéje.",
   "errorApkDownloadFailed": "Az APK letöltése sikertelen.",
   "errorCouldNotOpenInstaller": "A telepítő nem nyitható meg."
+  ,
+  "errorInvalidBackupFormat": "Érvénytelen biztonsági mentés formátum.",
+  "errorUnsupportedBackupFormatVersion": "Nem támogatott biztonsági mentés verzió.",
+  "errorInvalidSettingsPayload": "Érvénytelen beállítás adatok a mentésben.",
+  "errorInvalidRowPayload": "Érvénytelen soradatok a mentésben.",
+  "errorInvalidRowPayloadItem": "Érvénytelen mentési sorelem."
 }

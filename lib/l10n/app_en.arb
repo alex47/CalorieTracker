@@ -201,6 +201,12 @@
   "errorOpenAiRequestTimedOut": "OpenAI request timed out.",
   "errorOpenAiRequestFailed": "OpenAI request failed.",
   "errorNoModelsReturned": "No models were returned for this API key.",
+  "aiSaysPrefix": "The AI says: {message}",
+  "@aiSaysPrefix": {
+    "placeholders": {
+      "message": {}
+    }
+  },
   "errorFailedParseAiResponse": "Failed to parse AI response.",
   "errorEmptyAiContent": "AI returned an empty response.",
   "errorAiNoItemsNoExplanation": "AI returned no items and no explanation.",
@@ -214,4 +220,10 @@
   "errorLatestReleaseTagMissing": "Latest release tag is missing.",
   "errorApkDownloadFailed": "APK download failed.",
   "errorCouldNotOpenInstaller": "Could not open installer."
+  ,
+  "errorInvalidBackupFormat": "Invalid backup file format.",
+  "errorUnsupportedBackupFormatVersion": "Unsupported backup file version.",
+  "errorInvalidSettingsPayload": "Invalid settings data in backup.",
+  "errorInvalidRowPayload": "Invalid row data in backup.",
+  "errorInvalidRowPayloadItem": "Invalid backup row item."
 }

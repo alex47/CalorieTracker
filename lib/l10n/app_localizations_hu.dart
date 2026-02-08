@@ -353,6 +353,11 @@ class AppLocalizationsHu extends AppLocalizations {
       'Ehhez az API kulcshoz nem érkezett modell.';
 
   @override
+  String aiSaysPrefix(Object message) {
+    return 'Az AI ezt üzeni: $message';
+  }
+
+  @override
   String get errorFailedParseAiResponse =>
       'Az AI válasz feldolgozása sikertelen.';
 
@@ -398,4 +403,23 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get errorCouldNotOpenInstaller => 'A telepítő nem nyitható meg.';
+
+  @override
+  String get errorInvalidBackupFormat =>
+      'Érvénytelen biztonsági mentés formátum.';
+
+  @override
+  String get errorUnsupportedBackupFormatVersion =>
+      'Nem támogatott biztonsági mentés verzió.';
+
+  @override
+  String get errorInvalidSettingsPayload =>
+      'Érvénytelen beállítás adatok a mentésben.';
+
+  @override
+  String get errorInvalidRowPayload =>
+      'Érvénytelen soradatok a mentésben.';
+
+  @override
+  String get errorInvalidRowPayloadItem => 'Érvénytelen mentési sorelem.';
 }

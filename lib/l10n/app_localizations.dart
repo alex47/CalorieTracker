@@ -680,6 +680,12 @@ abstract class AppLocalizations {
   /// **'No models were returned for this API key.'**
   String get errorNoModelsReturned;
 
+  /// No description provided for @aiSaysPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI says: {message}'**
+  String aiSaysPrefix(Object message);
+
   /// No description provided for @errorFailedParseAiResponse.
   ///
   /// In en, this message translates to:
@@ -757,6 +763,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open installer.'**
   String get errorCouldNotOpenInstaller;
+
+  /// No description provided for @errorInvalidBackupFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid backup file format.'**
+  String get errorInvalidBackupFormat;
+
+  /// No description provided for @errorUnsupportedBackupFormatVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported backup file version.'**
+  String get errorUnsupportedBackupFormatVersion;
+
+  /// No description provided for @errorInvalidSettingsPayload.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid settings data in backup.'**
+  String get errorInvalidSettingsPayload;
+
+  /// No description provided for @errorInvalidRowPayload.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid row data in backup.'**
+  String get errorInvalidRowPayload;
+
+  /// No description provided for @errorInvalidRowPayloadItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid backup row item.'**
+  String get errorInvalidRowPayloadItem;
 }
 
 class _AppLocalizationsDelegate
