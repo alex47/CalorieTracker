@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
+import '../models/daily_goals.dart';
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
+import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -28,17 +30,26 @@ class DailyMetricDetailScreen extends StatefulWidget {
 
 class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with RouteAware {
   late Future<List<FoodItem>> _itemsFuture;
+  late Future<DailyGoals> _goalsFuture;
   PageRoute<dynamic>? _route;
 
   @override
   void initState() {
     super.initState();
     _itemsFuture = EntriesRepository.instance.fetchItemsForDate(widget.date);
+    _goalsFuture = GoalHistoryService.instance.getEffectiveGoalsForDate(
+      date: widget.date,
+      fallback: DailyGoals.fromSettings(SettingsService.instance.settings),
+    );
   }
 
   void _reload() {
     setState(() {
       _itemsFuture = EntriesRepository.instance.fetchItemsForDate(widget.date);
+      _goalsFuture = GoalHistoryService.instance.getEffectiveGoalsForDate(
+        date: widget.date,
+        fallback: DailyGoals.fromSettings(SettingsService.instance.settings),
+      );
     });
   }
 
@@ -93,17 +104,16 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
     }
   }
 
-  double _metricGoal() {
-    final settings = SettingsService.instance.settings;
+  double _metricGoal(DailyGoals goals) {
     switch (widget.metricType) {
       case DailyMetricType.calories:
-        return settings.dailyGoal.toDouble();
+        return goals.calories.toDouble();
       case DailyMetricType.fat:
-        return settings.dailyFatGoal.toDouble();
+        return goals.fat.toDouble();
       case DailyMetricType.protein:
-        return settings.dailyProteinGoal.toDouble();
+        return goals.protein.toDouble();
       case DailyMetricType.carbs:
-        return settings.dailyCarbsGoal.toDouble();
+        return goals.carbs.toDouble();
     }
   }
 
@@ -146,7 +156,6 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
     final metricLabel = _metricLabel(l10n);
     final metricUnit = _metricUnit();
     final metricColor = _metricColor();
-    final metricGoal = _metricGoal();
 
     return Scaffold(
       appBar: AppBar(
@@ -183,9 +192,19 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
               .toList()
             ..sort((a, b) => b.value.compareTo(a.value));
 
-          return ListView(
-            padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
-            children: [
+          return FutureBuilder<DailyGoals>(
+            future: _goalsFuture,
+            builder: (context, goalSnapshot) {
+              if (goalSnapshot.connectionState == ConnectionState.waiting &&
+                  !goalSnapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final goals =
+                  goalSnapshot.data ?? DailyGoals.fromSettings(SettingsService.instance.settings);
+              final metricGoal = _metricGoal(goals);
+              return ListView(
+                padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
+                children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                 child: Center(
@@ -321,9 +340,11 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                         }),
                       ],
                     ),
-                  ),
                 ),
+              ),
             ],
+              );
+            },
           );
         },
       ),

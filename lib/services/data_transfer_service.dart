@@ -28,6 +28,7 @@ class DataTransferService {
     final entries = await db.query('entries');
     final entryItems = await db.query('entry_items');
     final settingsRows = await db.query('settings');
+    final goalHistory = await db.query('goal_history');
     final settings = {
       for (final row in settingsRows) row['key'] as String: row['value'] as String,
     };
@@ -36,6 +37,7 @@ class DataTransferService {
       'format_version': _formatVersion,
       'exported_at': DateTime.now().toIso8601String(),
       'settings': settings,
+      'goal_history': goalHistory,
       'entries': entries,
       'entry_items': entryItems,
     };
@@ -82,6 +84,7 @@ class DataTransferService {
     }
 
     final settings = _readSettings(decoded['settings']);
+    final goalHistory = _readRows(decoded['goal_history'] ?? const []);
     final entries = _readRows(decoded['entries']);
     final entryItems = _readRows(decoded['entry_items']);
 
@@ -90,6 +93,7 @@ class DataTransferService {
       await txn.delete('entry_items');
       await txn.delete('entries');
       await txn.delete('settings');
+      await txn.delete('goal_history');
 
       for (final entry in entries) {
         await txn.insert(
@@ -127,6 +131,22 @@ class DataTransferService {
         await txn.insert(
           'settings',
           {'key': setting.key, 'value': setting.value},
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+
+      for (final goal in goalHistory) {
+        await txn.insert(
+          'goal_history',
+          {
+            'id': goal['id'] as int?,
+            'goal_date': goal['goal_date'] as String,
+            'calories': (goal['calories'] as num).round(),
+            'fat': (goal['fat'] as num).round(),
+            'protein': (goal['protein'] as num).round(),
+            'carbs': (goal['carbs'] as num).round(),
+            'created_at': goal['created_at'] as String,
+          },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }

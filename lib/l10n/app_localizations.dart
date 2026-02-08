@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateAvailableDialogView.
   ///
   /// In en, this message translates to:
-  /// **'View update'**
+  /// **'Update'**
   String get updateAvailableDialogView;
 
   /// No description provided for @updateAvailableStatus.

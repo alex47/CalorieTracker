@@ -3,8 +3,10 @@ import 'package:flutter/gestures.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../main.dart';
+import '../models/daily_goals.dart';
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
+import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -33,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   late final PageController _pageController;
   late DateTime _selectedDate;
   final Map<String, Future<List<FoodItem>>> _dayFutures = {};
+  final Map<String, Future<DailyGoals>> _goalFutures = {};
   PageRoute<dynamic>? _route;
 
   @override
@@ -68,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   void didPopNext() {
+    _goalFutures.clear();
     _reloadDate(_selectedDate);
   }
 
@@ -92,9 +96,21 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
     );
   }
 
+  Future<DailyGoals> _goalsForDate(DateTime date, DailyGoals fallback) {
+    final key = _dateKey(date);
+    return _goalFutures.putIfAbsent(
+      key,
+      () => GoalHistoryService.instance.getEffectiveGoalsForDate(
+        date: date,
+        fallback: fallback,
+      ),
+    );
+  }
+
   Future<void> _reloadDate(DateTime date) async {
     final day = _dayOnly(date);
     _dayFutures.remove(_dateKey(day));
+    _goalFutures.remove(_dateKey(day));
     setState(() {});
     await _itemsForDate(day);
   }
@@ -170,7 +186,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = SettingsService.instance.settings;
-    final dailyGoal = settings.dailyGoal;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -188,6 +203,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                 if (value == SettingsScreen.routeName) {
                   await Navigator.pushNamed(context, SettingsScreen.routeName);
                   if (mounted) {
+                    _goalFutures.clear();
                     setState(() {});
                   }
                 } else if (value == AboutScreen.routeName) {
@@ -299,35 +315,50 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                         final totalFat = _totalFat(items);
                         final totalProtein = _totalProtein(items);
                         final totalCarbs = _totalCarbs(items);
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildTotalCard(
-                              l10n,
-                              dailyGoal,
-                              totalCalories,
-                              onTap: () => _openMetricDetails(
-                                pageDate,
-                                DailyMetricType.calories,
-                              ),
-                            ),
-                            const SizedBox(height: UiConstants.smallSpacing),
-                            _DailyMacrosRow(
-                              l10n: l10n,
-                              fat: totalFat,
-                              fatGoal: settings.dailyFatGoal.toDouble(),
-                              protein: totalProtein,
-                              proteinGoal: settings.dailyProteinGoal.toDouble(),
-                              carbs: totalCarbs,
-                              carbsGoal: settings.dailyCarbsGoal.toDouble(),
-                              height: _progressBarHeight,
-                              onFatTap: () => _openMetricDetails(pageDate, DailyMetricType.fat),
-                              onProteinTap: () =>
-                                  _openMetricDetails(pageDate, DailyMetricType.protein),
-                              onCarbsTap: () => _openMetricDetails(pageDate, DailyMetricType.carbs),
-                            ),
-                          ],
+                        return FutureBuilder<DailyGoals>(
+                          future: _goalsForDate(pageDate, DailyGoals.fromSettings(settings)),
+                          builder: (context, goalSnapshot) {
+                            if (goalSnapshot.connectionState == ConnectionState.waiting &&
+                                !goalSnapshot.hasData) {
+                              return const Padding(
+                                padding:
+                                    EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+                            final goals =
+                                goalSnapshot.data ?? DailyGoals.fromSettings(settings);
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildTotalCard(
+                                  l10n,
+                                  goals.calories,
+                                  totalCalories,
+                                  onTap: () => _openMetricDetails(
+                                    pageDate,
+                                    DailyMetricType.calories,
+                                  ),
+                                ),
+                                const SizedBox(height: UiConstants.smallSpacing),
+                                _DailyMacrosRow(
+                                  l10n: l10n,
+                                  fat: totalFat,
+                                  fatGoal: goals.fat.toDouble(),
+                                  protein: totalProtein,
+                                  proteinGoal: goals.protein.toDouble(),
+                                  carbs: totalCarbs,
+                                  carbsGoal: goals.carbs.toDouble(),
+                                  height: _progressBarHeight,
+                                  onFatTap: () => _openMetricDetails(pageDate, DailyMetricType.fat),
+                                  onProteinTap: () =>
+                                      _openMetricDetails(pageDate, DailyMetricType.protein),
+                                  onCarbsTap: () =>
+                                      _openMetricDetails(pageDate, DailyMetricType.carbs),
+                                ),
+                              ],
+                            );
+                          },
                         );
                       },
                       ),

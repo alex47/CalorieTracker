@@ -5,7 +5,9 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
+import '../models/daily_goals.dart';
 import 'database_service.dart';
+import 'goal_history_service.dart';
 
 class SettingsService extends ChangeNotifier {
   SettingsService._();
@@ -59,10 +61,18 @@ class SettingsService extends ChangeNotifier {
       dailyCarbsGoal:
           int.tryParse(settingsMap[_dailyCarbsGoalKey] ?? '') ?? AppDefaults.dailyCarbsGrams,
     );
+    final hasGoalHistory = await db.query('goal_history', limit: 1);
+    if (hasGoalHistory.isEmpty) {
+      await GoalHistoryService.instance.upsertGoalsForDate(
+        date: DateTime.now(),
+        goals: DailyGoals.fromSettings(_settings),
+      );
+    }
     notifyListeners();
   }
 
   Future<void> updateSettings(AppSettings settings) async {
+    final previous = _settings;
     _settings = settings;
     final db = await DatabaseService.instance.database;
     await db.insert(
@@ -110,6 +120,16 @@ class SettingsService extends ChangeNotifier {
       {'key': _dailyCarbsGoalKey, 'value': settings.dailyCarbsGoal.toString()},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    final goalsChanged = previous.dailyGoal != settings.dailyGoal ||
+        previous.dailyFatGoal != settings.dailyFatGoal ||
+        previous.dailyProteinGoal != settings.dailyProteinGoal ||
+        previous.dailyCarbsGoal != settings.dailyCarbsGoal;
+    if (goalsChanged) {
+      await GoalHistoryService.instance.upsertGoalsForDate(
+        date: DateTime.now(),
+        goals: DailyGoals.fromSettings(settings),
+      );
+    }
     notifyListeners();
   }
 

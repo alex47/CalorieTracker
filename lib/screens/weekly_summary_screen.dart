@@ -3,8 +3,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../models/daily_goals.dart';
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
+import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -65,17 +67,31 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
       ),
     );
     final dailyItems = await Future.wait(futures);
+    final weekEnd = weekStart.add(const Duration(days: 6));
+    final fallbackGoals = DailyGoals.fromSettings(SettingsService.instance.settings);
+    final goalsByDate = await GoalHistoryService.instance.getEffectiveGoalsForDateRange(
+      startDate: weekStart,
+      endDate: weekEnd,
+      fallback: fallbackGoals,
+    );
     return List<_DayMetricTotals>.generate(
       7,
-      (index) => _DayMetricTotals.fromItems(
-        date: weekStart.add(Duration(days: index)),
-        items: dailyItems[index],
-      ),
+      (index) {
+        final date = weekStart.add(Duration(days: index));
+        final dateKey = _weekKey(date);
+        return _DayMetricTotals.fromItems(
+          date: date,
+          goals: goalsByDate[dateKey] ?? fallbackGoals,
+          items: dailyItems[index],
+        );
+      },
     );
   }
 
   String _weekKey(DateTime weekStart) {
-    return '${weekStart.year}-${weekStart.month}-${weekStart.day}';
+    final month = weekStart.month.toString().padLeft(2, '0');
+    final day = weekStart.day.toString().padLeft(2, '0');
+    return '${weekStart.year}-$month-$day';
   }
 
   DateTime _weekStartForPage(int page) {
@@ -169,7 +185,6 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final settings = SettingsService.instance.settings;
     final languageCode = SettingsService.instance.settings.languageCode;
 
     return WillPopScope(
@@ -224,22 +239,22 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                   final specs = <_WeeklyMetricSpec>[
                     _WeeklyMetricSpec(
                       color: _metricColor(WeeklyMetricType.calories),
-                      dailyGoal: settings.dailyGoal.toDouble(),
+                      goalForDay: (day) => day.goals.calories.toDouble(),
                       valueForDay: (day) => _metricValue(WeeklyMetricType.calories, day),
                     ),
                     _WeeklyMetricSpec(
                       color: _metricColor(WeeklyMetricType.fat),
-                      dailyGoal: settings.dailyFatGoal.toDouble(),
+                      goalForDay: (day) => day.goals.fat.toDouble(),
                       valueForDay: (day) => _metricValue(WeeklyMetricType.fat, day),
                     ),
                     _WeeklyMetricSpec(
                       color: _metricColor(WeeklyMetricType.protein),
-                      dailyGoal: settings.dailyProteinGoal.toDouble(),
+                      goalForDay: (day) => day.goals.protein.toDouble(),
                       valueForDay: (day) => _metricValue(WeeklyMetricType.protein, day),
                     ),
                     _WeeklyMetricSpec(
                       color: _metricColor(WeeklyMetricType.carbs),
-                      dailyGoal: settings.dailyCarbsGoal.toDouble(),
+                      goalForDay: (day) => day.goals.carbs.toDouble(),
                       valueForDay: (day) => _metricValue(WeeklyMetricType.carbs, day),
                     ),
                   ];
@@ -362,10 +377,11 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: specs.map((spec) {
                           final value = spec.valueForDay(days[i]);
-                          final isOverGoal = spec.dailyGoal > 0 && value > spec.dailyGoal;
+                          final goal = spec.goalForDay(days[i]);
+                          final isOverGoal = goal > 0 && value > goal;
                           final stripedFillColor = spec.color.withOpacity(0.42);
                           final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
-                          final max = spec.dailyGoal > 0 ? spec.dailyGoal : 1.0;
+                          final max = goal > 0 ? goal : 1.0;
 
                           return Expanded(
                             child: Padding(
@@ -418,18 +434,19 @@ class _CombinedMetricWeekChart extends StatelessWidget {
 class _WeeklyMetricSpec {
   const _WeeklyMetricSpec({
     required this.color,
-    required this.dailyGoal,
+    required this.goalForDay,
     required this.valueForDay,
   });
 
   final Color color;
-  final double dailyGoal;
+  final double Function(_DayMetricTotals day) goalForDay;
   final double Function(_DayMetricTotals day) valueForDay;
 }
 
 class _DayMetricTotals {
   const _DayMetricTotals({
     required this.date,
+    required this.goals,
     required this.itemCount,
     required this.calories,
     required this.fat,
@@ -438,6 +455,7 @@ class _DayMetricTotals {
   });
 
   final DateTime date;
+  final DailyGoals goals;
   final int itemCount;
   final int calories;
   final double fat;
@@ -446,10 +464,12 @@ class _DayMetricTotals {
 
   factory _DayMetricTotals.fromItems({
     required DateTime date,
+    required DailyGoals goals,
     required List<FoodItem> items,
   }) {
     return _DayMetricTotals(
       date: date,
+      goals: goals,
       itemCount: items.length,
       calories: items.fold<int>(0, (sum, item) => sum + item.calories),
       fat: items.fold<double>(0, (sum, item) => sum + item.fat),

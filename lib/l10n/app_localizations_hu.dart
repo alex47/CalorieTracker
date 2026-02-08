@@ -417,8 +417,7 @@ class AppLocalizationsHu extends AppLocalizations {
       'Érvénytelen beállítás adatok a mentésben.';
 
   @override
-  String get errorInvalidRowPayload =>
-      'Érvénytelen soradatok a mentésben.';
+  String get errorInvalidRowPayload => 'Érvénytelen soradatok a mentésben.';
 
   @override
   String get errorInvalidRowPayloadItem => 'Érvénytelen mentési sorelem.';
