@@ -126,13 +126,24 @@ Rules:
 
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
     final data = decoded['data'] as List<dynamic>? ?? const [];
-    final ids = data
+    final models = data
         .map((item) => item as Map<String, dynamic>)
-        .map((item) => item['id'] as String?)
-        .whereType<String>()
+        .where((item) => item['id'] is String)
+        .toList();
+    models.sort((a, b) {
+      final createdA = a['created'] is num ? (a['created'] as num).toInt() : 0;
+      final createdB = b['created'] is num ? (b['created'] as num).toInt() : 0;
+      if (createdA != createdB) {
+        return createdB.compareTo(createdA);
+      }
+      final idA = a['id'] as String;
+      final idB = b['id'] as String;
+      return idA.compareTo(idB);
+    });
+    final ids = models
+        .map((item) => item['id'] as String)
         .toSet()
         .toList();
-    ids.sort();
 
     if (ids.isEmpty) {
       throw StateError('No models were returned for this API key.');
