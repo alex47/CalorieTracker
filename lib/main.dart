@@ -222,6 +222,7 @@ class CalorieTrackerApp extends StatelessWidget {
   }
 }
 
-String formatDate(DateTime date) {
-  return DateFormat.yMMMMd().format(date);
+String formatDate(DateTime date, {String? languageCode}) {
+  final resolvedLanguageCode = languageCode ?? SettingsService.instance.settings.languageCode;
+  return DateFormat.yMMMMd(resolvedLanguageCode).format(date);
 }

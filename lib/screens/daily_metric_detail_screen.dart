@@ -187,7 +187,10 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
             padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
               Text(
-                formatDate(widget.date),
+                formatDate(
+                  widget.date,
+                  languageCode: SettingsService.instance.settings.languageCode,
+                ),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineSmall,
               ),

@@ -242,7 +242,10 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
                       padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                       child: Center(
                         child: Text(
-                          formatDate(pageDate),
+                          formatDate(
+                            pageDate,
+                            languageCode: settings.languageCode,
+                          ),
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                       ),
