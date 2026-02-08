@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
+import '../utils/error_localizer.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
 
@@ -29,17 +31,6 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   bool _didResolveRouteArgs = false;
   bool _loading = false;
   String? _errorMessage;
-
-  String _displayError(Object error) {
-    final raw = error.toString().trim();
-    if (raw.startsWith('Bad state: ')) {
-      return raw.substring('Bad state: '.length).trim();
-    }
-    if (raw.startsWith('FormatException: ')) {
-      return raw.substring('FormatException: '.length).trim();
-    }
-    return raw;
-  }
 
   @override
   void initState() {
@@ -74,9 +65,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   Future<void> _submit({required String prompt}) async {
+    final l10n = AppLocalizations.of(context)!;
     final apiKey = await SettingsService.instance.getApiKey();
     if (apiKey == null || apiKey.isEmpty) {
-      setState(() => _errorMessage = 'Please set your OpenAI API key in Settings.');
+      setState(() => _errorMessage = l10n.setApiKeyInSettings);
       return;
     }
 
@@ -104,7 +96,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       });
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to fetch calories. ${_displayError(error)}';
+        _errorMessage = l10n.failedToFetchCalories(localizeError(error, l10n));
       });
     } finally {
       setState(() => _loading = false);
@@ -112,8 +104,9 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   Future<void> _saveEntry() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_items.isEmpty) {
-      setState(() => _errorMessage = 'Please request calories before saving.');
+      setState(() => _errorMessage = l10n.requestCaloriesBeforeSaving);
       return;
     }
     final latestUserPrompt = _history.lastWhere(
@@ -144,11 +137,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isBusy = _loading;
     return WillPopScope(
       onWillPop: () async => !isBusy,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Add food')),
+        appBar: AppBar(title: Text(l10n.addFoodTitle)),
         body: AbsorbPointer(
           absorbing: isBusy,
           child: ListView(
@@ -158,10 +152,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
               controller: _inputController,
               enabled: !isBusy,
               focusNode: _inputFocusNode,
-              decoration: const InputDecoration(
-                labelText: 'Food and amounts',
+              decoration: InputDecoration(
+                labelText: l10n.foodAndAmountsLabel,
                 floatingLabelBehavior: FloatingLabelBehavior.always,
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               minLines: 5,
               maxLines: 10,
@@ -173,7 +167,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   : () {
                       final text = _inputController.text.trim();
                       if (text.isEmpty) {
-                        setState(() => _errorMessage = 'Please enter food items.');
+                        setState(() => _errorMessage = l10n.enterFoodItems);
                         return;
                       }
                       setState(() {
@@ -185,7 +179,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       _submit(prompt: text);
                     },
               icon: const Icon(Icons.auto_awesome),
-              label: const Text('Estimate calories', textAlign: TextAlign.center),
+              label: Text(l10n.estimateCaloriesButton, textAlign: TextAlign.center),
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
             if (isBusy) const LinearProgressIndicator(),
@@ -207,7 +201,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                     child: FilledButton.icon(
                       onPressed: isBusy ? null : () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
-                      label: const Text('Cancel', textAlign: TextAlign.center),
+                      label: Text(l10n.cancelButton, textAlign: TextAlign.center),
                     ),
                   ),
                   const SizedBox(width: UiConstants.smallSpacing),
@@ -215,7 +209,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                     child: FilledButton.icon(
                       onPressed: isBusy ? null : _saveEntry,
                       icon: const Icon(Icons.check),
-                      label: const Text('Accept', textAlign: TextAlign.center),
+                      label: Text(l10n.acceptButton, textAlign: TextAlign.center),
                     ),
                   ),
                 ],

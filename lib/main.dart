@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 import 'screens/about_screen.dart';
@@ -65,7 +67,7 @@ class CalorieTrackerApp extends StatelessWidget {
         .toColor();
 
     return MaterialApp(
-      title: 'Calorie Tracker',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
@@ -193,12 +195,12 @@ class CalorieTrackerApp extends StatelessWidget {
       },
       home: const HomeScreen(),
       localizationsDelegates: const [
-        DefaultMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en', 'US'),
-      ],
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 }

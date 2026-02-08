@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -45,6 +46,7 @@ class FoodBreakdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final trimmedNotes = notes.trim();
     final displayName = name.trim().isEmpty ? '-' : name;
@@ -120,8 +122,8 @@ class FoodBreakdownCard extends StatelessWidget {
             ),
             const SizedBox(height: UiConstants.smallSpacing),
             MetricGroupBox(
-              label: 'Calories',
-              value: '$calories kcal',
+              label: l10n.caloriesLabel,
+              value: l10n.caloriesKcalValue(calories),
               color: AppColors.calories,
             ),
             const SizedBox(height: UiConstants.smallSpacing),
@@ -130,25 +132,25 @@ class FoodBreakdownCard extends StatelessWidget {
               runSpacing: UiConstants.smallSpacing,
               children: [
                 MetricGroupBox(
-                  label: 'Fat',
-                  value: '${_formatGrams(fat)} g',
+                  label: l10n.fatLabel,
+                  value: l10n.gramsValue(_formatGrams(fat)),
                   color: AppColors.fat,
                 ),
                 MetricGroupBox(
-                  label: 'Protein',
-                  value: '${_formatGrams(protein)} g',
+                  label: l10n.proteinLabel,
+                  value: l10n.gramsValue(_formatGrams(protein)),
                   color: AppColors.protein,
                 ),
                 MetricGroupBox(
-                  label: 'Carbs',
-                  value: '${_formatGrams(carbs)} g',
+                  label: l10n.carbsLabel,
+                  value: l10n.gramsValue(_formatGrams(carbs)),
                   color: AppColors.carbs,
                 ),
               ],
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
             LabeledGroupBox(
-              label: 'Notes',
+              label: l10n.notesLabel,
               value: trimmedNotes.isEmpty ? '-' : trimmedNotes,
               borderColor: AppColors.subtleBorder,
               textStyle: textTheme.bodyMedium,

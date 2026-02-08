@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as p;
@@ -10,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../services/update_service.dart';
 import '../theme/ui_constants.dart';
+import '../utils/error_localizer.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -28,24 +30,18 @@ class _AboutScreenState extends State<AboutScreen> {
   UpdateCheckResult? _updateResult;
 
   Future<void> _openRepo(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final uri = Uri.parse(AboutScreen._repoUrl);
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open GitHub link.')),
+        SnackBar(content: Text(l10n.couldNotOpenGithubLink)),
       );
     }
   }
 
-  String _displayError(Object error) {
-    final raw = error.toString().trim();
-    if (raw.startsWith('Bad state: ')) {
-      return raw.substring('Bad state: '.length).trim();
-    }
-    return raw;
-  }
-
   Future<void> _checkForUpdates() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _checkingUpdates = true);
     try {
       final packageInfo = await PackageInfo.fromPlatform();
@@ -59,7 +55,7 @@ class _AboutScreenState extends State<AboutScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Update check failed: ${_displayError(error)}')),
+          SnackBar(content: Text(l10n.updateCheckFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
@@ -70,10 +66,11 @@ class _AboutScreenState extends State<AboutScreen> {
   }
 
   Future<void> _downloadUpdate() async {
+    final l10n = AppLocalizations.of(context)!;
     final url = _updateResult?.downloadUrl;
     if (url == null || url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No APK asset found in latest release.')),
+        SnackBar(content: Text(l10n.noApkAssetFound)),
       );
       return;
     }
@@ -83,7 +80,7 @@ class _AboutScreenState extends State<AboutScreen> {
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open update download URL.')),
+          SnackBar(content: Text(l10n.couldNotOpenUpdateUrl)),
         );
       }
       return;
@@ -115,7 +112,7 @@ class _AboutScreenState extends State<AboutScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Update install failed: ${_displayError(error)}')),
+          SnackBar(content: Text(l10n.updateInstallFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
@@ -150,6 +147,7 @@ class _AboutScreenState extends State<AboutScreen> {
     required Uint8List bytes,
     required String fileName,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final tempDir = await getTemporaryDirectory();
     final apkFile = File(p.join(tempDir.path, fileName));
     await apkFile.writeAsBytes(bytes, flush: true);
@@ -164,26 +162,25 @@ class _AboutScreenState extends State<AboutScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Installer opened. If prompted, allow installs from this app.'),
-        ),
+        SnackBar(content: Text(l10n.installerOpenedMessage)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isBusy = _checkingUpdates || _installingUpdate;
     return WillPopScope(
       onWillPop: () async => !isBusy,
       child: Scaffold(
         appBar: AppBar(
-          title: const Row(
+          title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.info_outline),
               SizedBox(width: UiConstants.appBarIconTextSpacing),
-              Text('About'),
+              Text(l10n.aboutTitle),
             ],
           ),
         ),
@@ -199,12 +196,12 @@ class _AboutScreenState extends State<AboutScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(
-                  'Calorie Tracker helps you log meals and estimate calories using OpenAI.',
+                  l10n.aboutDescription,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: UiConstants.largeSpacing),
                 Text(
-                  'Version: $version',
+                  l10n.versionLabel(version),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: UiConstants.largeSpacing),
@@ -220,15 +217,18 @@ class _AboutScreenState extends State<AboutScreen> {
                             width: UiConstants.loadingIndicatorSize,
                             child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                           )
-                          : const Text('Check for updates', textAlign: TextAlign.center),
+                        : Text(l10n.checkForUpdatesButton, textAlign: TextAlign.center),
                     ),
                   ),
                 if (_updateResult != null) ...[
                   const SizedBox(height: UiConstants.mediumSpacing),
                   Text(
                     _updateResult!.updateAvailable
-                        ? 'Update available: ${_updateResult!.latestVersion} (current: ${_updateResult!.currentVersion})'
-                        : 'You are up to date (${_updateResult!.currentVersion}).',
+                        ? l10n.updateAvailableStatus(
+                            _updateResult!.latestVersion,
+                            _updateResult!.currentVersion,
+                          )
+                        : l10n.upToDateStatus(_updateResult!.currentVersion),
                   ),
                   if (_updateResult!.updateAvailable) ...[
                     const SizedBox(height: UiConstants.smallSpacing),
@@ -243,7 +243,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 width: UiConstants.loadingIndicatorSize,
                                 child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                               )
-                            : const Text('Install latest APK', textAlign: TextAlign.center),
+                            : Text(l10n.installLatestApkButton, textAlign: TextAlign.center),
                       ),
                     ),
                     if (_installingUpdate) ...[
@@ -252,8 +252,10 @@ class _AboutScreenState extends State<AboutScreen> {
                       const SizedBox(height: UiConstants.xxSmallSpacing),
                       Text(
                         _downloadProgress == null
-                            ? 'Downloading update...'
-                            : 'Downloading update... ${(_downloadProgress! * 100).clamp(0, 100).toStringAsFixed(0)}%',
+                            ? l10n.downloadingUpdate
+                            : l10n.downloadingUpdateProgress(
+                                (_downloadProgress! * 100).clamp(0, 100).toStringAsFixed(0),
+                              ),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -265,7 +267,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     child: FilledButton.icon(
                       onPressed: isBusy ? null : () => _openRepo(context),
                       icon: const Icon(Icons.open_in_new),
-                      label: const Text('GitHub repository', textAlign: TextAlign.center),
+                      label: Text(l10n.githubRepositoryButton, textAlign: TextAlign.center),
                     ),
                   ),
                   ],

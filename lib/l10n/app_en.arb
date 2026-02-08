@@ -1,0 +1,170 @@
+{
+  "@@locale": "en",
+  "appTitle": "Calorie Tracker",
+  "settingsTitle": "Settings",
+  "aboutTitle": "About",
+  "addButton": "Add",
+  "cancelButton": "Cancel",
+  "acceptButton": "Accept",
+  "deleteButton": "Delete",
+  "reestimateButton": "Re-estimate",
+  "caloriesLabel": "Calories",
+  "fatLabel": "Fat",
+  "proteinLabel": "Protein",
+  "carbsLabel": "Carbs",
+  "foodLabel": "Food",
+  "amountLabel": "Amount",
+  "notesLabel": "Notes",
+  "caloriesKcalValue": "{calories} kcal",
+  "@caloriesKcalValue": {
+    "placeholders": {
+      "calories": {}
+    }
+  },
+  "gramsValue": "{value} g",
+  "@gramsValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "failedToLoadDailyTotals": "Failed to load daily totals.",
+  "trackedFoods": "Tracked foods",
+  "failedToLoadEntries": "Failed to load entries.",
+  "emptyEntriesHint": "No entries for this day yet. Tap Add to log food.",
+  "openAiSectionTitle": "OpenAI",
+  "openAiApiKeyLabel": "OpenAI API key",
+  "testKeyButton": "Test key",
+  "modelLabel": "Model",
+  "reasoningEffortLabel": "Reasoning effort",
+  "maxOutputTokensLabel": "Max output tokens",
+  "goalsSectionTitle": "Goals",
+  "dailyCalorieGoalLabel": "Daily calorie goal (kcal)",
+  "dailyFatGoalLabel": "Daily fat goal (g)",
+  "dailyProteinGoalLabel": "Daily protein goal (g)",
+  "dailyCarbsGoalLabel": "Daily carbs goal (g)",
+  "dataToolsSectionTitle": "Data tools",
+  "exportDataButton": "Export data",
+  "importDataButton": "Import data",
+  "exportComingSoon": "Export is coming soon.",
+  "importComingSoon": "Import is coming soon.",
+  "couldNotLoadModels": "Could not load models dynamically. {error}",
+  "@couldNotLoadModels": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterApiKeyFirst": "Please enter an API key first.",
+  "apiKeyTestSucceeded": "API key test succeeded. Key saved.",
+  "apiKeyTestFailed": "API key test failed: {error}",
+  "@apiKeyTestFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "setApiKeyInSettings": "Please set your OpenAI API key in Settings.",
+  "failedToFetchCalories": "Failed to fetch calories. {error}",
+  "@failedToFetchCalories": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "requestCaloriesBeforeSaving": "Please request calories before saving.",
+  "addFoodTitle": "Add food",
+  "foodAndAmountsLabel": "Food and amounts",
+  "enterFoodItems": "Please enter food items.",
+  "estimateCaloriesButton": "Estimate calories",
+  "missingItemInAiResponse": "Missing item in AI response.",
+  "invalidReestimatedItemInAiResponse": "Invalid re-estimated item in AI response.",
+  "failedToReestimateItem": "Failed to re-estimate item. {error}",
+  "@failedToReestimateItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSaveItem": "Failed to save item. {error}",
+  "@failedToSaveItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "deleteItemTitle": "Delete item",
+  "deleteItemConfirmMessage": "Are you sure you want to delete this food item?",
+  "failedToDeleteItem": "Failed to delete item. {error}",
+  "@failedToDeleteItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToCopyItem": "Failed to copy item. {error}",
+  "@failedToCopyItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "foodDetailsTitle": "Food details",
+  "copyToTodayButton": "Copy to today",
+  "askFollowupChangesLabel": "Ask for follow-up changes",
+  "couldNotOpenGithubLink": "Could not open GitHub link.",
+  "updateCheckFailed": "Update check failed: {error}",
+  "@updateCheckFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noApkAssetFound": "No APK asset found in latest release.",
+  "couldNotOpenUpdateUrl": "Could not open update download URL.",
+  "updateInstallFailed": "Update install failed: {error}",
+  "@updateInstallFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "installerOpenedMessage": "Installer opened. If prompted, allow installs from this app.",
+  "aboutDescription": "Calorie Tracker helps you log meals and estimate calories using OpenAI.",
+  "versionLabel": "Version: {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "checkForUpdatesButton": "Check for updates",
+  "updateAvailableStatus": "Update available: {latestVersion} (current: {currentVersion})",
+  "@updateAvailableStatus": {
+    "placeholders": {
+      "latestVersion": {},
+      "currentVersion": {}
+    }
+  },
+  "upToDateStatus": "You are up to date ({currentVersion}).",
+  "@upToDateStatus": {
+    "placeholders": {
+      "currentVersion": {}
+    }
+  },
+  "installLatestApkButton": "Install latest APK",
+  "downloadingUpdate": "Downloading update...",
+  "downloadingUpdateProgress": "Downloading update... {percent}%",
+  "@downloadingUpdateProgress": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "githubRepositoryButton": "GitHub repository"
+  ,
+  "errorOpenAiRequestTimedOut": "OpenAI request timed out.",
+  "errorOpenAiRequestFailed": "OpenAI request failed.",
+  "errorNoModelsReturned": "No models were returned for this API key.",
+  "errorFailedParseAiResponse": "Failed to parse AI response.",
+  "errorEmptyAiContent": "AI returned an empty response.",
+  "errorAiNoItemsNoExplanation": "AI returned no items and no explanation.",
+  "errorMissingNameOrAmount": "Missing food name or amount.",
+  "errorMissingOrInvalidCalories": "Missing or invalid calories.",
+  "errorMissingOrInvalidFat": "Missing or invalid fat.",
+  "errorMissingOrInvalidProtein": "Missing or invalid protein.",
+  "errorMissingOrInvalidCarbs": "Missing or invalid carbs.",
+  "errorUpdateCheckTimedOut": "Update check timed out.",
+  "errorUpdateCheckFailed": "Update check failed.",
+  "errorLatestReleaseTagMissing": "Latest release tag is missing.",
+  "errorApkDownloadFailed": "APK download failed.",
+  "errorCouldNotOpenInstaller": "Could not open installer."
+}

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
@@ -8,6 +9,7 @@ import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../utils/error_localizer.dart';
 import '../widgets/labeled_input_box.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -106,14 +108,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  String _displayError(Object error) {
-    final raw = error.toString().trim();
-    if (raw.startsWith('Bad state: ')) {
-      return raw.substring('Bad state: '.length).trim();
-    }
-    return raw;
-  }
-
   Future<void> _loadModelsForApiKey(String apiKey, {required bool showError}) async {
     setState(() => _loadingModels = true);
     try {
@@ -142,10 +136,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
       });
       if (showError) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Could not load models dynamically. ${_displayError(error)}',
+              l10n.couldNotLoadModels(localizeError(error, l10n)),
             ),
           ),
         );
@@ -158,10 +153,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _testKey() async {
+    final l10n = AppLocalizations.of(context)!;
     final apiKey = _apiKeyController.text.trim();
     if (apiKey.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter an API key first.')),
+        SnackBar(content: Text(l10n.enterApiKeyFirst)),
       );
       return;
     }
@@ -174,13 +170,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _loadModelsForApiKey(apiKey, showError: true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('API key test succeeded. Key saved.')),
+          SnackBar(content: Text(l10n.apiKeyTestSucceeded)),
         );
       }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('API key test failed: ${_displayError(error)}')),
+          SnackBar(content: Text(l10n.apiKeyTestFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
@@ -192,6 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isBusy = _testing || _loadingModels;
     const sectionSpacing = UiConstants.sectionSpacing;
     const headerToContentSpacing = UiConstants.mediumSpacing;
@@ -200,12 +197,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onWillPop: () async => !isBusy,
       child: Scaffold(
         appBar: AppBar(
-          title: const Row(
+          title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.settings),
-              SizedBox(width: UiConstants.appBarIconTextSpacing),
-              Text('Settings'),
+              const Icon(Icons.settings),
+              const SizedBox(width: UiConstants.appBarIconTextSpacing),
+              Text(l10n.settingsTitle),
             ],
           ),
         ),
@@ -215,12 +212,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
           Text(
-            'OpenAI',
+            l10n.openAiSectionTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
           LabeledInputBox(
-            label: 'OpenAI API key',
+            label: l10n.openAiApiKeyLabel,
             controller: _apiKeyController,
             enabled: !isBusy,
             obscureText: true,
@@ -236,11 +233,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     width: UiConstants.loadingIndicatorSize,
                     child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
                   )
-                : const Text('Test key', textAlign: TextAlign.center),
+                : Text(l10n.testKeyButton, textAlign: TextAlign.center),
           ),
           const SizedBox(height: controlSpacing),
           LabeledDropdownBox<String>(
-            label: 'Model',
+            label: l10n.modelLabel,
             value: _availableModels.contains(_selectedModel) ? _selectedModel : null,
             contentHeight: UiConstants.settingsFieldHeight,
             items: _availableModels
@@ -272,7 +269,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: controlSpacing),
           LabeledDropdownBox<String>(
-            label: 'Reasoning effort',
+            label: l10n.reasoningEffortLabel,
             value: _selectedReasoningEffort,
             contentHeight: UiConstants.settingsFieldHeight,
             items: AppDefaults.reasoningEffortOptions
@@ -295,7 +292,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: controlSpacing),
           LabeledInputBox(
-            label: 'Max output tokens',
+            label: l10n.maxOutputTokensLabel,
             controller: _maxOutputTokensController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
@@ -304,12 +301,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: sectionSpacing),
           Text(
-            'Goals',
+            l10n.goalsSectionTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
           LabeledInputBox(
-            label: 'Daily calorie goal (kcal)',
+            label: l10n.dailyCalorieGoalLabel,
             controller: _calorieGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
@@ -320,7 +317,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: controlSpacing),
           LabeledInputBox(
-            label: 'Daily fat goal (g)',
+            label: l10n.dailyFatGoalLabel,
             controller: _fatGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
@@ -331,7 +328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: controlSpacing),
           LabeledInputBox(
-            label: 'Daily protein goal (g)',
+            label: l10n.dailyProteinGoalLabel,
             controller: _proteinGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
@@ -342,7 +339,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: controlSpacing),
           LabeledInputBox(
-            label: 'Daily carbs goal (g)',
+            label: l10n.dailyCarbsGoalLabel,
             controller: _carbsGoalController,
             enabled: !isBusy,
             contentHeight: UiConstants.settingsFieldHeight,
@@ -353,7 +350,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: sectionSpacing),
           Text(
-            'Data tools',
+            l10n.dataToolsSectionTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
@@ -362,11 +359,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? null
                 : () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Export is coming soon.')),
+                      SnackBar(content: Text(l10n.exportComingSoon)),
                     );
                   },
             icon: const Icon(Icons.download),
-            label: const Text('Export data', textAlign: TextAlign.center),
+            label: Text(l10n.exportDataButton, textAlign: TextAlign.center),
           ),
           const SizedBox(height: UiConstants.smallSpacing),
           FilledButton.icon(
@@ -374,11 +371,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? null
                 : () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Import is coming soon.')),
+                      SnackBar(content: Text(l10n.importComingSoon)),
                     );
                   },
             icon: const Icon(Icons.upload),
-            label: const Text('Import data', textAlign: TextAlign.center),
+            label: Text(l10n.importDataButton, textAlign: TextAlign.center),
           ),
             ],
           ),

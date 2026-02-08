@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
@@ -6,6 +7,7 @@ import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../utils/error_localizer.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
@@ -31,17 +33,6 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   bool _dirty = false;
   String? _errorMessage;
 
-  String _displayError(Object error) {
-    final raw = error.toString().trim();
-    if (raw.startsWith('Bad state: ')) {
-      return raw.substring('Bad state: '.length).trim();
-    }
-    if (raw.startsWith('FormatException: ')) {
-      return raw.substring('FormatException: '.length).trim();
-    }
-    return raw;
-  }
-
   String _formatGrams(double value) {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
   }
@@ -61,6 +52,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   }
 
   Future<void> _reestimateItem() async {
+    final l10n = AppLocalizations.of(context)!;
     final reestimateInput = await showReestimateDialog(context);
 
     if (reestimateInput == null || reestimateInput.isEmpty) {
@@ -69,7 +61,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
     final apiKey = await SettingsService.instance.getApiKey();
     if (apiKey == null || apiKey.isEmpty) {
-      setState(() => _errorMessage = 'Please set your OpenAI API key in Settings.');
+      setState(() => _errorMessage = l10n.setApiKeyInSettings);
       return;
     }
 
@@ -100,7 +92,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
       final items = response['items'] as List<dynamic>? ?? [];
       if (items.isEmpty) {
-        throw const FormatException('Missing item in AI response.');
+        throw FormatException(l10n.missingItemInAiResponse);
       }
 
       final updated = Map<String, dynamic>.from(items.first as Map);
@@ -121,7 +113,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           protein < 0 ||
           carbs == null ||
           carbs < 0) {
-        throw const FormatException('Invalid re-estimated item in AI response.');
+        throw FormatException(l10n.invalidReestimatedItemInAiResponse);
       }
 
       setState(() {
@@ -140,7 +132,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       });
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to re-estimate item. ${_displayError(error)}';
+        _errorMessage = l10n.failedToReestimateItem(localizeError(error, l10n));
       });
     } finally {
       setState(() => _loading = false);
@@ -148,6 +140,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   }
 
   Future<void> _saveChanges() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _saving = true;
       _errorMessage = null;
@@ -168,7 +161,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       }
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to save item. ${error.toString()}';
+        _errorMessage = l10n.failedToSaveItem(error.toString());
       });
     } finally {
       setState(() => _saving = false);
@@ -176,6 +169,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   }
 
   Future<void> _deleteItem() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -185,8 +179,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 color: AppColors.dialogBorder,
               ),
             ),
-            title: const Text('Delete item'),
-            content: const Text('Are you sure you want to delete this food item?'),
+            title: Text(l10n.deleteItemTitle),
+            content: Text(l10n.deleteItemConfirmMessage),
             actions: [
               DialogActionRow(
                 alignment: MainAxisAlignment.end,
@@ -196,7 +190,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context, false),
                       icon: const Icon(Icons.close),
-                      label: const Text('Cancel', textAlign: TextAlign.center),
+                      label: Text(l10n.cancelButton, textAlign: TextAlign.center),
                     ),
                   ),
                   DialogActionItem(
@@ -204,7 +198,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context, true),
                       icon: const Icon(Icons.delete),
-                      label: const Text('Delete', textAlign: TextAlign.center),
+                      label: Text(l10n.deleteButton, textAlign: TextAlign.center),
                     ),
                   ),
                 ],
@@ -229,7 +223,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       }
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to delete item. ${error.toString()}';
+        _errorMessage = l10n.failedToDeleteItem(error.toString());
       });
     } finally {
       setState(() => _saving = false);
@@ -237,6 +231,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   }
 
   Future<void> _copyToToday() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _saving = true;
       _errorMessage = null;
@@ -251,7 +246,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       }
     } catch (error) {
       setState(() {
-        _errorMessage = 'Failed to copy item. ${error.toString()}';
+        _errorMessage = l10n.failedToCopyItem(error.toString());
       });
     } finally {
       setState(() => _saving = false);
@@ -260,17 +255,18 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isBusy = _loading || _saving;
     return WillPopScope(
       onWillPop: () async => !isBusy,
       child: Scaffold(
         appBar: AppBar(
-          title: const Row(
+          title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.restaurant_menu),
               SizedBox(width: UiConstants.smallSpacing),
-              Text('Food details'),
+              Text(l10n.foodDetailsTitle),
             ],
           ),
         ),
@@ -305,7 +301,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 child: FilledButton.icon(
                   onPressed: isBusy ? null : _copyToToday,
                   icon: const Icon(Icons.copy),
-                  label: const Text('Copy to today', textAlign: TextAlign.center),
+                  label: Text(l10n.copyToTodayButton, textAlign: TextAlign.center),
                 ),
               ),
               const SizedBox(height: UiConstants.smallSpacing),
@@ -316,7 +312,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _deleteItem,
                     icon: const Icon(Icons.delete),
-                    label: const Text('Delete', textAlign: TextAlign.center),
+                    label: Text(l10n.deleteButton, textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: UiConstants.smallSpacing),
@@ -324,7 +320,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _reestimateItem,
                     icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Re-estimate', textAlign: TextAlign.center),
+                    label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
                   ),
                 ),
               ],
@@ -336,7 +332,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 child: FilledButton.icon(
                   onPressed: isBusy ? null : _saveChanges,
                   icon: const Icon(Icons.check),
-                  label: const Text('Accept', textAlign: TextAlign.center),
+                  label: Text(l10n.acceptButton, textAlign: TextAlign.center),
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../main.dart';
 import '../models/food_item.dart';
@@ -117,13 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final settings = SettingsService.instance.settings;
     final dailyGoal = settings.dailyGoal;
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Calorie Tracker'),
+          title: Text(l10n.appTitle),
           actions: [
             PopupMenuButton<String>(
               iconSize: UiConstants.menuIconSize,
@@ -154,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     dense: true,
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.settings),
-                    title: Text('Settings', style: menuTextStyle),
+                    title: Text(l10n.settingsTitle, style: menuTextStyle),
                   ),
                 ),
                   PopupMenuItem(
@@ -163,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     dense: true,
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.info_outline),
-                    title: Text('About', style: menuTextStyle),
+                    title: Text(l10n.aboutTitle, style: menuTextStyle),
                   ),
                 ),
                 ];
@@ -176,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: FilledButton.icon(
             onPressed: _navigateToAdd,
             icon: const Icon(Icons.add),
-            label: const Text('Add'),
+            label: Text(l10n.addButton),
           ),
         ),
         body: ScrollConfiguration(
@@ -223,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
                               child: Text(
-                                'Failed to load daily totals.',
+                                l10n.failedToLoadDailyTotals,
                                 style: TextStyle(color: Theme.of(context).colorScheme.error),
                               ),
                             );
@@ -238,11 +240,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildTotalCard(
+                              l10n,
                               dailyGoal,
                               totalCalories,
                             ),
                             const SizedBox(height: UiConstants.smallSpacing),
                             _DailyMacrosRow(
+                              l10n: l10n,
                               fat: totalFat,
                               fatGoal: settings.dailyFatGoal.toDouble(),
                               protein: totalProtein,
@@ -260,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                       child: Text(
-                        'Tracked foods',
+                        l10n.trackedFoods,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
@@ -282,21 +286,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               vertical: UiConstants.largeSpacing,
                             ),
                             child: Text(
-                              'Failed to load entries.',
+                              l10n.failedToLoadEntries,
                               style: TextStyle(color: Theme.of(context).colorScheme.error),
                             ),
                           );
                         }
                         final items = snapshot.data ?? const <FoodItem>[];
                         if (items.isEmpty) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                            child: _EmptyState(),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                            child: _EmptyState(l10n: l10n),
                           );
                         }
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                           child: _ItemsTable(
+                            l10n: l10n,
                             items: items,
                             onItemTap: (item) async {
                               final result = await Navigator.push<dynamic>(
@@ -336,11 +341,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTotalCard(
+    AppLocalizations l10n,
     int dailyGoal,
     int total,
   ) {
     return LabeledProgressBar(
-      label: 'Calories',
+      label: l10n.caloriesLabel,
       value: total.toDouble(),
       goal: dailyGoal.toDouble(),
       unit: 'kcal',
@@ -353,10 +359,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _ItemsTable extends StatelessWidget {
   const _ItemsTable({
+    required this.l10n,
     required this.items,
     required this.onItemTap,
   });
 
+  final AppLocalizations l10n;
   final List<FoodItem> items;
   final Future<void> Function(FoodItem) onItemTap;
 
@@ -366,7 +374,10 @@ class _ItemsTable extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: Column(
         children: [
-          _ItemsHeaderRow(textTheme: Theme.of(context).textTheme),
+          _ItemsHeaderRow(
+            l10n: l10n,
+            textTheme: Theme.of(context).textTheme,
+          ),
           const Divider(height: 1),
           ...items.map(
             (item) => InkWell(
@@ -382,6 +393,7 @@ class _ItemsTable extends StatelessWidget {
 
 class _DailyMacrosRow extends StatelessWidget {
   const _DailyMacrosRow({
+    required this.l10n,
     required this.fat,
     required this.fatGoal,
     required this.protein,
@@ -391,6 +403,7 @@ class _DailyMacrosRow extends StatelessWidget {
     required this.height,
   });
 
+  final AppLocalizations l10n;
   final double fat;
   final double fatGoal;
   final double protein;
@@ -405,7 +418,7 @@ class _DailyMacrosRow extends StatelessWidget {
       children: [
         Expanded(
           child: LabeledProgressBar(
-            label: 'Fat',
+            label: l10n.fatLabel,
             value: fat,
             goal: fatGoal,
             color: AppColors.fat,
@@ -415,7 +428,7 @@ class _DailyMacrosRow extends StatelessWidget {
         const SizedBox(width: UiConstants.smallSpacing),
         Expanded(
           child: LabeledProgressBar(
-            label: 'Protein',
+            label: l10n.proteinLabel,
             value: protein,
             goal: proteinGoal,
             color: AppColors.protein,
@@ -425,7 +438,7 @@ class _DailyMacrosRow extends StatelessWidget {
         const SizedBox(width: UiConstants.smallSpacing),
         Expanded(
           child: LabeledProgressBar(
-            label: 'Carbs',
+            label: l10n.carbsLabel,
             value: carbs,
             goal: carbsGoal,
             color: AppColors.carbs,
@@ -438,8 +451,12 @@ class _DailyMacrosRow extends StatelessWidget {
 }
 
 class _ItemsHeaderRow extends StatelessWidget {
-  const _ItemsHeaderRow({required this.textTheme});
+  const _ItemsHeaderRow({
+    required this.l10n,
+    required this.textTheme,
+  });
 
+  final AppLocalizations l10n;
   final TextTheme textTheme;
 
   @override
@@ -453,16 +470,16 @@ class _ItemsHeaderRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 4,
-            child: Text('Food', style: textTheme.labelLarge),
+            child: Text(l10n.foodLabel, style: textTheme.labelLarge),
           ),
           Expanded(
             flex: 3,
-            child: Text('Amount', style: textTheme.labelLarge),
+            child: Text(l10n.amountLabel, style: textTheme.labelLarge),
           ),
           Expanded(
             flex: 2,
             child: Text(
-              'Calories',
+              l10n.caloriesLabel,
               style: textTheme.labelLarge,
               textAlign: TextAlign.end,
             ),
@@ -517,14 +534,16 @@ class _ItemsDataRow extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.l10n});
+
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: UiConstants.sectionSpacing),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: UiConstants.sectionSpacing),
       child: Center(
-        child: Text('No entries for this day yet. Tap Add to log food.'),
+        child: Text(l10n.emptyEntriesHint),
       ),
     );
   }

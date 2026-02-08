@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -10,6 +11,7 @@ Future<String?> showReestimateDialog(
   return showDialog<String>(
     context: context,
     builder: (context) {
+      final l10n = AppLocalizations.of(context)!;
       final controller = TextEditingController();
       return StatefulBuilder(
         builder: (context, setDialogState) {
@@ -31,10 +33,10 @@ Future<String?> showReestimateDialog(
                   autofocus: true,
                   textAlignVertical: TextAlignVertical.top,
                   onChanged: (_) => setDialogState(() {}),
-                  decoration: const InputDecoration(
-                    labelText: 'Ask for follow-up changes',
+                  decoration: InputDecoration(
+                    labelText: l10n.askFollowupChangesLabel,
                     floatingLabelBehavior: FloatingLabelBehavior.always,
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                   ),
                   expands: true,
                   minLines: null,
@@ -51,7 +53,7 @@ Future<String?> showReestimateDialog(
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
-                      label: const Text('Cancel', textAlign: TextAlign.center),
+                      label: Text(l10n.cancelButton, textAlign: TextAlign.center),
                     ),
                   ),
                   DialogActionItem(
@@ -61,7 +63,7 @@ Future<String?> showReestimateDialog(
                             ? null
                             : () => Navigator.pop(context, trimmed),
                         icon: const Icon(Icons.auto_awesome),
-                        label: const Text('Re-estimate', textAlign: TextAlign.center),
+                        label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
                       ),
                     ),
                   ),
