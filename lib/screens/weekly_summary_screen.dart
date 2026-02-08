@@ -198,6 +198,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             final weekEnd = weekStart.add(const Duration(days: 6));
 
             return RefreshIndicator(
+              color: Colors.white,
               onRefresh: () => _reloadWeek(weekStart),
               child: FutureBuilder<List<_DayMetricTotals>>(
                 future: _totalsForWeek(weekStart),

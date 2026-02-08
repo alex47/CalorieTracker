@@ -75,7 +75,10 @@ Rules:
   - If user input uses non-metric units (cup, tablespoon, ounce, pound, etc.), convert to a reasonable metric amount.
   - Prefer concise forms like "200 g", "250 ml", "1 slice (30 g)".
   - Avoid long phrases or explanations in "amount".
-- On successful parse, keep "notes" informational only; do not ask follow-up questions or request user actions.
+- Keep "notes" brief and concise:
+  - Prefer one short sentence when possible.
+  - Include only key assumptions or clarifications.
+  - Do not ask follow-up questions or request user actions.
 - If you cannot extract at least one valid food name + amount pair, return:
   { "items": [], "error": "<a short natural-language explanation of what is missing and what the user should clarify>" }
 - The "error" text must sound natural and helpful, not templated.
