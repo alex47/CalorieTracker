@@ -30,6 +30,19 @@ class FoodBreakdownCard extends StatelessWidget {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
   }
 
+  double _measureTextWidth(
+    BuildContext context, {
+    required String text,
+    required TextStyle? style,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: Directionality.of(context),
+      maxLines: 1,
+    )..layout();
+    return painter.width;
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -45,45 +58,60 @@ class FoodBreakdownCard extends StatelessWidget {
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
-                final shouldStack = constraints.maxWidth < 360 ||
-                    (displayName.length > 26 && displayAmount.length > 18);
+                final nameStyle = textTheme.titleMedium;
+                final amountStyle = textTheme.bodyMedium;
+                final maxWidth = constraints.maxWidth;
+                final spacing = UiConstants.smallSpacing;
+                final nameWidth = _measureTextWidth(
+                  context,
+                  text: displayName,
+                  style: nameStyle,
+                );
+                final amountWidth = _measureTextWidth(
+                  context,
+                  text: displayAmount,
+                  style: amountStyle,
+                );
+                final combinedWidth = nameWidth + spacing + amountWidth;
+                final shouldStack = combinedWidth > (maxWidth - 1);
+
                 if (shouldStack) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         displayName,
-                        style: textTheme.titleMedium,
+                        style: nameStyle,
                       ),
                       const SizedBox(height: UiConstants.xSmallSpacing),
                       Text(
                         displayAmount,
-                        style: textTheme.bodyMedium,
+                        style: amountStyle,
                       ),
                     ],
                   );
                 }
                 return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
-                      flex: 3,
                       child: Text(
                         displayName,
-                        style: textTheme.titleMedium,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        style: nameStyle,
+                        softWrap: false,
                       ),
                     ),
                     const SizedBox(width: UiConstants.smallSpacing),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        displayAmount,
-                        style: textTheme.bodyMedium,
-                        textAlign: TextAlign.end,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    SizedBox(
+                      width: amountWidth,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          displayAmount,
+                          style: amountStyle,
+                          textAlign: TextAlign.end,
+                          softWrap: false,
+                        ),
                       ),
                     ),
                   ],
