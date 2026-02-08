@@ -105,7 +105,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get maxOutputTokensLabel => 'Maximális kimeneti tokenek';
 
   @override
-  String get openAiTimeoutSecondsLabel => 'OpenAI időkorlát (másodperc)';
+  String get openAiTimeoutSecondsLabel => 'Időkorlát (másodperc)';
 
   @override
   String get goalsSectionTitle => 'Célok';

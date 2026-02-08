@@ -40,7 +40,7 @@
   "modelLabel": "Modell",
   "reasoningEffortLabel": "Következtetési szint",
   "maxOutputTokensLabel": "Maximális kimeneti tokenek",
-  "openAiTimeoutSecondsLabel": "OpenAI időkorlát (másodperc)",
+  "openAiTimeoutSecondsLabel": "Időkorlát (másodperc)",
   "goalsSectionTitle": "Célok",
   "dailyCalorieGoalLabel": "Napi kalóriacél (kcal)",
   "dailyFatGoalLabel": "Napi zsírcél (g)",
