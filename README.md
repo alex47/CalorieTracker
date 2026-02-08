@@ -1,7 +1,7 @@
 # Calorie Tracker
 
 Calorie Tracker is a Flutter app for tracking daily food intake with AI-assisted nutrition estimates.
-It stores data locally (SQLite), supports localization (English/Hungarian), and includes Android release/update tooling.
+It stores data locally (SQLite), supports localization, and includes Android release/update tooling.
 This app was built using a vibe-coding workflow.
 
 ## What the app does
