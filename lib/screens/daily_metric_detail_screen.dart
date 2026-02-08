@@ -184,123 +184,143 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
             ..sort((a, b) => b.value.compareTo(a.value));
 
           return ListView(
-            padding: const EdgeInsets.all(UiConstants.pagePadding),
+            padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
             children: [
-              Text(
-                formatDate(
-                  widget.date,
-                  languageCode: SettingsService.instance.settings.languageCode,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: UiConstants.smallSpacing,
+                      vertical: UiConstants.xxSmallSpacing,
+                    ),
+                    child: Text(
+                      formatDate(
+                        widget.date,
+                        languageCode: SettingsService.instance.settings.languageCode,
+                      ),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: UiConstants.mediumSpacing),
-              LabeledProgressBar(
-                label: metricLabel,
-                value: total,
-                goal: metricGoal,
-                unit: metricUnit,
-                color: metricColor,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                child: LabeledProgressBar(
+                  label: metricLabel,
+                  value: total,
+                  goal: metricGoal,
+                  unit: metricUnit,
+                  color: metricColor,
+                ),
               ),
               const SizedBox(height: UiConstants.largeSpacing),
               if (contributors.isEmpty)
-                Text(l10n.emptyEntriesHint)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                  child: Text(l10n.emptyEntriesHint),
+                )
               else
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: UiConstants.tableRowHorizontalPadding,
-                          vertical: UiConstants.tableRowVerticalPadding,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 5,
-                              child: Text(
-                                l10n.foodLabel,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: metricColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 3,
-                              child: Text(
-                                metricLabel,
-                                textAlign: TextAlign.end,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: metricColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Text(
-                                '%',
-                                textAlign: TextAlign.end,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: metricColor,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      ...contributors.map((entry) {
-                        final percent = total > 0 ? (entry.value / total) * 100 : 0.0;
-                        return InkWell(
-                          onTap: () {
-                            Navigator.push<dynamic>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    FoodItemDetailScreen(item: entry.item, itemDate: widget.date),
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: UiConstants.tableRowHorizontalPadding,
-                              vertical: UiConstants.tableRowVerticalPadding,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 5,
-                                  child: Text(
-                                    entry.item.name,
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: Text(
-                                    '${_formatValue(entry.value)} $metricUnit',
-                                    textAlign: TextAlign.end,
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    '${percent.toStringAsFixed(1)}%',
-                                    textAlign: TextAlign.end,
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                ),
-                              ],
-                            ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                  child: Card(
+                    margin: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: UiConstants.tableRowHorizontalPadding,
+                            vertical: UiConstants.tableRowVerticalPadding,
                           ),
-                        );
-                      }),
-                    ],
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: Text(
+                                  l10n.foodLabel,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: metricColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  metricLabel,
+                                  textAlign: TextAlign.end,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: metricColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  '%',
+                                  textAlign: TextAlign.end,
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: metricColor,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        ...contributors.map((entry) {
+                          final percent = total > 0 ? (entry.value / total) * 100 : 0.0;
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push<dynamic>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      FoodItemDetailScreen(item: entry.item, itemDate: widget.date),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: UiConstants.tableRowHorizontalPadding,
+                                vertical: UiConstants.tableRowVerticalPadding,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    flex: 5,
+                                    child: Text(
+                                      entry.item.name,
+                                      style: Theme.of(context).textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      '${_formatValue(entry.value)} $metricUnit',
+                                      textAlign: TextAlign.end,
+                                      style: Theme.of(context).textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Text(
+                                      '${percent.toStringAsFixed(1)}%',
+                                      textAlign: TextAlign.end,
+                                      style: Theme.of(context).textTheme.bodyMedium,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
                   ),
                 ),
             ],

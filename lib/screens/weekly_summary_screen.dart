@@ -245,24 +245,40 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(UiConstants.pagePadding),
+                    padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
                     children: [
-                      Center(
-                        child: Text(
-                          _formatWeekRange(languageCode, weekStart, weekEnd),
-                          style: Theme.of(context).textTheme.headlineSmall,
-                          textAlign: TextAlign.center,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: UiConstants.smallSpacing,
+                              vertical: UiConstants.xxSmallSpacing,
+                            ),
+                            child: Text(
+                              _formatWeekRange(languageCode, weekStart, weekEnd),
+                              style: Theme.of(context).textTheme.headlineSmall,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: UiConstants.mediumSpacing),
-                      _CombinedMetricWeekChart(
-                        specs: specs,
-                        days: dailyTotals,
-                        languageCode: languageCode,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                        child: _CombinedMetricWeekChart(
+                          specs: specs,
+                          days: dailyTotals,
+                          languageCode: languageCode,
+                        ),
                       ),
                       if (dailyTotals.every((day) => day.itemCount == 0))
                         Padding(
-                          padding: const EdgeInsets.only(top: UiConstants.largeSpacing),
+                          padding: const EdgeInsets.only(
+                            top: UiConstants.largeSpacing,
+                            left: UiConstants.pagePadding,
+                            right: UiConstants.pagePadding,
+                          ),
                           child: Text(l10n.noEntriesForWeek),
                         ),
                     ],
