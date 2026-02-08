@@ -25,17 +25,24 @@ It stores data locally (SQLite), supports localization (English/Hungarian), and 
   - Daily total progress + macro progress.
   - Tap metrics to open per-metric daily contribution details.
   - Tap date to open weekly summary.
+ <img width="490" height="858" alt="main_page" src="https://github.com/user-attachments/assets/4468d841-e625-4ef2-8a52-78c3e59b64cc" />
+
 - **Add food**
   - Multi-line food input.
   - AI estimate + follow-up re-estimation.
   - Structured nutrition breakdown preview.
+<img width="490" height="858" alt="add_food" src="https://github.com/user-attachments/assets/fd150fb8-2d53-492f-b7d6-e7c6fbaf1b04" />
+
 - **Food details**
   - Edit via AI re-estimation.
   - Delete item.
   - Copy item to today (for older dates).
+
 - **Weekly summary**
   - Per-day bars for calories/macros relative to each day’s configured goal.
   - Swipe weeks, blocked from future weeks.
+<img width="490" height="858" alt="weekly_summary" src="https://github.com/user-attachments/assets/9b262978-2cb7-4005-ae70-3be2ba66060d" />
+
 - **Settings**
   - OpenAI key test and model selection.
   - Reasoning effort, max output tokens, request timeout.
