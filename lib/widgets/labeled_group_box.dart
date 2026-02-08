@@ -121,7 +121,7 @@ class MetricGroupBox extends StatelessWidget {
         child: Text(value, style: valueStyle),
       ),
       minWidth: minWidth,
-      backgroundColor: color.withOpacity(0.14),
+      backgroundColor: Colors.transparent,
       labelColor: color,
     );
   }
