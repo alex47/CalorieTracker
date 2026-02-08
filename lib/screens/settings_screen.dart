@@ -10,6 +10,7 @@ import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/labeled_dropdown_box.dart';
 import '../widgets/labeled_input_box.dart';
 
 class SettingsScreen extends StatefulWidget {
