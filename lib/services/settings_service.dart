@@ -1,13 +1,16 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart';
+import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import 'database_service.dart';
 
-class SettingsService {
+class SettingsService extends ChangeNotifier {
   SettingsService._();
 
+  static const _languageCodeKey = 'language_code';
   static const _apiKeyKey = 'openai_api_key';
   static const _modelKey = 'model';
   static const _reasoningEffortKey = 'reasoning_effort';
@@ -21,6 +24,7 @@ class SettingsService {
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   AppSettings _settings = const AppSettings(
+    languageCode: AppDefaults.languageCode,
     model: AppDefaults.model,
     reasoningEffort: AppDefaults.reasoningEffort,
     maxOutputTokens: AppDefaults.maxOutputTokens,
@@ -39,6 +43,7 @@ class SettingsService {
       for (final row in rows) row['key'] as String: row['value'] as String,
     };
     _settings = AppSettings(
+      languageCode: _parseLanguageCode(settingsMap[_languageCodeKey]),
       model: settingsMap[_modelKey] ?? AppDefaults.model,
       reasoningEffort: AppDefaults.reasoningEffortOptions.contains(settingsMap[_reasoningEffortKey])
           ? settingsMap[_reasoningEffortKey]!
@@ -51,11 +56,17 @@ class SettingsService {
       dailyCarbsGoal:
           int.tryParse(settingsMap[_dailyCarbsGoalKey] ?? '') ?? AppDefaults.dailyCarbsGrams,
     );
+    notifyListeners();
   }
 
   Future<void> updateSettings(AppSettings settings) async {
     _settings = settings;
     final db = await DatabaseService.instance.database;
+    await db.insert(
+      'settings',
+      {'key': _languageCodeKey, 'value': settings.languageCode},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
     await db.insert(
       'settings',
       {'key': _modelKey, 'value': settings.model},
@@ -91,6 +102,7 @@ class SettingsService {
       {'key': _dailyCarbsGoalKey, 'value': settings.dailyCarbsGoal.toString()},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    notifyListeners();
   }
 
   Future<String?> getApiKey() async {
@@ -107,5 +119,15 @@ class SettingsService {
       return AppDefaults.maxOutputTokens;
     }
     return parsed;
+  }
+
+  String _parseLanguageCode(String? rawValue) {
+    final supportedLanguageCodes = AppLocalizations.supportedLocales
+        .map((locale) => locale.languageCode)
+        .toSet();
+    if (rawValue != null && supportedLanguageCodes.contains(rawValue)) {
+      return rawValue!;
+    }
+    return AppDefaults.languageCode;
   }
 }

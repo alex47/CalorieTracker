@@ -1,0 +1,172 @@
+{
+  "@@locale": "hu",
+  "appTitle": "Kalória Követő",
+  "settingsTitle": "Beállítások",
+  "aboutTitle": "Névjegy",
+  "addButton": "Hozzáadás",
+  "cancelButton": "Mégse",
+  "acceptButton": "Elfogadás",
+  "deleteButton": "Törlés",
+  "reestimateButton": "Újrabecslés",
+  "caloriesLabel": "Kalória",
+  "fatLabel": "Zsír",
+  "proteinLabel": "Fehérje",
+  "carbsLabel": "Szénhidrát",
+  "foodLabel": "Étel",
+  "amountLabel": "Mennyiség",
+  "notesLabel": "Megjegyzések",
+  "caloriesKcalValue": "{calories} kcal",
+  "@caloriesKcalValue": {
+    "placeholders": {
+      "calories": {}
+    }
+  },
+  "gramsValue": "{value} g",
+  "@gramsValue": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "failedToLoadDailyTotals": "A napi összesítők betöltése sikertelen.",
+  "trackedFoods": "Rögzített ételek",
+  "failedToLoadEntries": "A bejegyzések betöltése sikertelen.",
+  "emptyEntriesHint": "Erre a napra még nincs bejegyzés. Koppints a Hozzáadás gombra.",
+  "openAiSectionTitle": "OpenAI",
+  "languageLabel": "Nyelv",
+  "languageEnglish": "Angol",
+  "languageHungarian": "Magyar",
+  "openAiApiKeyLabel": "OpenAI API kulcs",
+  "testKeyButton": "Kulcs tesztelése",
+  "modelLabel": "Modell",
+  "reasoningEffortLabel": "Következtetési szint",
+  "maxOutputTokensLabel": "Maximális kimeneti tokenek",
+  "goalsSectionTitle": "Célok",
+  "dailyCalorieGoalLabel": "Napi kalóriacél (kcal)",
+  "dailyFatGoalLabel": "Napi zsírcél (g)",
+  "dailyProteinGoalLabel": "Napi fehérjecél (g)",
+  "dailyCarbsGoalLabel": "Napi szénhidrátcél (g)",
+  "dataToolsSectionTitle": "Adateszközök",
+  "exportDataButton": "Adatok exportálása",
+  "importDataButton": "Adatok importálása",
+  "exportComingSoon": "Az export hamarosan elérhető.",
+  "importComingSoon": "Az import hamarosan elérhető.",
+  "couldNotLoadModels": "A modellek dinamikus betöltése nem sikerült. {error}",
+  "@couldNotLoadModels": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "enterApiKeyFirst": "Először adj meg egy API kulcsot.",
+  "apiKeyTestSucceeded": "Az API kulcs tesztje sikeres. A kulcs mentve.",
+  "apiKeyTestFailed": "Az API kulcs tesztje sikertelen: {error}",
+  "@apiKeyTestFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "setApiKeyInSettings": "Állítsd be az OpenAI API kulcsot a Beállításokban.",
+  "failedToFetchCalories": "A kalóriák lekérése sikertelen. {error}",
+  "@failedToFetchCalories": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "requestCaloriesBeforeSaving": "Mentés előtt kérj kalóriabecslést.",
+  "addFoodTitle": "Étel hozzáadása",
+  "foodAndAmountsLabel": "Ételek és mennyiségek",
+  "enterFoodItems": "Adj meg étel tételeket.",
+  "estimateCaloriesButton": "Kalória becslése",
+  "missingItemInAiResponse": "Hiányzó tétel az AI válaszában.",
+  "invalidReestimatedItemInAiResponse": "Érvénytelen újrabecsült tétel az AI válaszában.",
+  "failedToReestimateItem": "A tétel újrabecslése sikertelen. {error}",
+  "@failedToReestimateItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSaveItem": "A tétel mentése sikertelen. {error}",
+  "@failedToSaveItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "deleteItemTitle": "Tétel törlése",
+  "deleteItemConfirmMessage": "Biztosan törölni szeretnéd ezt az étel tételt?",
+  "failedToDeleteItem": "A tétel törlése sikertelen. {error}",
+  "@failedToDeleteItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToCopyItem": "A tétel másolása sikertelen. {error}",
+  "@failedToCopyItem": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "foodDetailsTitle": "Étel részletei",
+  "copyToTodayButton": "Másolás mára",
+  "askFollowupChangesLabel": "Kérj további módosításokat",
+  "couldNotOpenGithubLink": "A GitHub hivatkozás nem nyitható meg.",
+  "updateCheckFailed": "Frissítés ellenőrzése sikertelen: {error}",
+  "@updateCheckFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noApkAssetFound": "Nem található APK eszköz a legfrissebb kiadásban.",
+  "couldNotOpenUpdateUrl": "A frissítés letöltési URL nem nyitható meg.",
+  "updateInstallFailed": "A frissítés telepítése sikertelen: {error}",
+  "@updateInstallFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "installerOpenedMessage": "A telepítő megnyílt. Ha kéri, engedélyezd az alkalmazásból történő telepítést.",
+  "aboutDescription": "A Kalória Követő segít az étkezések naplózásában és a kalóriák becslésében OpenAI segítségével.",
+  "versionLabel": "Verzió: {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {}
+    }
+  },
+  "checkForUpdatesButton": "Frissítések keresése",
+  "updateAvailableStatus": "Frissítés elérhető: {latestVersion} (jelenlegi: {currentVersion})",
+  "@updateAvailableStatus": {
+    "placeholders": {
+      "latestVersion": {},
+      "currentVersion": {}
+    }
+  },
+  "upToDateStatus": "Naprakész ({currentVersion}).",
+  "@upToDateStatus": {
+    "placeholders": {
+      "currentVersion": {}
+    }
+  },
+  "installLatestApkButton": "Legfrissebb APK telepítése",
+  "downloadingUpdate": "Frissítés letöltése...",
+  "downloadingUpdateProgress": "Frissítés letöltése... {percent}%",
+  "@downloadingUpdateProgress": {
+    "placeholders": {
+      "percent": {}
+    }
+  },
+  "githubRepositoryButton": "GitHub repó",
+  "errorOpenAiRequestTimedOut": "Az OpenAI kérés időtúllépett.",
+  "errorOpenAiRequestFailed": "Az OpenAI kérés sikertelen.",
+  "errorNoModelsReturned": "Ehhez az API kulcshoz nem érkezett modell.",
+  "errorFailedParseAiResponse": "Az AI válasz feldolgozása sikertelen.",
+  "errorEmptyAiContent": "Az AI üres választ adott.",
+  "errorAiNoItemsNoExplanation": "Az AI nem adott tételeket és magyarázatot sem.",
+  "errorMissingNameOrAmount": "Hiányzik az étel neve vagy mennyisége.",
+  "errorMissingOrInvalidCalories": "Hiányzó vagy érvénytelen kalória.",
+  "errorMissingOrInvalidFat": "Hiányzó vagy érvénytelen zsír.",
+  "errorMissingOrInvalidProtein": "Hiányzó vagy érvénytelen fehérje.",
+  "errorMissingOrInvalidCarbs": "Hiányzó vagy érvénytelen szénhidrát.",
+  "errorUpdateCheckTimedOut": "A frissítés ellenőrzése időtúllépett.",
+  "errorUpdateCheckFailed": "A frissítés ellenőrzése sikertelen.",
+  "errorLatestReleaseTagMissing": "Hiányzik a legfrissebb kiadás címkéje.",
+  "errorApkDownloadFailed": "Az APK letöltése sikertelen.",
+  "errorCouldNotOpenInstaller": "A telepítő nem nyitható meg."
+}

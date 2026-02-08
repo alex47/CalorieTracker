@@ -1,5 +1,6 @@
 class AppSettings {
   const AppSettings({
+    required this.languageCode,
     required this.model,
     required this.reasoningEffort,
     required this.maxOutputTokens,
@@ -9,6 +10,7 @@ class AppSettings {
     required this.dailyCarbsGoal,
   });
 
+  final String languageCode;
   final String model;
   final String reasoningEffort;
   final int maxOutputTokens;

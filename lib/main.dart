@@ -22,8 +22,18 @@ void main() async {
 class CalorieTrackerApp extends StatelessWidget {
   const CalorieTrackerApp({super.key});
 
+  Locale? _resolveLocale(String languageCode) {
+    for (final locale in AppLocalizations.supportedLocales) {
+      if (locale.languageCode == languageCode) {
+        return locale;
+      }
+    }
+    return AppLocalizations.supportedLocales.first;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final settingsService = SettingsService.instance;
     final baseTextTheme = ThemeData.dark().textTheme.apply(
           bodyColor: AppColors.text,
           displayColor: AppColors.text,
@@ -66,8 +76,11 @@ class CalorieTrackerApp extends StatelessWidget {
         .withLightness((borderBaseHsl.lightness + 0.12).clamp(0.0, 1.0))
         .toColor();
 
-    return MaterialApp(
-      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+    return AnimatedBuilder(
+      animation: settingsService,
+      builder: (context, _) => MaterialApp(
+        locale: _resolveLocale(settingsService.settings.languageCode),
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
@@ -200,7 +213,8 @@ class CalorieTrackerApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: AppLocalizations.supportedLocales,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     );
   }
 }

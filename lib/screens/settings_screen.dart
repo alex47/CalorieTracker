@@ -29,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _proteinGoalController = TextEditingController();
   final TextEditingController _carbsGoalController = TextEditingController();
   Timer? _autosaveTimer;
+  late String _selectedLanguageCode;
   late String _selectedModel;
   late String _selectedReasoningEffort;
   bool _testing = false;
@@ -39,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     final settings = SettingsService.instance.settings;
+    _selectedLanguageCode = settings.languageCode;
     _selectedModel = settings.model;
     _selectedReasoningEffort = settings.reasoningEffort;
     _maxOutputTokensController.text = settings.maxOutputTokens.toString();
@@ -87,6 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final dailyCarbsGoal = int.tryParse(_carbsGoalController.text.trim()) ?? current.dailyCarbsGoal;
     await SettingsService.instance.updateSettings(
       AppSettings(
+        languageCode: _selectedLanguageCode,
         model: shouldSaveSelectedModel ? _selectedModel : current.model,
         reasoningEffort: _selectedReasoningEffort,
         maxOutputTokens: maxOutputTokens < AppDefaults.minOutputTokens
@@ -216,6 +219,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
+          LabeledDropdownBox<String>(
+            label: l10n.languageLabel,
+            value: _selectedLanguageCode,
+            contentHeight: UiConstants.settingsFieldHeight,
+            items: AppLocalizations.supportedLocales
+                .map(
+                  (locale) => DropdownMenuItem(
+                    value: locale.languageCode,
+                    child: Text(
+                      locale.languageCode == 'hu'
+                          ? l10n.languageHungarian
+                          : locale.languageCode == 'en'
+                              ? l10n.languageEnglish
+                              : locale.languageCode,
+                    ),
+                  ),
+                )
+                .toList(),
+            enabled: !isBusy,
+            onChanged: isBusy
+                ? null
+                : (value) {
+                    if (value != null) {
+                      setState(() => _selectedLanguageCode = value);
+                      _scheduleSettingsAutosave();
+                    }
+                  },
+          ),
+          const SizedBox(height: controlSpacing),
           LabeledInputBox(
             label: l10n.openAiApiKeyLabel,
             controller: _apiKeyController,
