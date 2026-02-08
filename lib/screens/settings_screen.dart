@@ -223,6 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _apiKeyController,
             enabled: !isBusy,
             obscureText: true,
+            contentHeight: UiConstants.settingsFieldHeight,
           ),
           const SizedBox(height: UiConstants.mediumSpacing),
           FilledButton.icon(
@@ -240,6 +241,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledDropdownBox<String>(
             label: 'Model',
             value: _availableModels.contains(_selectedModel) ? _selectedModel : null,
+            contentHeight: UiConstants.settingsFieldHeight,
             items: _availableModels
                 .map(
                   (model) => DropdownMenuItem(
@@ -271,6 +273,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           LabeledDropdownBox<String>(
             label: 'Reasoning effort',
             value: _selectedReasoningEffort,
+            contentHeight: UiConstants.settingsFieldHeight,
             items: AppDefaults.reasoningEffortOptions
                 .map(
                   (effort) => DropdownMenuItem(
@@ -294,6 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Max output tokens',
             controller: _maxOutputTokensController,
             enabled: !isBusy,
+            contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -307,6 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Daily calorie goal (kcal)',
             controller: _calorieGoalController,
             enabled: !isBusy,
+            contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -315,6 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Daily fat goal (g)',
             controller: _fatGoalController,
             enabled: !isBusy,
+            contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -323,6 +329,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Daily protein goal (g)',
             controller: _proteinGoalController,
             enabled: !isBusy,
+            contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),
@@ -331,6 +338,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Daily carbs goal (g)',
             controller: _carbsGoalController,
             enabled: !isBusy,
+            contentHeight: UiConstants.settingsFieldHeight,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),

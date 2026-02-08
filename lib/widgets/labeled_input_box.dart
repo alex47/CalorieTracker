@@ -13,6 +13,7 @@ class LabeledInputBox extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType,
     this.onChanged,
+    this.contentHeight = UiConstants.progressBarHeight,
   });
 
   final String label;
@@ -21,6 +22,7 @@ class LabeledInputBox extends StatelessWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
+  final double contentHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class LabeledInputBox extends StatelessWidget {
       borderColor: borderColor,
       textStyle: textStyle,
       backgroundColor: Colors.transparent,
-      contentHeight: UiConstants.progressBarHeight,
+      contentHeight: contentHeight,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: UiConstants.tableRowHorizontalPadding,
       ),
@@ -73,6 +75,7 @@ class LabeledDropdownBox<T> extends StatelessWidget {
     required this.onChanged,
     this.enabled = true,
     this.trailing,
+    this.contentHeight = UiConstants.progressBarHeight,
   });
 
   final String label;
@@ -81,6 +84,7 @@ class LabeledDropdownBox<T> extends StatelessWidget {
   final ValueChanged<T?>? onChanged;
   final bool enabled;
   final Widget? trailing;
+  final double contentHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +96,7 @@ class LabeledDropdownBox<T> extends StatelessWidget {
       borderColor: borderColor,
       textStyle: textStyle,
       backgroundColor: Colors.transparent,
-      contentHeight: UiConstants.progressBarHeight,
+      contentHeight: contentHeight,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: UiConstants.tableRowHorizontalPadding,
       ),

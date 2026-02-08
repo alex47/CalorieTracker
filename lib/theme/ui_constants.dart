@@ -18,9 +18,7 @@ class UiConstants {
   static const double tableRowVerticalPadding = 10;
   static const double tableRowHorizontalPadding = 12;
 
-  static const double cornerRadius = 12;
-  static const double buttonCornerRadius = 8;
-  static const double fabCornerRadius = 16;
+  static const double cornerRadius = 6;
   static const double buttonMinWidth = 110;
   static const double metricGroupMinWidth = 100;
   static const double reestimateDialogWidth = 460;
@@ -29,6 +27,7 @@ class UiConstants {
   static const double addButtonWidth = 130;
   static const double popupMenuMinWidth = 250;
   static const double progressBarHeight = 36;
+  static const double settingsFieldHeight = 44;
   static const double appBarIconTextSpacing = 8;
   static const double menuIconSize = 30;
   static const double loadingIndicatorSize = 16;

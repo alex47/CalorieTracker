@@ -108,20 +108,27 @@ class CalorieTrackerApp extends StatelessWidget {
         ),
         popupMenuTheme: PopupMenuThemeData(
           color: AppColors.boxBackground,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+            side: const BorderSide(color: AppColors.border, width: 1),
+          ),
           textStyle: appTextTheme.bodyMedium?.copyWith(
             fontSize: UiConstants.textMedium,
             color: AppColors.text,
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+            borderSide: const BorderSide(color: AppColors.border),
           ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border, width: 2),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+            borderSide: const BorderSide(color: AppColors.border, width: 2),
           ),
-          border: const OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+            borderSide: const BorderSide(color: AppColors.border),
           ),
           labelStyle: appTextTheme.bodyLarge?.copyWith(
             color: AppColors.text,
@@ -144,7 +151,7 @@ class CalorieTrackerApp extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
             textStyle: appTextTheme.labelLarge,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(UiConstants.buttonCornerRadius),
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
             ),
           ).copyWith(
             side: WidgetStateProperty.resolveWith<BorderSide>((states) {
@@ -160,7 +167,7 @@ class CalorieTrackerApp extends StatelessWidget {
           foregroundColor: AppColors.buttonForeground,
         ).copyWith(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(UiConstants.fabCornerRadius),
+            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
             side: BorderSide(
               color: buttonBorderColor,
               width: 1,

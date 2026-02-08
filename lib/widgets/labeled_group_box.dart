@@ -51,12 +51,12 @@ class LabeledGroupBox extends StatelessWidget {
           padding: contentPadding,
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(UiConstants.smallSpacing),
+            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
           ),
           child: child == null
               ? Text(value, style: textStyle)
               : ClipRRect(
-                  borderRadius: BorderRadius.circular(UiConstants.smallSpacing),
+                  borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
                   child: child,
                 ),
         ),
@@ -65,7 +65,7 @@ class LabeledGroupBox extends StatelessWidget {
             child: CustomPaint(
               painter: NotchedBorderPainter(
                 color: borderColor,
-                radius: UiConstants.smallSpacing,
+                radius: UiConstants.cornerRadius,
                 topInset: UiConstants.groupBoxHeaderTopInset,
                 gapStart: gapStart,
                 gapWidth: labelGapWidth,

@@ -8,7 +8,7 @@ class AppColors {
   static const pageBackground = Color(0xFF212121);
   static const text = Color(0xFFCBCBCB);
   static const boxBackground = Color(0xFF181818);
-  static const border = Color(0xFF343434);
+  static const border = Color(0x66909090);
 
   static const calories = Color(0xFF6F8FB8);
   static const fat = Color(0xFFB06A6A);
