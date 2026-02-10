@@ -178,9 +178,6 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String get importCancelled => 'Az import megszakítva.';
-
-  @override
   String importSuccess(Object entriesCount, Object itemsCount) {
     return 'Adatok importálva: $entriesCount bejegyzés, $itemsCount étel tétel.';
   }
