@@ -220,15 +220,13 @@ class _AboutScreenState extends State<AboutScreen> {
             ],
           ),
         ),
-        body: AbsorbPointer(
-          absorbing: isBusy,
-          child: Padding(
-            padding: const EdgeInsets.all(UiConstants.pagePadding),
-            child: FutureBuilder<PackageInfo>(
-              future: _packageInfoFuture,
-              builder: (context, snapshot) {
-                final version = snapshot.data?.version ?? '...';
-                return Column(
+        body: Padding(
+          padding: const EdgeInsets.all(UiConstants.pagePadding),
+          child: FutureBuilder<PackageInfo>(
+            future: _packageInfoFuture,
+            builder: (context, snapshot) {
+              final version = snapshot.data?.version ?? '...';
+              return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text(
@@ -318,9 +316,8 @@ class _AboutScreenState extends State<AboutScreen> {
                   ],
                 ],
                   ],
-                );
-              },
-            ),
+              );
+            },
           ),
         ),
       ),
