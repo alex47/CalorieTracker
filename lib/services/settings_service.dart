@@ -141,6 +141,24 @@ class SettingsService extends ChangeNotifier {
     await _secureStorage.write(key: _apiKeyKey, value: value);
   }
 
+  Future<void> clearApiKey() async {
+    await _secureStorage.delete(key: _apiKeyKey);
+  }
+
+  Map<String, String> exportSettingsMap() {
+    return {
+      _languageCodeKey: _settings.languageCode,
+      _modelKey: _settings.model,
+      _reasoningEffortKey: _settings.reasoningEffort,
+      _maxOutputTokensKey: _settings.maxOutputTokens.toString(),
+      _openAiTimeoutSecondsKey: _settings.openAiTimeoutSeconds.toString(),
+      _dailyGoalKey: _settings.dailyGoal.toString(),
+      _dailyFatGoalKey: _settings.dailyFatGoal.toString(),
+      _dailyProteinGoalKey: _settings.dailyProteinGoal.toString(),
+      _dailyCarbsGoalKey: _settings.dailyCarbsGoal.toString(),
+    };
+  }
+
   int _parseMaxOutputTokens(String? rawValue) {
     final parsed = int.tryParse(rawValue ?? '');
     if (parsed == null || parsed < AppDefaults.minOutputTokens) {

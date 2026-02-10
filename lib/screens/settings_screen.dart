@@ -6,6 +6,8 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import '../services/data_transfer_service.dart';
+import '../services/entries_repository.dart';
+import '../services/goal_history_service.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
@@ -265,6 +267,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (payload == null) {
         return;
       }
+      final rollbackPayload = ImportPayload(
+        settings: Map<String, String>.from(SettingsService.instance.exportSettingsMap()),
+        goalHistory: await GoalHistoryService.instance.exportGoalHistoryRows(),
+        entries: (await EntriesRepository.instance.exportEntriesRows())
+            .map((row) => Map<String, dynamic>.from(row))
+            .toList(),
+        entryItems: (await EntriesRepository.instance.exportEntryItemsRows())
+            .map((row) => Map<String, dynamic>.from(row))
+            .toList(),
+      );
+      final previousApiKey = await SettingsService.instance.getApiKey();
       var overwriteApiKey = false;
       if (payload.apiKeyFromBackup != null) {
         final shouldOverwrite = await _confirmOverwriteApiKeyOnImport(
@@ -278,39 +291,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
         overwriteApiKey = shouldOverwrite;
       }
-      if (overwriteApiKey) {
-        await SettingsService.instance.setApiKey(payload.apiKeyFromBackup!);
-      }
-      final summary = await DataTransferService.instance.applyImportData(payload);
-      if (!mounted) {
-        return;
-      }
-      if (overwriteApiKey) {
-        _apiKeyController.text = payload.apiKeyFromBackup!;
-      }
-      await SettingsService.instance.initialize();
-      if (!mounted) {
-        return;
-      }
-      final current = SettingsService.instance.settings;
-      setState(() {
-        _selectedLanguageCode = current.languageCode;
-        _selectedModel = current.model;
-        _selectedReasoningEffort = current.reasoningEffort;
-        _maxOutputTokensController.text = current.maxOutputTokens.toString();
-        _openAiTimeoutController.text = current.openAiTimeoutSeconds.toString();
-        _calorieGoalController.text = current.dailyGoal.toString();
-        _fatGoalController.text = current.dailyFatGoal.toString();
-        _proteinGoalController.text = current.dailyProteinGoal.toString();
-        _carbsGoalController.text = current.dailyCarbsGoal.toString();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.importSuccess(summary.entriesCount, summary.itemsCount),
+      try {
+        if (overwriteApiKey) {
+          await SettingsService.instance.setApiKey(payload.apiKeyFromBackup!);
+        }
+        final summary = await DataTransferService.instance.applyImportData(payload);
+        if (!mounted) {
+          return;
+        }
+        if (overwriteApiKey) {
+          _apiKeyController.text = payload.apiKeyFromBackup!;
+        }
+        await SettingsService.instance.initialize();
+        if (!mounted) {
+          return;
+        }
+        final current = SettingsService.instance.settings;
+        setState(() {
+          _selectedLanguageCode = current.languageCode;
+          _selectedModel = current.model;
+          _selectedReasoningEffort = current.reasoningEffort;
+          _maxOutputTokensController.text = current.maxOutputTokens.toString();
+          _openAiTimeoutController.text = current.openAiTimeoutSeconds.toString();
+          _calorieGoalController.text = current.dailyGoal.toString();
+          _fatGoalController.text = current.dailyFatGoal.toString();
+          _proteinGoalController.text = current.dailyProteinGoal.toString();
+          _carbsGoalController.text = current.dailyCarbsGoal.toString();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.importSuccess(summary.entriesCount, summary.itemsCount),
+            ),
           ),
-        ),
-      );
+        );
+      } catch (error) {
+        await DataTransferService.instance.applyImportData(rollbackPayload);
+        if (previousApiKey == null || previousApiKey.trim().isEmpty) {
+          await SettingsService.instance.clearApiKey();
+        } else {
+          await SettingsService.instance.setApiKey(previousApiKey);
+        }
+        rethrow;
+      }
     } catch (error) {
       if (!mounted) {
         return;

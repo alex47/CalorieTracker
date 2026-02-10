@@ -117,4 +117,16 @@ class EntriesRepository {
       });
     });
   }
+
+  Future<List<Map<String, dynamic>>> exportEntriesRows() async {
+    final db = await DatabaseService.instance.database;
+    final rows = await db.query('entries');
+    return rows.map((row) => Map<String, dynamic>.from(row)).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> exportEntryItemsRows() async {
+    final db = await DatabaseService.instance.database;
+    final rows = await db.query('entry_items');
+    return rows.map((row) => Map<String, dynamic>.from(row)).toList();
+  }
 }

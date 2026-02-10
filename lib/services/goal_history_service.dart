@@ -98,4 +98,10 @@ class GoalHistoryService {
       carbs: (row['carbs'] as int?) ?? fallback.carbs,
     );
   }
+
+  Future<List<Map<String, dynamic>>> exportGoalHistoryRows() async {
+    final db = await DatabaseService.instance.database;
+    final rows = await db.query('goal_history');
+    return rows.map((row) => Map<String, dynamic>.from(row)).toList();
+  }
 }
