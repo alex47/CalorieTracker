@@ -58,6 +58,7 @@
   "importApiKeyDetectedDialogTitle": "API key found in backup",
   "importApiKeyDetectedDialogBody": "This backup contains an OpenAI API key. Do you want to overwrite the current API key on this device?",
   "importOverwriteApiKeyButton": "Overwrite API key",
+  "importKeepCurrentApiKeyButton": "Keep current API key",
   "exportCancelled": "Export cancelled.",
   "exportSuccess": "Data exported: {path}",
   "@exportSuccess": {

@@ -58,6 +58,7 @@
   "importApiKeyDetectedDialogTitle": "API kulcs található a mentésben",
   "importApiKeyDetectedDialogBody": "Ez a mentés tartalmaz OpenAI API kulcsot. Felülírjuk az eszközön lévő jelenlegi API kulcsot?",
   "importOverwriteApiKeyButton": "API kulcs felülírása",
+  "importKeepCurrentApiKeyButton": "Jelenlegi API kulcs megtartása",
   "exportCancelled": "Az export megszakítva.",
   "exportSuccess": "Adatok exportálva: {path}",
   "@exportSuccess": {

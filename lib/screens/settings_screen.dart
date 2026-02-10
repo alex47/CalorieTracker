@@ -11,6 +11,8 @@ import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_dialog.dart';
+import '../widgets/dialog_action_row.dart';
 import '../widgets/labeled_dropdown_box.dart';
 import '../widgets/labeled_input_box.dart';
 
@@ -249,24 +251,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _dataTransferBusy = true);
     try {
-      final summary = await DataTransferService.instance.importData();
+      final payload = await DataTransferService.instance.pickImportData();
       if (!mounted) {
         return;
       }
-      if (summary == null) {
+      if (payload == null) {
         return;
       }
-      if (summary.apiKeyFromBackup != null) {
+      var overwriteApiKey = false;
+      if (payload.apiKeyFromBackup != null) {
         final shouldOverwrite = await _confirmOverwriteApiKeyOnImport(
           l10n: l10n,
         );
         if (!mounted) {
           return;
         }
-        if (shouldOverwrite == true) {
-          await SettingsService.instance.setApiKey(summary.apiKeyFromBackup!);
-          _apiKeyController.text = summary.apiKeyFromBackup!;
+        if (shouldOverwrite == null) {
+          return;
         }
+        overwriteApiKey = shouldOverwrite;
+      }
+      final summary = await DataTransferService.instance.applyImportData(payload);
+      if (!mounted) {
+        return;
+      }
+      if (overwriteApiKey) {
+        await SettingsService.instance.setApiKey(payload.apiKeyFromBackup!);
+        _apiKeyController.text = payload.apiKeyFromBackup!;
       }
       await SettingsService.instance.initialize();
       if (!mounted) {
@@ -308,33 +319,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<bool?> _confirmIncludeApiKeyInExport(AppLocalizations l10n) {
     return showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (dialogContext) => AppDialog(
         title: Text(l10n.exportIncludeApiKeyDialogTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.exportIncludeApiKeyDialogBody),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            FilledButton.icon(
+        content: Text(l10n.exportIncludeApiKeyDialogBody),
+        actionItems: [
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, true),
               icon: const Icon(Icons.vpn_key),
               label: Text(l10n.exportWithApiKeyButton),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            FilledButton.icon(
+          ),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, false),
               icon: const Icon(Icons.download),
               label: Text(l10n.exportWithoutApiKeyButton),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            FilledButton.icon(
+          ),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
               label: Text(l10n.cancelButton),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -344,27 +357,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      builder: (dialogContext) => AppDialog(
         title: Text(l10n.importApiKeyDetectedDialogTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(l10n.importApiKeyDetectedDialogBody),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            FilledButton.icon(
+        content: Text(l10n.importApiKeyDetectedDialogBody),
+        actionItems: [
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, true),
               icon: const Icon(Icons.vpn_key),
               label: Text(l10n.importOverwriteApiKeyButton),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            FilledButton.icon(
+          ),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, false),
+              icon: const Icon(Icons.lock_open),
+              label: Text(l10n.importKeepCurrentApiKeyButton),
+            ),
+          ),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
               label: Text(l10n.cancelButton),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

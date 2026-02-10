@@ -162,6 +162,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get importOverwriteApiKeyButton => 'API kulcs felülírása';
 
   @override
+  String get importKeepCurrentApiKeyButton => 'Jelenlegi API kulcs megtartása';
+
+  @override
   String get exportCancelled => 'Az export megszakítva.';
 
   @override

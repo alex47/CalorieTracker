@@ -20,6 +20,25 @@ class ImportSummary {
   final String? apiKeyFromBackup;
 }
 
+class ImportPayload {
+  const ImportPayload({
+    required this.settings,
+    required this.goalHistory,
+    required this.entries,
+    required this.entryItems,
+    this.apiKeyFromBackup,
+  });
+
+  final Map<String, String> settings;
+  final List<Map<String, dynamic>> goalHistory;
+  final List<Map<String, dynamic>> entries;
+  final List<Map<String, dynamic>> entryItems;
+  final String? apiKeyFromBackup;
+
+  int get entriesCount => entries.length;
+  int get itemsCount => entryItems.length;
+}
+
 class DataTransferService {
   DataTransferService._();
 
@@ -79,7 +98,7 @@ class DataTransferService {
     return targetPath;
   }
 
-  Future<ImportSummary?> importData() async {
+  Future<ImportPayload?> pickImportData() async {
     const jsonTypeGroup = XTypeGroup(
       label: 'JSON',
       extensions: ['json'],
@@ -105,6 +124,16 @@ class DataTransferService {
     final entryItems = _readRows(decoded['entry_items']);
     final apiKeyFromBackup = _readApiKeyFromBackup(decoded['secure']);
 
+    return ImportPayload(
+      settings: settings,
+      goalHistory: goalHistory,
+      entries: entries,
+      entryItems: entryItems,
+      apiKeyFromBackup: apiKeyFromBackup,
+    );
+  }
+
+  Future<ImportSummary> applyImportData(ImportPayload payload) async {
     final db = await DatabaseService.instance.database;
     await db.transaction((txn) async {
       await txn.delete('entry_items');
@@ -112,7 +141,7 @@ class DataTransferService {
       await txn.delete('settings');
       await txn.delete('goal_history');
 
-      for (final entry in entries) {
+      for (final entry in payload.entries) {
         await txn.insert(
           'entries',
           {
@@ -126,7 +155,7 @@ class DataTransferService {
         );
       }
 
-      for (final item in entryItems) {
+      for (final item in payload.entryItems) {
         await txn.insert(
           'entry_items',
           {
@@ -144,7 +173,7 @@ class DataTransferService {
         );
       }
 
-      for (final setting in settings.entries) {
+      for (final setting in payload.settings.entries) {
         await txn.insert(
           'settings',
           {'key': setting.key, 'value': setting.value},
@@ -152,7 +181,7 @@ class DataTransferService {
         );
       }
 
-      for (final goal in goalHistory) {
+      for (final goal in payload.goalHistory) {
         await txn.insert(
           'goal_history',
           {
@@ -170,9 +199,9 @@ class DataTransferService {
     });
 
     return ImportSummary(
-      entriesCount: entries.length,
-      itemsCount: entryItems.length,
-      apiKeyFromBackup: apiKeyFromBackup,
+      entriesCount: payload.entriesCount,
+      itemsCount: payload.itemsCount,
+      apiKeyFromBackup: payload.apiKeyFromBackup,
     );
   }
 

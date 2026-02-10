@@ -160,6 +160,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importOverwriteApiKeyButton => 'Overwrite API key';
 
   @override
+  String get importKeepCurrentApiKeyButton => 'Keep current API key';
+
+  @override
   String get exportCancelled => 'Export cancelled.';
 
   @override

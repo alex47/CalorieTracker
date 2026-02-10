@@ -386,6 +386,12 @@ abstract class AppLocalizations {
   /// **'Overwrite API key'**
   String get importOverwriteApiKeyButton;
 
+  /// No description provided for @importKeepCurrentApiKeyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep current API key'**
+  String get importKeepCurrentApiKeyButton;
+
   /// No description provided for @exportCancelled.
   ///
   /// In en, this message translates to:
