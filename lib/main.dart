@@ -79,7 +79,6 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
                 content: Text(
                   l10n.updateAvailableDialogBody(
                     result.latestVersion,
-                    result.currentVersion,
                   ),
                 ),
                 actionItems: [

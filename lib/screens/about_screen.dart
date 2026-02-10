@@ -268,7 +268,6 @@ class _AboutScreenState extends State<AboutScreen> {
                     _updateResult!.updateAvailable
                         ? l10n.updateAvailableStatus(
                             _updateResult!.latestVersion,
-                            _updateResult!.currentVersion,
                           )
                         : l10n.upToDateStatus(_updateResult!.currentVersion),
                   ),

@@ -173,20 +173,18 @@
   },
   "checkForUpdatesButton": "Check for updates",
   "updateAvailableDialogTitle": "Update available",
-  "updateAvailableDialogBody": "Version {latestVersion} is available (current: {currentVersion}).",
+  "updateAvailableDialogBody": "Version {latestVersion} is available.",
   "@updateAvailableDialogBody": {
     "placeholders": {
-      "latestVersion": {},
-      "currentVersion": {}
+      "latestVersion": {}
     }
   },
   "updateAvailableDialogLater": "Later",
   "updateAvailableDialogView": "Update",
-  "updateAvailableStatus": "Update available: {latestVersion} (current: {currentVersion})",
+  "updateAvailableStatus": "New version available: {latestVersion}",
   "@updateAvailableStatus": {
     "placeholders": {
-      "latestVersion": {},
-      "currentVersion": {}
+      "latestVersion": {}
     }
   },
   "upToDateStatus": "You are up to date ({currentVersion}).",

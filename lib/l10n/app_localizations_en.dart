@@ -326,9 +326,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateAvailableDialogTitle => 'Update available';
 
   @override
-  String updateAvailableDialogBody(
-      Object latestVersion, Object currentVersion) {
-    return 'Version $latestVersion is available (current: $currentVersion).';
+  String updateAvailableDialogBody(Object latestVersion) {
+    return 'Version $latestVersion is available.';
   }
 
   @override
@@ -338,8 +337,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateAvailableDialogView => 'Update';
 
   @override
-  String updateAvailableStatus(Object latestVersion, Object currentVersion) {
-    return 'Update available: $latestVersion (current: $currentVersion)';
+  String updateAvailableStatus(Object latestVersion) {
+    return 'New version available: $latestVersion';
   }
 
   @override

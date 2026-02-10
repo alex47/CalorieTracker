@@ -653,8 +653,8 @@ abstract class AppLocalizations {
   /// No description provided for @updateAvailableDialogBody.
   ///
   /// In en, this message translates to:
-  /// **'Version {latestVersion} is available (current: {currentVersion}).'**
-  String updateAvailableDialogBody(Object latestVersion, Object currentVersion);
+  /// **'Version {latestVersion} is available.'**
+  String updateAvailableDialogBody(Object latestVersion);
 
   /// No description provided for @updateAvailableDialogLater.
   ///
@@ -671,8 +671,8 @@ abstract class AppLocalizations {
   /// No description provided for @updateAvailableStatus.
   ///
   /// In en, this message translates to:
-  /// **'Update available: {latestVersion} (current: {currentVersion})'**
-  String updateAvailableStatus(Object latestVersion, Object currentVersion);
+  /// **'New version available: {latestVersion}'**
+  String updateAvailableStatus(Object latestVersion);
 
   /// No description provided for @upToDateStatus.
   ///

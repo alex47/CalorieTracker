@@ -331,9 +331,8 @@ class AppLocalizationsHu extends AppLocalizations {
   String get updateAvailableDialogTitle => 'Frissítés érhető el';
 
   @override
-  String updateAvailableDialogBody(
-      Object latestVersion, Object currentVersion) {
-    return 'A(z) $latestVersion verzió elérhető (jelenlegi: $currentVersion).';
+  String updateAvailableDialogBody(Object latestVersion) {
+    return 'A(z) $latestVersion verzió elérhető.';
   }
 
   @override
@@ -343,8 +342,8 @@ class AppLocalizationsHu extends AppLocalizations {
   String get updateAvailableDialogView => 'Frissítés';
 
   @override
-  String updateAvailableStatus(Object latestVersion, Object currentVersion) {
-    return 'Frissítés elérhető: $latestVersion (jelenlegi: $currentVersion)';
+  String updateAvailableStatus(Object latestVersion) {
+    return 'Új verzió elérhető: $latestVersion';
   }
 
   @override
