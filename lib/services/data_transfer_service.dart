@@ -12,10 +12,12 @@ class ImportSummary {
   const ImportSummary({
     required this.entriesCount,
     required this.itemsCount,
+    this.apiKeyFromBackup,
   });
 
   final int entriesCount;
   final int itemsCount;
+  final String? apiKeyFromBackup;
 }
 
 class DataTransferService {
@@ -25,7 +27,10 @@ class DataTransferService {
 
   static const int _formatVersion = 1;
 
-  Future<String?> exportData() async {
+  Future<String?> exportData({
+    required bool includeApiKey,
+    String? apiKey,
+  }) async {
     final db = await DatabaseService.instance.database;
     final entries = await db.query('entries');
     final entryItems = await db.query('entry_items');
@@ -42,6 +47,10 @@ class DataTransferService {
       'goal_history': goalHistory,
       'entries': entries,
       'entry_items': entryItems,
+      if (includeApiKey && apiKey != null && apiKey.trim().isNotEmpty)
+        'secure': {
+          'openai_api_key': apiKey.trim(),
+        },
     };
 
     final fileName = _exportFileName();
@@ -94,6 +103,7 @@ class DataTransferService {
     final goalHistory = _readRows(decoded['goal_history'] ?? const []);
     final entries = _readRows(decoded['entries']);
     final entryItems = _readRows(decoded['entry_items']);
+    final apiKeyFromBackup = _readApiKeyFromBackup(decoded['secure']);
 
     final db = await DatabaseService.instance.database;
     await db.transaction((txn) async {
@@ -162,6 +172,7 @@ class DataTransferService {
     return ImportSummary(
       entriesCount: entries.length,
       itemsCount: entryItems.length,
+      apiKeyFromBackup: apiKeyFromBackup,
     );
   }
 
@@ -188,6 +199,21 @@ class DataTransferService {
           return item;
         })
         .toList(growable: false);
+  }
+
+  String? _readApiKeyFromBackup(Object? rawSecure) {
+    if (rawSecure is! Map<String, dynamic>) {
+      return null;
+    }
+    final rawKey = rawSecure['openai_api_key'];
+    if (rawKey is! String) {
+      return null;
+    }
+    final trimmed = rawKey.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    return trimmed;
   }
 
   String _exportFileName() {

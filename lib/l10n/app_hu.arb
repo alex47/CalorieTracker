@@ -51,6 +51,13 @@
   "dataToolsSectionTitle": "Adateszközök",
   "exportDataButton": "Adatok exportálása",
   "importDataButton": "Adatok importálása",
+  "exportIncludeApiKeyDialogTitle": "API kulcs exportálása?",
+  "exportIncludeApiKeyDialogBody": "Szeretnéd belefoglalni az OpenAI API kulcsot az exportált fájlba?\n\nFigyelem: ez a kulcsot olvasható (plain text) formában menti.",
+  "exportWithoutApiKeyButton": "API kulcs nélkül",
+  "exportWithApiKeyButton": "API kulccsal",
+  "importApiKeyDetectedDialogTitle": "API kulcs található a mentésben",
+  "importApiKeyDetectedDialogBody": "Ez a mentés tartalmaz OpenAI API kulcsot. Felülírjuk az eszközön lévő jelenlegi API kulcsot?",
+  "importOverwriteApiKeyButton": "API kulcs felülírása",
   "exportCancelled": "Az export megszakítva.",
   "exportSuccess": "Adatok exportálva: {path}",
   "@exportSuccess": {

@@ -51,6 +51,13 @@
   "dataToolsSectionTitle": "Data tools",
   "exportDataButton": "Export data",
   "importDataButton": "Import data",
+  "exportIncludeApiKeyDialogTitle": "Export API key?",
+  "exportIncludeApiKeyDialogBody": "Do you want to include your OpenAI API key in the exported file?\n\nWarning: this stores the key in plain text.",
+  "exportWithoutApiKeyButton": "Without API key",
+  "exportWithApiKeyButton": "With API key",
+  "importApiKeyDetectedDialogTitle": "API key found in backup",
+  "importApiKeyDetectedDialogBody": "This backup contains an OpenAI API key. Do you want to overwrite the current API key on this device?",
+  "importOverwriteApiKeyButton": "Overwrite API key",
   "exportCancelled": "Export cancelled.",
   "exportSuccess": "Data exported: {path}",
   "@exportSuccess": {

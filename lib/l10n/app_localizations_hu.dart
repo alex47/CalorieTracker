@@ -138,6 +138,30 @@ class AppLocalizationsHu extends AppLocalizations {
   String get importDataButton => 'Adatok importálása';
 
   @override
+  String get exportIncludeApiKeyDialogTitle => 'API kulcs exportálása?';
+
+  @override
+  String get exportIncludeApiKeyDialogBody =>
+      'Szeretnéd belefoglalni az OpenAI API kulcsot az exportált fájlba?\n\nFigyelem: ez a kulcsot olvasható (plain text) formában menti.';
+
+  @override
+  String get exportWithoutApiKeyButton => 'API kulcs nélkül';
+
+  @override
+  String get exportWithApiKeyButton => 'API kulccsal';
+
+  @override
+  String get importApiKeyDetectedDialogTitle =>
+      'API kulcs található a mentésben';
+
+  @override
+  String get importApiKeyDetectedDialogBody =>
+      'Ez a mentés tartalmaz OpenAI API kulcsot. Felülírjuk az eszközön lévő jelenlegi API kulcsot?';
+
+  @override
+  String get importOverwriteApiKeyButton => 'API kulcs felülírása';
+
+  @override
   String get exportCancelled => 'Az export megszakítva.';
 
   @override

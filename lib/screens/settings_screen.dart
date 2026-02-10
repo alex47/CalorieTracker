@@ -207,9 +207,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _exportData() async {
     final l10n = AppLocalizations.of(context)!;
+    final includeApiKey = await _confirmIncludeApiKeyInExport(l10n);
+    if (!mounted || includeApiKey == null) {
+      return;
+    }
+
     setState(() => _dataTransferBusy = true);
     try {
-      final path = await DataTransferService.instance.exportData();
+      final apiKey = includeApiKey ? await SettingsService.instance.getApiKey() : null;
+      final path = await DataTransferService.instance.exportData(
+        includeApiKey: includeApiKey,
+        apiKey: apiKey,
+      );
       if (!mounted) {
         return;
       }
@@ -250,6 +259,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
         return;
       }
+      if (summary.apiKeyFromBackup != null) {
+        final shouldOverwrite = await _confirmOverwriteApiKeyOnImport(
+          l10n: l10n,
+        );
+        if (!mounted) {
+          return;
+        }
+        if (shouldOverwrite == true) {
+          await SettingsService.instance.setApiKey(summary.apiKeyFromBackup!);
+          _apiKeyController.text = summary.apiKeyFromBackup!;
+        }
+      }
       await SettingsService.instance.initialize();
       if (!mounted) {
         return;
@@ -285,6 +306,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() => _dataTransferBusy = false);
       }
     }
+  }
+
+  Future<bool?> _confirmIncludeApiKeyInExport(AppLocalizations l10n) {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.exportIncludeApiKeyDialogTitle),
+        content: Text(l10n.exportIncludeApiKeyDialogBody),
+        actions: [
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext),
+            icon: const Icon(Icons.close),
+            label: Text(l10n.cancelButton),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            icon: const Icon(Icons.download),
+            label: Text(l10n.exportWithoutApiKeyButton),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.vpn_key),
+            label: Text(l10n.exportWithApiKeyButton),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _confirmOverwriteApiKeyOnImport({
+    required AppLocalizations l10n,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.importApiKeyDetectedDialogTitle),
+        content: Text(l10n.importApiKeyDetectedDialogBody),
+        actions: [
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            icon: const Icon(Icons.close),
+            label: Text(l10n.cancelButton),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.vpn_key),
+            label: Text(l10n.importOverwriteApiKeyButton),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

@@ -137,6 +137,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importDataButton => 'Import data';
 
   @override
+  String get exportIncludeApiKeyDialogTitle => 'Export API key?';
+
+  @override
+  String get exportIncludeApiKeyDialogBody =>
+      'Do you want to include your OpenAI API key in the exported file?\n\nWarning: this stores the key in plain text.';
+
+  @override
+  String get exportWithoutApiKeyButton => 'Without API key';
+
+  @override
+  String get exportWithApiKeyButton => 'With API key';
+
+  @override
+  String get importApiKeyDetectedDialogTitle => 'API key found in backup';
+
+  @override
+  String get importApiKeyDetectedDialogBody =>
+      'This backup contains an OpenAI API key. Do you want to overwrite the current API key on this device?';
+
+  @override
+  String get importOverwriteApiKeyButton => 'Overwrite API key';
+
+  @override
   String get exportCancelled => 'Export cancelled.';
 
   @override

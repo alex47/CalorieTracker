@@ -344,6 +344,48 @@ abstract class AppLocalizations {
   /// **'Import data'**
   String get importDataButton;
 
+  /// No description provided for @exportIncludeApiKeyDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export API key?'**
+  String get exportIncludeApiKeyDialogTitle;
+
+  /// No description provided for @exportIncludeApiKeyDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to include your OpenAI API key in the exported file?\n\nWarning: this stores the key in plain text.'**
+  String get exportIncludeApiKeyDialogBody;
+
+  /// No description provided for @exportWithoutApiKeyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Without API key'**
+  String get exportWithoutApiKeyButton;
+
+  /// No description provided for @exportWithApiKeyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'With API key'**
+  String get exportWithApiKeyButton;
+
+  /// No description provided for @importApiKeyDetectedDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'API key found in backup'**
+  String get importApiKeyDetectedDialogTitle;
+
+  /// No description provided for @importApiKeyDetectedDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This backup contains an OpenAI API key. Do you want to overwrite the current API key on this device?'**
+  String get importApiKeyDetectedDialogBody;
+
+  /// No description provided for @importOverwriteApiKeyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite API key'**
+  String get importOverwriteApiKeyButton;
+
   /// No description provided for @exportCancelled.
   ///
   /// In en, this message translates to:
