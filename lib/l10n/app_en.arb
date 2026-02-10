@@ -72,7 +72,6 @@
       "error": {}
     }
   },
-  "importCancelled": "Import cancelled.",
   "importSuccess": "Data imported: {entriesCount} entries, {itemsCount} food items.",
   "@importSuccess": {
     "placeholders": {

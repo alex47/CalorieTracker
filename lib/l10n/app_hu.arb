@@ -72,7 +72,6 @@
       "error": {}
     }
   },
-  "importCancelled": "Az import megszakítva.",
   "importSuccess": "Adatok importálva: {entriesCount} bejegyzés, {itemsCount} étel tétel.",
   "@importSuccess": {
     "placeholders": {

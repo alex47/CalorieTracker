@@ -176,9 +176,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get importCancelled => 'Import cancelled.';
-
-  @override
   String importSuccess(Object entriesCount, Object itemsCount) {
     return 'Data imported: $entriesCount entries, $itemsCount food items.';
   }

@@ -410,12 +410,6 @@ abstract class AppLocalizations {
   /// **'Export failed: {error}'**
   String exportFailed(Object error);
 
-  /// No description provided for @importCancelled.
-  ///
-  /// In en, this message translates to:
-  /// **'Import cancelled.'**
-  String get importCancelled;
-
   /// No description provided for @importSuccess.
   ///
   /// In en, this message translates to:
