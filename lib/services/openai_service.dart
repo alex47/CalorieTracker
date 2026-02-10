@@ -192,11 +192,14 @@ Rules:
     if (lastParseError != null) {
       throw AiParseException(
         'Failed to parse AI response after $maxAttempts attempts: ${lastParseError.message}',
-        rawResponseText: lastParseError.rawResponseText,
+        rawResponseText: lastParseError.rawResponseText ?? lastError?.toString(),
       );
     }
 
-    throw StateError('Failed to parse AI response after $maxAttempts attempts: $lastError');
+    throw AiParseException(
+      'Failed to parse AI response after $maxAttempts attempts: $lastError',
+      rawResponseText: lastError?.toString(),
+    );
   }
 
   bool _isNonRetriableRequestError(Object error) {
@@ -213,7 +216,7 @@ Rules:
     return message.contains('OpenAI request failed: 4');
   }
 
-  Future<Map<String, dynamic>> _sendRequest({
+  Future<_OpenAiResponsePayload> _sendRequest({
     required String model,
     required String languageCode,
     required String reasoningEffort,
@@ -274,7 +277,17 @@ Rules:
       throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
     }
 
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    try {
+      return _OpenAiResponsePayload(
+        parsedBody: jsonDecode(response.body) as Map<String, dynamic>,
+        rawBody: response.body,
+      );
+    } catch (_) {
+      throw AiParseException(
+        'Failed to parse AI response.',
+        rawResponseText: response.body,
+      );
+    }
   }
 
   String _languageNameEnglish(String languageCode) {
@@ -286,10 +299,15 @@ Rules:
     return lookupAppLocalizations(const Locale('en')).languageNameEnglish;
   }
 
-  Map<String, dynamic> _parseResponse(Map<String, dynamic> response) {
+  Map<String, dynamic> _parseResponse(_OpenAiResponsePayload responsePayload) {
+    final response = responsePayload.parsedBody;
+    final rawBody = responsePayload.rawBody;
     final content = _extractResponseText(response);
     if (content == null || content.isEmpty) {
-      throw const AiParseException('Empty content in response.');
+      throw AiParseException(
+        'Empty content in response.',
+        rawResponseText: rawBody,
+      );
     }
 
     Map<String, dynamic> parsed;
@@ -298,7 +316,7 @@ Rules:
     } catch (_) {
       throw AiParseException(
         'Failed to parse AI response.',
-        rawResponseText: content,
+        rawResponseText: content.isNotEmpty ? content : rawBody,
       );
     }
     final errorMessage = (parsed['error'] as String?)?.trim();
@@ -310,7 +328,7 @@ Rules:
     if (items == null || items.isEmpty) {
       throw AiParseException(
         'AI returned no items and no explanation.',
-        rawResponseText: content,
+        rawResponseText: content.isNotEmpty ? content : rawBody,
       );
     }
 
@@ -325,31 +343,31 @@ Rules:
       if (name.trim().isEmpty || amount.trim().isEmpty) {
         throw AiParseException(
           'Missing name or amount.',
-          rawResponseText: content,
+          rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
       if (calories is! num || calories <= 0) {
         throw AiParseException(
           'Missing or invalid calories.',
-          rawResponseText: content,
+          rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
       if (fat is! num || fat < 0) {
         throw AiParseException(
           'Missing or invalid fat.',
-          rawResponseText: content,
+          rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
       if (protein is! num || protein < 0) {
         throw AiParseException(
           'Missing or invalid protein.',
-          rawResponseText: content,
+          rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
       if (carbs is! num || carbs < 0) {
         throw AiParseException(
           'Missing or invalid carbs.',
-          rawResponseText: content,
+          rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
     }
@@ -379,4 +397,14 @@ Rules:
     }
     return null;
   }
+}
+
+class _OpenAiResponsePayload {
+  const _OpenAiResponsePayload({
+    required this.parsedBody,
+    required this.rawBody,
+  });
+
+  final Map<String, dynamic> parsedBody;
+  final String rawBody;
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_item.dart';
@@ -11,6 +10,7 @@ import '../utils/error_localizer.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
+import '../widgets/raw_ai_response_section.dart';
 import '../widgets/reestimate_dialog.dart';
 
 class FoodItemDetailScreen extends StatefulWidget {
@@ -147,52 +147,6 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     } finally {
       setState(() => _loading = false);
     }
-  }
-
-  Future<void> _showRawAiResponseDialog() async {
-    final l10n = AppLocalizations.of(context)!;
-    final responseText = _rawAiResponseText;
-    if (responseText == null || responseText.trim().isEmpty) {
-      return;
-    }
-
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AppDialog(
-        title: Text(l10n.aiResponseDialogTitle),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 320),
-          child: SingleChildScrollView(
-            child: SelectableText(responseText),
-          ),
-        ),
-        actionItems: [
-          DialogActionItem(
-            width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
-              onPressed: () async {
-                final messenger = ScaffoldMessenger.of(this.context);
-                await Clipboard.setData(ClipboardData(text: responseText));
-                if (mounted) {
-                  messenger.showSnackBar(
-                    SnackBar(content: Text(l10n.aiResponseCopiedMessage)),
-                  );
-                }
-              },
-              icon: const Icon(Icons.copy),
-              label: Text(l10n.copyAiResponseButton),
-            ),
-          ),
-          DialogActionItem(
-            width: UiConstants.buttonMinWidth,
-            child: FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(l10n.cancelButton),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _saveChanges() async {
@@ -343,10 +297,9 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     ),
                     if (_rawAiResponseText != null && _rawAiResponseText!.trim().isNotEmpty) ...[
                       const SizedBox(height: UiConstants.smallSpacing),
-                      TextButton.icon(
-                        onPressed: _showRawAiResponseDialog,
-                        icon: const Icon(Icons.article_outlined),
-                        label: Text(l10n.showAiResponseButton),
+                      RawAiResponseSection(
+                        title: l10n.showAiResponseButton,
+                        responseText: _rawAiResponseText!,
                       ),
                     ],
                   ],
