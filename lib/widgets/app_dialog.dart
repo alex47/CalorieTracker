@@ -50,12 +50,7 @@ class AppDialog extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     for (var i = 0; i < actionItems!.length; i++) ...[
-                      actionItems![i].width == null
-                          ? actionItems![i].child
-                          : SizedBox(
-                              width: actionItems![i].width,
-                              child: actionItems![i].child,
-                            ),
+                      actionItems![i].child,
                       if (i != actionItems!.length - 1)
                         SizedBox(height: actionSpacing),
                     ],
