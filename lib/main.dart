@@ -111,8 +111,10 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
           builder: (_) => AboutScreen(initialUpdateResult: result),
         ),
       );
-    } catch (_) {
-      // Startup update check is best-effort and should stay silent on failure.
+    } catch (error, stackTrace) {
+      // Startup update check is best-effort and should stay silent to users.
+      debugPrint('Startup update check failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
     }
   }
 
