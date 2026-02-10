@@ -78,10 +78,11 @@ class DataTransferService {
       extensions: ['json'],
     );
     final encoded = const JsonEncoder.withIndent('  ').convert(payload);
+    final encodedBytes = utf8.encode(encoded);
     if (Platform.isAndroid || Platform.isIOS) {
       return _exportWithAndroidSaveDialog(
         fileName: fileName,
-        encodedJson: encoded,
+        encodedJsonBytes: encodedBytes,
       );
     }
 
@@ -94,7 +95,7 @@ class DataTransferService {
     }
     final targetPath = location.path;
     final file = File(targetPath);
-    await file.writeAsString(encoded);
+    await file.writeAsBytes(encodedBytes, flush: true);
     return targetPath;
   }
 
@@ -109,7 +110,8 @@ class DataTransferService {
       return null;
     }
 
-    final rawJson = await file.readAsString();
+    final rawBytes = await file.readAsBytes();
+    final rawJson = utf8.decode(rawBytes);
     final decoded = jsonDecode(rawJson);
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Invalid backup format.');
@@ -251,11 +253,11 @@ class DataTransferService {
 
   Future<String?> _exportWithAndroidSaveDialog({
     required String fileName,
-    required String encodedJson,
+    required List<int> encodedJsonBytes,
   }) async {
     final tempDir = await getTemporaryDirectory();
     final sourceFile = File('${tempDir.path}/$fileName');
-    await sourceFile.writeAsString(encodedJson);
+    await sourceFile.writeAsBytes(encodedJsonBytes, flush: true);
     try {
       final savedPath = await FlutterFileDialog.saveFile(
         params: SaveFileDialogParams(
