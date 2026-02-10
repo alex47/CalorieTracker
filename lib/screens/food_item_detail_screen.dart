@@ -6,9 +6,9 @@ import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
-import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/reestimate_dialog.dart';
@@ -158,7 +158,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => AppDialog(
         title: Text(l10n.aiResponseDialogTitle),
         content: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 320),
@@ -166,23 +166,29 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             child: SelectableText(responseText),
           ),
         ),
-        actions: [
-          TextButton.icon(
-            onPressed: () async {
-              final messenger = ScaffoldMessenger.of(this.context);
-              await Clipboard.setData(ClipboardData(text: responseText));
-              if (mounted) {
-                messenger.showSnackBar(
-                  SnackBar(content: Text(l10n.aiResponseCopiedMessage)),
-                );
-              }
-            },
-            icon: const Icon(Icons.copy),
-            label: Text(l10n.copyAiResponseButton),
+        actionItems: [
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(this.context);
+                await Clipboard.setData(ClipboardData(text: responseText));
+                if (mounted) {
+                  messenger.showSnackBar(
+                    SnackBar(content: Text(l10n.aiResponseCopiedMessage)),
+                  );
+                }
+              },
+              icon: const Icon(Icons.copy),
+              label: Text(l10n.copyAiResponseButton),
+            ),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancelButton),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancelButton),
+            ),
           ),
         ],
       ),
@@ -222,36 +228,25 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-              side: const BorderSide(
-                color: AppColors.dialogBorder,
-              ),
-            ),
+          builder: (context) => AppDialog(
             title: Text(l10n.deleteItemTitle),
             content: Text(l10n.deleteItemConfirmMessage),
-            actions: [
-              DialogActionRow(
-                alignment: MainAxisAlignment.end,
-                items: [
-                  DialogActionItem(
-                    width: UiConstants.buttonMinWidth,
-                    child: FilledButton.icon(
-                      onPressed: () => Navigator.pop(context, false),
-                      icon: const Icon(Icons.close),
-                      label: Text(l10n.cancelButton, textAlign: TextAlign.center),
-                    ),
-                  ),
-                  DialogActionItem(
-                    width: UiConstants.buttonMinWidth,
-                    child: FilledButton.icon(
-                      onPressed: () => Navigator.pop(context, true),
-                      icon: const Icon(Icons.delete),
-                      label: Text(l10n.deleteButton, textAlign: TextAlign.center),
-                    ),
-                  ),
-                ],
+            actionItems: [
+              DialogActionItem(
+                width: UiConstants.buttonMinWidth,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.pop(context, true),
+                  icon: const Icon(Icons.delete),
+                  label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+                ),
+              ),
+              DialogActionItem(
+                width: UiConstants.buttonMinWidth,
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.pop(context, false),
+                  icon: const Icon(Icons.close),
+                  label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                ),
               ),
             ],
           ),

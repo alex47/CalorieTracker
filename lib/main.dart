@@ -13,6 +13,8 @@ import 'services/settings_service.dart';
 import 'services/update_coordinator.dart';
 import 'theme/app_colors.dart';
 import 'theme/ui_constants.dart';
+import 'widgets/app_dialog.dart';
+import 'widgets/dialog_action_row.dart';
 
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -72,7 +74,7 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
       final openAbout = await showDialog<bool>(
             context: popupContext,
             builder: (dialogContext) {
-              return AlertDialog(
+              return AppDialog(
                 title: Text(l10n.updateAvailableDialogTitle),
                 content: Text(
                   l10n.updateAvailableDialogBody(
@@ -80,15 +82,21 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
                     result.currentVersion,
                   ),
                 ),
-                actions: [
-                  FilledButton(
-                    onPressed: () => Navigator.pop(dialogContext, false),
-                    child: Text(l10n.updateAvailableDialogLater),
+                actionItems: [
+                  DialogActionItem(
+                    width: UiConstants.buttonMinWidth,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(dialogContext, false),
+                      child: Text(l10n.updateAvailableDialogLater),
+                    ),
                   ),
-                  FilledButton.icon(
-                    onPressed: () => Navigator.pop(dialogContext, true),
-                    icon: const Icon(Icons.info_outline),
-                    label: Text(l10n.updateAvailableDialogView),
+                  DialogActionItem(
+                    width: UiConstants.buttonMinWidth,
+                    child: FilledButton.icon(
+                      onPressed: () => Navigator.pop(dialogContext, true),
+                      icon: const Icon(Icons.info_outline),
+                      label: Text(l10n.updateAvailableDialogView),
+                    ),
                   ),
                 ],
               );
