@@ -254,9 +254,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
       if (summary == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importCancelled)),
-        );
         return;
       }
       if (summary.apiKeyFromBackup != null) {
