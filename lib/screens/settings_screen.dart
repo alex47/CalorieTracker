@@ -119,7 +119,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _autosaveTimer?.cancel();
     _autosaveTimer = Timer(
       AppDefaults.settingsAutosaveDebounce,
-      () => _saveNonSensitiveSettings(),
+      () async {
+        try {
+          await _saveNonSensitiveSettings();
+        } catch (error, stackTrace) {
+          debugPrint('Settings autosave failed: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        }
+      },
     );
   }
 
