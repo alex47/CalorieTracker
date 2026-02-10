@@ -248,7 +248,6 @@ class _AboutScreenState extends State<AboutScreen> {
                   ),
                 ),
                 const SizedBox(height: UiConstants.largeSpacing),
-                const SizedBox(height: UiConstants.smallSpacing),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
