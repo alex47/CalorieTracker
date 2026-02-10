@@ -171,7 +171,9 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             controller: _pageController,
             itemCount: _maxPage + 1,
             onPageChanged: (page) {
-              _selectedPage = page;
+              setState(() {
+                _selectedPage = page;
+              });
             },
             itemBuilder: (context, page) {
             final weekStart = _weekStartForPage(page);
