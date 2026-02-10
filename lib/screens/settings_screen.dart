@@ -326,11 +326,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       } catch (error) {
-        await DataTransferService.instance.applyImportData(rollbackPayload);
-        if (previousApiKey == null || previousApiKey.trim().isEmpty) {
-          await SettingsService.instance.clearApiKey();
-        } else {
-          await SettingsService.instance.setApiKey(previousApiKey);
+        Object? rollbackError;
+        try {
+          await DataTransferService.instance.applyImportData(rollbackPayload);
+          if (previousApiKey == null || previousApiKey.trim().isEmpty) {
+            await SettingsService.instance.clearApiKey();
+          } else {
+            await SettingsService.instance.setApiKey(previousApiKey);
+          }
+        } catch (restoreError) {
+          rollbackError = restoreError;
+        }
+
+        if (rollbackError != null) {
+          throw StateError(
+            'Import failed and automatic restore also failed. '
+            'Import error: $error. Restore error: $rollbackError',
+          );
         }
         rethrow;
       }
