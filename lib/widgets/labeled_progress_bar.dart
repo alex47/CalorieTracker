@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
 
@@ -33,7 +34,7 @@ class LabeledProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = goal > 0 ? (value / goal).clamp(0.0, 1.0) : 0.0;
     final isOverGoal = value > goal;
-    final stripedFillColor = color.withValues(alpha: 0.42);
+    final stripedFillColor = color.withValues(alpha: AppColors.progressFillAlpha);
     final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
     final borderColor = color;
 

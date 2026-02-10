@@ -21,4 +21,5 @@ class AppColors {
   static const dialogBorder = Color(0x33CBCBCB);
   static const progressFillOverlay = Color(0x47FFFFFF);
   static const progressTrackOverlay = Color(0x99FFFFFF);
+  static const progressFillAlpha = 0.28;
 }
