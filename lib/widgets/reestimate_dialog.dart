@@ -21,7 +21,6 @@ Future<String?> showReestimateDialog(
               padding: const EdgeInsets.only(top: UiConstants.mediumSpacing),
               child: SizedBox(
                 width: UiConstants.reestimateDialogWidth,
-                height: UiConstants.reestimateDialogHeight,
                 child: TextField(
                   controller: controller,
                   autofocus: true,
@@ -32,8 +31,7 @@ Future<String?> showReestimateDialog(
                     floatingLabelBehavior: FloatingLabelBehavior.always,
                     border: const OutlineInputBorder(),
                   ),
-                  expands: true,
-                  minLines: null,
+                  minLines: 3,
                   maxLines: null,
                 ),
               ),
