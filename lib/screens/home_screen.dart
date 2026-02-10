@@ -241,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
           child: FilledButton.icon(
             onPressed: _navigateToAdd,
             icon: const Icon(Icons.add),
-            label: Text(l10n.addButton),
+            label: Text(l10n.addButton, textAlign: TextAlign.center),
           ),
         ),
         body: ScrollConfiguration(

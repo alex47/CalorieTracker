@@ -86,7 +86,7 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
                     width: UiConstants.buttonMinWidth,
                     child: FilledButton(
                       onPressed: () => Navigator.pop(dialogContext, false),
-                      child: Text(l10n.updateAvailableDialogLater),
+                      child: Text(l10n.updateAvailableDialogLater, textAlign: TextAlign.center),
                     ),
                   ),
                   DialogActionItem(
@@ -94,7 +94,7 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
                     child: FilledButton.icon(
                       onPressed: () => Navigator.pop(dialogContext, true),
                       icon: const Icon(Icons.info_outline),
-                      label: Text(l10n.updateAvailableDialogView),
+                      label: Text(l10n.updateAvailableDialogView, textAlign: TextAlign.center),
                     ),
                   ),
                 ],

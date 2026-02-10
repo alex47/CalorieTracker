@@ -373,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, true),
               icon: const Icon(Icons.vpn_key),
-              label: Text(l10n.exportWithApiKeyButton),
+              label: Text(l10n.exportWithApiKeyButton, textAlign: TextAlign.center),
             ),
           ),
           DialogActionItem(
@@ -381,7 +381,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, false),
               icon: const Icon(Icons.download),
-              label: Text(l10n.exportWithoutApiKeyButton),
+              label: Text(l10n.exportWithoutApiKeyButton, textAlign: TextAlign.center),
             ),
           ),
           DialogActionItem(
@@ -389,7 +389,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
-              label: Text(l10n.cancelButton),
+              label: Text(l10n.cancelButton, textAlign: TextAlign.center),
             ),
           ),
         ],
@@ -411,7 +411,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, true),
               icon: const Icon(Icons.vpn_key),
-              label: Text(l10n.importOverwriteApiKeyButton),
+              label: Text(l10n.importOverwriteApiKeyButton, textAlign: TextAlign.center),
             ),
           ),
           DialogActionItem(
@@ -419,7 +419,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, false),
               icon: const Icon(Icons.lock_open),
-              label: Text(l10n.importKeepCurrentApiKeyButton),
+              label: Text(l10n.importKeepCurrentApiKeyButton, textAlign: TextAlign.center),
             ),
           ),
           DialogActionItem(
@@ -427,7 +427,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
-              label: Text(l10n.cancelButton),
+              label: Text(l10n.cancelButton, textAlign: TextAlign.center),
             ),
           ),
         ],
