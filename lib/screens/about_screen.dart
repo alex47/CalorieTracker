@@ -238,7 +238,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   l10n.versionLabel(version),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const SizedBox(height: UiConstants.largeSpacing),
+                const SizedBox(height: UiConstants.buttonSpacing),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -247,7 +247,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     label: Text(l10n.githubRepositoryButton, textAlign: TextAlign.center),
                   ),
                 ),
-                const SizedBox(height: UiConstants.largeSpacing),
+                const SizedBox(height: UiConstants.buttonSpacing),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -273,7 +273,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         : l10n.upToDateStatus(_updateResult!.currentVersion),
                   ),
                   if (_updateResult!.updateAvailable) ...[
-                    const SizedBox(height: UiConstants.smallSpacing),
+                    const SizedBox(height: UiConstants.buttonSpacing),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
@@ -289,7 +289,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       ),
                     ),
                     if (_installingUpdate) ...[
-                      const SizedBox(height: UiConstants.smallSpacing),
+                      const SizedBox(height: UiConstants.buttonSpacing),
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(

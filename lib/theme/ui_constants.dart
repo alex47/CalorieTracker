@@ -18,6 +18,7 @@ class UiConstants {
 
   static const double cornerRadius = 6;
   static const double buttonMinWidth = 110;
+  static const double buttonSpacing = smallSpacing;
   static const double metricGroupMinWidth = 100;
   static const double reestimateDialogWidth = 460;
   static const double reestimateDialogHeight = 180;

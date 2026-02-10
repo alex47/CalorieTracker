@@ -17,7 +17,7 @@ class AppDialog extends StatelessWidget {
     this.actionItems,
     this.actionAxis = Axis.vertical,
     this.actionAlignment = MainAxisAlignment.end,
-    this.actionSpacing = UiConstants.smallSpacing,
+    this.actionSpacing = UiConstants.buttonSpacing,
   });
 
   final Widget? title;

@@ -214,7 +214,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       label: Text(l10n.cancelButton, textAlign: TextAlign.center),
                     ),
                   ),
-                  const SizedBox(width: UiConstants.smallSpacing),
+                  const SizedBox(width: UiConstants.buttonSpacing),
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: isBusy ? null : _saveEntry,

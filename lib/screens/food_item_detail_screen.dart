@@ -315,7 +315,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                   label: Text(l10n.copyToTodayButton, textAlign: TextAlign.center),
                 ),
               ),
-              const SizedBox(height: UiConstants.smallSpacing),
+              const SizedBox(height: UiConstants.buttonSpacing),
             ],
             Row(
               children: [
@@ -326,7 +326,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     label: Text(l10n.deleteButton, textAlign: TextAlign.center),
                   ),
                 ),
-                const SizedBox(width: UiConstants.smallSpacing),
+                const SizedBox(width: UiConstants.buttonSpacing),
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _reestimateItem,
@@ -337,7 +337,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               ],
             ),
             if (_dirty) ...[
-              const SizedBox(height: UiConstants.smallSpacing),
+              const SizedBox(height: UiConstants.buttonSpacing),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(

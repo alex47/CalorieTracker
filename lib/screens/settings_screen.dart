@@ -656,7 +656,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.download),
             label: Text(l10n.exportDataButton, textAlign: TextAlign.center),
           ),
-          const SizedBox(height: UiConstants.smallSpacing),
+          const SizedBox(height: UiConstants.buttonSpacing),
           FilledButton.icon(
             onPressed: isAnyBusy ? null : _importData,
             icon: const Icon(Icons.upload),

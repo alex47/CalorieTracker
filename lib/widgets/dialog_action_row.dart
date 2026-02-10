@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/ui_constants.dart';
+
 class DialogActionItem {
   const DialogActionItem({
     required this.child,
@@ -14,7 +16,7 @@ class DialogActionRow extends StatelessWidget {
   const DialogActionRow({
     super.key,
     required this.items,
-    this.spacing = 8,
+    this.spacing = UiConstants.buttonSpacing,
     this.alignment = MainAxisAlignment.end,
   });
 
