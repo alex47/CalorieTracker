@@ -33,6 +33,14 @@ class _AboutScreenState extends State<AboutScreen> {
   bool _installingUpdate = false;
   double? _downloadProgress;
   UpdateCheckResult? _updateResult;
+  HttpClient? _activeDownloadClient;
+  bool _downloadCancelledByUser = false;
+
+  @override
+  void dispose() {
+    _activeDownloadClient?.close(force: true);
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -103,6 +111,8 @@ class _AboutScreenState extends State<AboutScreen> {
     });
     try {
       final client = HttpClient();
+      _activeDownloadClient = client;
+      _downloadCancelledByUser = false;
       final response = await client.getUrl(Uri.parse(url)).then((request) => request.close());
       if (response.statusCode >= 400) {
         client.close(force: true);
@@ -121,19 +131,32 @@ class _AboutScreenState extends State<AboutScreen> {
         fileName: fileName,
       );
     } catch (error) {
+      if (_downloadCancelledByUser) {
+        return;
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.updateInstallFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
+      _activeDownloadClient = null;
       if (mounted) {
         setState(() {
           _installingUpdate = false;
           _downloadProgress = null;
+          _downloadCancelledByUser = false;
         });
       }
     }
+  }
+
+  void _cancelDownload() {
+    if (!_installingUpdate) {
+      return;
+    }
+    _downloadCancelledByUser = true;
+    _activeDownloadClient?.close(force: true);
   }
 
   Future<Uint8List> _collectDownloadBytes(
@@ -266,6 +289,17 @@ class _AboutScreenState extends State<AboutScreen> {
                             : Text(l10n.installLatestApkButton, textAlign: TextAlign.center),
                       ),
                     ),
+                    if (_installingUpdate) ...[
+                      const SizedBox(height: UiConstants.smallSpacing),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _cancelDownload,
+                          icon: const Icon(Icons.close),
+                          label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                        ),
+                      ),
+                    ],
                     if (_installingUpdate) ...[
                       const SizedBox(height: UiConstants.smallSpacing),
                       LinearProgressIndicator(value: _downloadProgress),
