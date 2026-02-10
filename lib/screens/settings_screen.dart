@@ -313,24 +313,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.exportIncludeApiKeyDialogTitle),
-        content: Text(l10n.exportIncludeApiKeyDialogBody),
-        actions: [
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(dialogContext),
-            icon: const Icon(Icons.close),
-            label: Text(l10n.cancelButton),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            icon: const Icon(Icons.download),
-            label: Text(l10n.exportWithoutApiKeyButton),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            icon: const Icon(Icons.vpn_key),
-            label: Text(l10n.exportWithApiKeyButton),
-          ),
-        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.exportIncludeApiKeyDialogBody),
+            const SizedBox(height: UiConstants.mediumSpacing),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              icon: const Icon(Icons.vpn_key),
+              label: Text(l10n.exportWithApiKeyButton),
+            ),
+            const SizedBox(height: UiConstants.smallSpacing),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              icon: const Icon(Icons.download),
+              label: Text(l10n.exportWithoutApiKeyButton),
+            ),
+            const SizedBox(height: UiConstants.smallSpacing),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext),
+              icon: const Icon(Icons.close),
+              label: Text(l10n.cancelButton),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -342,19 +349,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.importApiKeyDetectedDialogTitle),
-        content: Text(l10n.importApiKeyDetectedDialogBody),
-        actions: [
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            icon: const Icon(Icons.close),
-            label: Text(l10n.cancelButton),
-          ),
-          FilledButton.icon(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            icon: const Icon(Icons.vpn_key),
-            label: Text(l10n.importOverwriteApiKeyButton),
-          ),
-        ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(l10n.importApiKeyDetectedDialogBody),
+            const SizedBox(height: UiConstants.mediumSpacing),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              icon: const Icon(Icons.vpn_key),
+              label: Text(l10n.importOverwriteApiKeyButton),
+            ),
+            const SizedBox(height: UiConstants.smallSpacing),
+            FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              icon: const Icon(Icons.close),
+              label: Text(l10n.cancelButton),
+            ),
+          ],
+        ),
       ),
     );
   }
