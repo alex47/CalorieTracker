@@ -204,8 +204,13 @@ Rules:
       return false;
     }
     final message = error.message.toString();
-    return message.contains('OpenAI request failed: 4') ||
-        message.startsWith(aiSaysErrorPrefix);
+    if (message.startsWith(aiSaysErrorPrefix)) {
+      return true;
+    }
+    if (message.contains('OpenAI request failed: 429')) {
+      return false;
+    }
+    return message.contains('OpenAI request failed: 4');
   }
 
   Future<Map<String, dynamic>> _sendRequest({
