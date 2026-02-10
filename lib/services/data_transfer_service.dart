@@ -201,13 +201,18 @@ class DataTransferService {
     final tempDir = await getTemporaryDirectory();
     final sourceFile = File('${tempDir.path}/$fileName');
     await sourceFile.writeAsString(encodedJson);
-
-    final savedPath = await FlutterFileDialog.saveFile(
-      params: SaveFileDialogParams(
-        sourceFilePath: sourceFile.path,
-        mimeTypesFilter: const ['application/json'],
-      ),
-    );
-    return savedPath;
+    try {
+      final savedPath = await FlutterFileDialog.saveFile(
+        params: SaveFileDialogParams(
+          sourceFilePath: sourceFile.path,
+          mimeTypesFilter: const ['application/json'],
+        ),
+      );
+      return savedPath;
+    } finally {
+      if (await sourceFile.exists()) {
+        await sourceFile.delete();
+      }
+    }
   }
 }
