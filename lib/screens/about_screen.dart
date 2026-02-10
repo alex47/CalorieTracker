@@ -33,6 +33,7 @@ class _AboutScreenState extends State<AboutScreen> {
   bool _installingUpdate = false;
   double? _downloadProgress;
   UpdateCheckResult? _updateResult;
+  late final Future<PackageInfo> _packageInfoFuture;
   HttpClient? _activeDownloadClient;
   bool _downloadCancelledByUser = false;
 
@@ -45,6 +46,7 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   void initState() {
     super.initState();
+    _packageInfoFuture = PackageInfo.fromPlatform();
     _updateResult = widget.initialUpdateResult ?? UpdateCoordinator.instance.latestResult;
   }
 
@@ -223,7 +225,7 @@ class _AboutScreenState extends State<AboutScreen> {
           child: Padding(
             padding: const EdgeInsets.all(UiConstants.pagePadding),
             child: FutureBuilder<PackageInfo>(
-              future: PackageInfo.fromPlatform(),
+              future: _packageInfoFuture,
               builder: (context, snapshot) {
                 final version = snapshot.data?.version ?? '...';
                 return Column(
