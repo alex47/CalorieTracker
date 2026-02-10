@@ -278,12 +278,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
         overwriteApiKey = shouldOverwrite;
       }
+      if (overwriteApiKey) {
+        await SettingsService.instance.setApiKey(payload.apiKeyFromBackup!);
+      }
       final summary = await DataTransferService.instance.applyImportData(payload);
       if (!mounted) {
         return;
       }
       if (overwriteApiKey) {
-        await SettingsService.instance.setApiKey(payload.apiKeyFromBackup!);
         _apiKeyController.text = payload.apiKeyFromBackup!;
       }
       await SettingsService.instance.initialize();
