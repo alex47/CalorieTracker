@@ -46,36 +46,35 @@ class LabeledProgressBar extends StatelessWidget {
       textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: borderColor),
       backgroundColor: Colors.transparent,
       contentPadding: EdgeInsets.zero,
-      child: SizedBox(
-        height: height,
-            child: Stack(
-              alignment: Alignment.centerLeft,
-              children: [
-                AnimatedFractionallySizedBox(
-                  duration: animationDuration,
-                  curve: Curves.easeOutCubic,
-                  widthFactor: progress,
-                  child: SizedBox(
-                    height: height,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          DecoratedBox(
-                            decoration: BoxDecoration(color: fillColor),
-                          ),
-                          if (isOverGoal)
-                            CustomPaint(
-                              painter: _DiagonalStripePainter(
-                                stripeColor: stripedFillColor,
-                              ),
-                            ),
-                        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+        child: SizedBox(
+          height: height,
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              AnimatedFractionallySizedBox(
+                duration: animationDuration,
+                curve: Curves.easeOutCubic,
+                widthFactor: progress,
+                child: SizedBox(
+                  height: height,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(color: fillColor),
                       ),
-                    ),
+                      if (isOverGoal)
+                        CustomPaint(
+                          painter: _DiagonalStripePainter(
+                            stripeColor: stripedFillColor,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
+              ),
             SizedBox(
               height: height,
               child: Center(
@@ -85,7 +84,8 @@ class LabeledProgressBar extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
