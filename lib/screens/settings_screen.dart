@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
@@ -497,6 +498,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             enabled: !isAnyBusy,
             obscureText: true,
             contentHeight: UiConstants.settingsFieldHeight,
+            suffixIcon: IconButton(
+              onPressed: isAnyBusy
+                  ? null
+                  : () async {
+                      final text = _apiKeyController.text.trim();
+                      if (text.isEmpty) {
+                        return;
+                      }
+                      await Clipboard.setData(ClipboardData(text: text));
+                    },
+              icon: const Icon(Icons.copy),
+            ),
           ),
           const SizedBox(height: UiConstants.mediumSpacing),
           FilledButton.icon(

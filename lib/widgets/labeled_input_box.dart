@@ -16,6 +16,7 @@ class LabeledInputBox extends StatelessWidget {
     this.contentHeight = UiConstants.progressBarHeight,
     this.borderColor,
     this.textColor,
+    this.suffixIcon,
   });
 
   final String label;
@@ -27,6 +28,7 @@ class LabeledInputBox extends StatelessWidget {
   final double contentHeight;
   final Color? borderColor;
   final Color? textColor;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -55,15 +57,16 @@ class LabeledInputBox extends StatelessWidget {
           maxLines: 1,
           textAlignVertical: TextAlignVertical.center,
           style: textStyle,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             isDense: true,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             disabledBorder: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(
+            contentPadding: const EdgeInsets.symmetric(
               vertical: UiConstants.xSmallSpacing,
             ),
+            suffixIcon: suffixIcon,
           ),
         ),
       ),
