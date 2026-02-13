@@ -34,6 +34,7 @@
   "emptyEntriesHint": "No entries for this day yet. Tap Add to log food.",
   "noEntriesForWeek": "No entries for this week.",
   "openAiSectionTitle": "OpenAI",
+  "generalSectionTitle": "General",
   "languageLabel": "Language",
   "languageNameNative": "English",
   "languageNameEnglish": "English",

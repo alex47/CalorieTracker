@@ -437,7 +437,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
           Text(
-            l10n.openAiSectionTitle,
+            l10n.generalSectionTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: headerToContentSpacing),
@@ -465,7 +465,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
           ),
-          const SizedBox(height: controlSpacing),
+          const SizedBox(height: sectionSpacing),
+          Text(
+            l10n.openAiSectionTitle,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: headerToContentSpacing),
           LabeledInputBox(
             label: l10n.openAiApiKeyLabel,
             controller: _apiKeyController,

@@ -34,6 +34,7 @@
   "emptyEntriesHint": "Erre a napra még nincs bejegyzés. Koppints a Hozzáadás gombra.",
   "noEntriesForWeek": "Erre a hétre nincs bejegyzés.",
   "openAiSectionTitle": "OpenAI",
+  "generalSectionTitle": "Általános",
   "languageLabel": "Nyelv",
   "languageNameNative": "Magyar",
   "languageNameEnglish": "Hungarian",
