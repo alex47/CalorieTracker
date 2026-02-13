@@ -16,7 +16,7 @@ class CalorieDeficitService {
     final isMale = profile.sex == 'male';
     final base = (10 * profile.weightKg) + (6.25 * profile.heightCm) - (5 * profile.age);
     final bmr = base + (isMale ? 5 : -161);
-    final factor = _activityFactors[profile.activityLevel] ?? _activityFactors['moderate']!;
+    final factor = _activityFactors[profile.activityLevel] ?? _activityFactors['bmr']!;
     return (bmr * factor).round();
   }
 

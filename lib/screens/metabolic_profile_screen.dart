@@ -24,7 +24,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   final TextEditingController _weightController = TextEditingController();
   Timer? _autosaveTimer;
   String _selectedSex = 'male';
-  String _selectedActivityLevel = 'moderate';
+  String _selectedActivityLevel = 'bmr';
   String _selectedMacroPresetKey = _MacroRatioPreset.balancedDefaultKey;
 
   static const List<_MacroRatioPreset> _macroRatioPresets = [

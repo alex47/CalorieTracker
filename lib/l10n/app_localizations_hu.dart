@@ -187,17 +187,7 @@ class AppLocalizationsHu extends AppLocalizations {
       'Állítsd be az anyagcsere profilodat a kalóriadeficit követéséhez.';
 
   @override
-  String dailyDeficitLabel(Object deficit) {
-    return 'Napi deficit: $deficit kcal';
-  }
-
-  @override
   String get dailyDeficitTitle => 'Napi deficit';
-
-  @override
-  String maintenanceCaloriesLabel(Object calories) {
-    return 'Fenntartó: $calories kcal/nap';
-  }
 
   @override
   String get dataToolsSectionTitle => 'Adateszközök';

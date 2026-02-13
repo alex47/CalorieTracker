@@ -245,6 +245,20 @@ class DataTransferService {
       _requireOptionalNum(profile, 'protein_ratio_percent', table: 'metabolic_profile_history');
       _requireOptionalNum(profile, 'carbs_ratio_percent', table: 'metabolic_profile_history');
       _requireString(profile, 'created_at', table: 'metabolic_profile_history');
+      _validateMacroRatios(profile);
+    }
+  }
+
+  void _validateMacroRatios(Map<String, dynamic> row) {
+    final fat = (row['fat_ratio_percent'] as num?)?.round() ?? 30;
+    final protein = (row['protein_ratio_percent'] as num?)?.round() ?? 30;
+    final carbs = (row['carbs_ratio_percent'] as num?)?.round() ?? 40;
+    final values = [fat, protein, carbs];
+    if (values.any((v) => v < 0 || v > 100)) {
+      throw const FormatException('Invalid macro ratio range in backup payload.');
+    }
+    if (fat + protein + carbs != 100) {
+      throw const FormatException('Macro ratios in backup payload must sum to 100.');
     }
   }
 

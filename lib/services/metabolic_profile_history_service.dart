@@ -105,15 +105,26 @@ class MetabolicProfileHistoryService {
   }
 
   MetabolicProfile _profileFromRow(Map<String, Object?> row) {
+    final fatRatio = ((row['fat_ratio_percent'] as num?)?.round()) ?? 30;
+    final proteinRatio = ((row['protein_ratio_percent'] as num?)?.round()) ?? 30;
+    final carbsRatio = ((row['carbs_ratio_percent'] as num?)?.round()) ?? 40;
+    final validRatios = fatRatio >= 0 &&
+        fatRatio <= 100 &&
+        proteinRatio >= 0 &&
+        proteinRatio <= 100 &&
+        carbsRatio >= 0 &&
+        carbsRatio <= 100 &&
+        (fatRatio + proteinRatio + carbsRatio == 100);
+
     return MetabolicProfile(
       age: (row['age'] as int?) ?? 0,
       sex: (row['sex'] as String?) ?? 'male',
       heightCm: (row['height_cm'] as num?)?.toDouble() ?? 0,
       weightKg: (row['weight_kg'] as num?)?.toDouble() ?? 0,
-      activityLevel: (row['activity_level'] as String?) ?? 'moderate',
-      fatRatioPercent: ((row['fat_ratio_percent'] as num?)?.round()) ?? 30,
-      proteinRatioPercent: ((row['protein_ratio_percent'] as num?)?.round()) ?? 30,
-      carbsRatioPercent: ((row['carbs_ratio_percent'] as num?)?.round()) ?? 40,
+      activityLevel: (row['activity_level'] as String?) ?? 'bmr',
+      fatRatioPercent: validRatios ? fatRatio : 30,
+      proteinRatioPercent: validRatios ? proteinRatio : 30,
+      carbsRatioPercent: validRatios ? carbsRatio : 40,
     );
   }
 

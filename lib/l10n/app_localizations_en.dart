@@ -185,17 +185,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Set your metabolic profile to track calorie deficit.';
 
   @override
-  String dailyDeficitLabel(Object deficit) {
-    return 'Daily deficit: $deficit kcal';
-  }
-
-  @override
   String get dailyDeficitTitle => 'Daily deficit';
-
-  @override
-  String maintenanceCaloriesLabel(Object calories) {
-    return 'Maintenance: $calories kcal/day';
-  }
 
   @override
   String get dataToolsSectionTitle => 'Data tools';

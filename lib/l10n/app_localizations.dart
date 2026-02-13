@@ -434,23 +434,11 @@ abstract class AppLocalizations {
   /// **'Set your metabolic profile to track calorie deficit.'**
   String get setMetabolicProfileHint;
 
-  /// No description provided for @dailyDeficitLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily deficit: {deficit} kcal'**
-  String dailyDeficitLabel(Object deficit);
-
   /// No description provided for @dailyDeficitTitle.
   ///
   /// In en, this message translates to:
   /// **'Daily deficit'**
   String get dailyDeficitTitle;
-
-  /// No description provided for @maintenanceCaloriesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Maintenance: {calories} kcal/day'**
-  String maintenanceCaloriesLabel(Object calories);
 
   /// No description provided for @dataToolsSectionTitle.
   ///

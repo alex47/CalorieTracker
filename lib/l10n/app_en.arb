@@ -66,19 +66,7 @@
   "activityActive": "Active",
   "activityVeryActive": "Very active",
   "setMetabolicProfileHint": "Set your metabolic profile to track calorie deficit.",
-  "dailyDeficitLabel": "Daily deficit: {deficit} kcal",
-  "@dailyDeficitLabel": {
-    "placeholders": {
-      "deficit": {}
-    }
-  },
   "dailyDeficitTitle": "Daily deficit",
-  "maintenanceCaloriesLabel": "Maintenance: {calories} kcal/day",
-  "@maintenanceCaloriesLabel": {
-    "placeholders": {
-      "calories": {}
-    }
-  },
   "dataToolsSectionTitle": "Data tools",
   "exportDataButton": "Export data",
   "importDataButton": "Import data",

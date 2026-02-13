@@ -66,19 +66,7 @@
   "activityActive": "Aktív",
   "activityVeryActive": "Nagyon aktív",
   "setMetabolicProfileHint": "Állítsd be az anyagcsere profilodat a kalóriadeficit követéséhez.",
-  "dailyDeficitLabel": "Napi deficit: {deficit} kcal",
-  "@dailyDeficitLabel": {
-    "placeholders": {
-      "deficit": {}
-    }
-  },
   "dailyDeficitTitle": "Napi deficit",
-  "maintenanceCaloriesLabel": "Fenntartó: {calories} kcal/nap",
-  "@maintenanceCaloriesLabel": {
-    "placeholders": {
-      "calories": {}
-    }
-  },
   "dataToolsSectionTitle": "Adateszközök",
   "exportDataButton": "Adatok exportálása",
   "importDataButton": "Adatok importálása",
