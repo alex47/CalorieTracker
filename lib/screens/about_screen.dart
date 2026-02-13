@@ -243,7 +243,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : () => _openRepo(context),
-                    icon: const Icon(Icons.open_in_new),
+                    icon: const Icon(Icons.open_in_new_outlined),
                     label: Text(l10n.githubRepositoryButton, textAlign: TextAlign.center),
                   ),
                 ),
@@ -252,7 +252,7 @@ class _AboutScreenState extends State<AboutScreen> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _checkForUpdates,
-                    icon: const Icon(Icons.update),
+                    icon: const Icon(Icons.update_outlined),
                     label: _checkingUpdates
                         ? const SizedBox(
                             height: UiConstants.loadingIndicatorSize,
@@ -277,7 +277,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         onPressed: isBusy ? null : _downloadUpdate,
-                        icon: const Icon(Icons.system_update),
+                        icon: const Icon(Icons.system_update_alt_outlined),
                         label: _installingUpdate
                             ? const SizedBox(
                                 height: UiConstants.loadingIndicatorSize,

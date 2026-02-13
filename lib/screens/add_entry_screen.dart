@@ -176,7 +176,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       });
                       _submit(prompt: text);
                     },
-              icon: const Icon(Icons.auto_awesome),
+              icon: const Icon(Icons.auto_awesome_outlined),
               label: Text(l10n.estimateCaloriesButton, textAlign: TextAlign.center),
             ),
             const SizedBox(height: UiConstants.mediumSpacing),

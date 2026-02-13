@@ -385,9 +385,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: l10n.exportIncludeApiKeyDialogTitle,
       body: l10n.exportIncludeApiKeyDialogBody,
       trueLabel: l10n.exportWithApiKeyButton,
-      trueIcon: Icons.vpn_key,
+      trueIcon: Icons.key_outlined,
       falseLabel: l10n.exportWithoutApiKeyButton,
-      falseIcon: Icons.download,
+      falseIcon: Icons.download_outlined,
       cancelLabel: l10n.cancelButton,
     );
   }
@@ -399,9 +399,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: l10n.importApiKeyDetectedDialogTitle,
       body: l10n.importApiKeyDetectedDialogBody,
       trueLabel: l10n.importOverwriteApiKeyButton,
-      trueIcon: Icons.vpn_key,
+      trueIcon: Icons.key_outlined,
       falseLabel: l10n.importKeepCurrentApiKeyButton,
-      falseIcon: Icons.lock_open,
+      falseIcon: Icons.lock_open_outlined,
       cancelLabel: l10n.cancelButton,
     );
   }
@@ -484,13 +484,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                       await Clipboard.setData(ClipboardData(text: text));
                     },
-              icon: const Icon(Icons.copy),
+              icon: const Icon(Icons.content_copy_outlined),
             ),
           ),
           const SizedBox(height: UiConstants.mediumSpacing),
           FilledButton.icon(
             onPressed: isAnyBusy ? null : _testKey,
-            icon: const Icon(Icons.vpn_key),
+            icon: const Icon(Icons.key_outlined),
             label: _testing
                 ? const SizedBox(
                     height: UiConstants.loadingIndicatorSize,
@@ -580,13 +580,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: headerToContentSpacing),
           FilledButton.icon(
             onPressed: isAnyBusy ? null : _exportData,
-            icon: const Icon(Icons.download),
+            icon: const Icon(Icons.download_outlined),
             label: Text(l10n.exportDataButton, textAlign: TextAlign.center),
           ),
           const SizedBox(height: UiConstants.buttonSpacing),
           FilledButton.icon(
             onPressed: isAnyBusy ? null : _importData,
-            icon: const Icon(Icons.upload),
+            icon: const Icon(Icons.upload_outlined),
             label: Text(l10n.importDataButton, textAlign: TextAlign.center),
           ),
             ],

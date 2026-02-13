@@ -304,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
           width: UiConstants.addButtonWidth,
           child: FilledButton.icon(
             onPressed: _navigateToAdd,
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_outlined),
             label: Text(l10n.addButton, textAlign: TextAlign.center),
           ),
         ),

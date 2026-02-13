@@ -303,7 +303,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: () => _openAddDialog(existingDateKeys: existingDateKeys),
-                      icon: const Icon(Icons.add),
+                      icon: const Icon(Icons.add_outlined),
                       label: Text(l10n.addButton, textAlign: TextAlign.center),
                     ),
                   ),
@@ -392,6 +392,22 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
+      builder: (context, child) {
+        final baseTheme = Theme.of(context);
+        return Theme(
+          data: baseTheme.copyWith(
+            datePickerTheme: baseTheme.datePickerTheme.copyWith(
+              cancelButtonStyle: ButtonStyle(
+                foregroundColor: WidgetStatePropertyAll<Color>(AppColors.text),
+              ),
+              confirmButtonStyle: ButtonStyle(
+                foregroundColor: WidgetStatePropertyAll<Color>(AppColors.text),
+              ),
+            ),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
     if (picked == null) {
       return;
@@ -441,24 +457,50 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
       return;
     }
 
-    final selectedDateKey = widget.formatDateKey(_selectedDate);
-    final todayKey = widget.formatDateKey(DateTime.now());
-    final originalDateKey = widget.formatDateKey(widget.initialDate);
-    final allowedDate = selectedDateKey == todayKey ||
-        widget.existingDateKeys.contains(selectedDateKey) ||
-        selectedDateKey == originalDateKey;
-    if (!allowedDate) {
-      setState(() {
-        _validationMessage = l10n.metabolicProfileDateMustBeTodayOrExisting;
-      });
-      return;
-    }
-
     Navigator.of(context).pop(
       _MetabolicProfileEditorResult.save(
         profileDate: _selectedDate,
         profile: profile,
       ),
+    );
+  }
+
+  Future<void> _confirmAndDelete(AppLocalizations l10n) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AppDialog(
+            title: Text(l10n.deleteProfileEntryTitle),
+            content: Text(
+              l10n.deleteProfileEntryConfirmMessage(
+                widget.formatDateKey(_selectedDate),
+              ),
+            ),
+            actionItems: [
+              DialogActionItem(
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  icon: const Icon(Icons.delete_outline),
+                  label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+                ),
+              ),
+              DialogActionItem(
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  icon: const Icon(Icons.close),
+                  label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    Navigator.of(context).pop(
+      _MetabolicProfileEditorResult.delete(profileDate: _selectedDate),
     );
   }
 
@@ -598,9 +640,7 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
         if (widget.isEditing)
           DialogActionItem(
             child: FilledButton.icon(
-              onPressed: () => Navigator.of(context).pop(
-                _MetabolicProfileEditorResult.delete(profileDate: _selectedDate),
-              ),
+              onPressed: () => _confirmAndDelete(l10n),
               icon: const Icon(Icons.delete_outline),
               label: Text(l10n.deleteButton, textAlign: TextAlign.center),
             ),

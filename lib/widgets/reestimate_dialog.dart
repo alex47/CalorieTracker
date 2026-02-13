@@ -42,7 +42,7 @@ Future<String?> showReestimateDialog(
                   onPressed: trimmed.isEmpty
                       ? null
                       : () => Navigator.pop(context, trimmed),
-                  icon: const Icon(Icons.auto_awesome),
+                  icon: const Icon(Icons.auto_awesome_outlined),
                   label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
                 ),
               ),

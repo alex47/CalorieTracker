@@ -190,7 +190,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 width: UiConstants.buttonMinWidth,
                 child: FilledButton.icon(
                   onPressed: () => Navigator.pop(context, true),
-                  icon: const Icon(Icons.delete),
+                  icon: const Icon(Icons.delete_outline),
                   label: Text(l10n.deleteButton, textAlign: TextAlign.center),
                 ),
               ),
@@ -311,7 +311,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: isBusy ? null : _copyToToday,
-                  icon: const Icon(Icons.copy),
+                  icon: const Icon(Icons.content_copy_outlined),
                   label: Text(l10n.copyToTodayButton, textAlign: TextAlign.center),
                 ),
               ),
@@ -322,7 +322,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _deleteItem,
-                    icon: const Icon(Icons.delete),
+                    icon: const Icon(Icons.delete_outline),
                     label: Text(l10n.deleteButton, textAlign: TextAlign.center),
                   ),
                 ),
@@ -330,7 +330,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _reestimateItem,
-                    icon: const Icon(Icons.auto_awesome),
+                    icon: const Icon(Icons.auto_awesome_outlined),
                     label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
                   ),
                 ),
