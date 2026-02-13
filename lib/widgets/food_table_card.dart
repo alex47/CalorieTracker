@@ -132,8 +132,10 @@ class FoodTableCard extends StatelessWidget {
               ...rows.map((row) {
                 final dominantColor =
                     highlightRowsByDominantMacro ? _dominantMacroColor(row) : null;
-                final effectiveTextStyle =
-                    row.textStyle ?? textTheme.bodyMedium?.copyWith(color: dominantColor);
+                final effectiveTextStyle = row.textStyle ??
+                    (dominantColor != null
+                        ? textTheme.bodyMedium?.copyWith(color: dominantColor)
+                        : textTheme.bodyMedium);
                 final content = Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: UiConstants.tableRowHorizontalPadding,

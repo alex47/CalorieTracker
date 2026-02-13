@@ -3,6 +3,18 @@ import 'package:sqflite/sqflite.dart';
 import '../models/metabolic_profile.dart';
 import 'database_service.dart';
 
+class MetabolicProfileHistoryEntry {
+  const MetabolicProfileHistoryEntry({
+    required this.profileDate,
+    required this.profile,
+    required this.createdAtIso,
+  });
+
+  final DateTime profileDate;
+  final MetabolicProfile profile;
+  final String createdAtIso;
+}
+
 class MetabolicProfileHistoryService {
   MetabolicProfileHistoryService._();
 
@@ -132,5 +144,32 @@ class MetabolicProfileHistoryService {
     final db = await DatabaseService.instance.database;
     final rows = await db.query('metabolic_profile_history');
     return rows.map((row) => Map<String, dynamic>.from(row)).toList();
+  }
+
+  Future<List<MetabolicProfileHistoryEntry>> fetchProfileHistory() async {
+    final db = await DatabaseService.instance.database;
+    final rows = await db.query(
+      'metabolic_profile_history',
+      orderBy: 'profile_date DESC',
+    );
+    return rows.map((row) {
+      final rawDate = (row['profile_date'] as String?) ?? '';
+      final parsedDate = DateTime.tryParse(rawDate) ?? DateTime.now();
+      final dayDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+      return MetabolicProfileHistoryEntry(
+        profileDate: dayDate,
+        profile: _profileFromRow(row),
+        createdAtIso: (row['created_at'] as String?) ?? '',
+      );
+    }).toList(growable: false);
+  }
+
+  Future<void> deleteProfileForDate(DateTime date) async {
+    final db = await DatabaseService.instance.database;
+    await db.delete(
+      'metabolic_profile_history',
+      where: 'profile_date = ?',
+      whereArgs: [_dayKey(date)],
+    );
   }
 }

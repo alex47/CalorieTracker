@@ -27,6 +27,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get addButton => 'Hozzáadás';
 
   @override
+  String get saveButton => 'Mentés';
+
+  @override
   String get cancelButton => 'Mégse';
 
   @override
@@ -121,6 +124,43 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get metabolicProfileTitle => 'Anyagcsere profil';
+
+  @override
+  String get metabolicProfileHistoryTitle => 'Profil előzmények';
+
+  @override
+  String get profileDateLabel => 'Profil dátuma';
+
+  @override
+  String get editButton => 'Szerkesztés';
+
+  @override
+  String editingProfileDateLabel(Object date) {
+    return 'Szerkesztett profil dátuma: $date';
+  }
+
+  @override
+  String get resetToTodayButton => 'Vissza mára';
+
+  @override
+  String get deleteProfileEntryTitle => 'Profil bejegyzés törlése';
+
+  @override
+  String deleteProfileEntryConfirmMessage(Object date) {
+    return 'Biztosan törölni szeretnéd a(z) $date napi profilt?';
+  }
+
+  @override
+  String get noMetabolicProfileHistory =>
+      'Még nincs profil előzmény bejegyzés.';
+
+  @override
+  String get invalidMetabolicProfileInput =>
+      'Kérlek, adj meg érvényes profil adatokat.';
+
+  @override
+  String get metabolicProfileDateMustBeTodayOrExisting =>
+      'A dátum csak mai vagy meglévő profil dátum lehet.';
 
   @override
   String get ageLabel => 'Életkor';

@@ -6,6 +6,7 @@
   "weeklySummaryTitle": "Weekly summary",
   "weeklyDeficitTitle": "Weekly deficit",
   "addButton": "Add",
+  "saveButton": "Save",
   "cancelButton": "Cancel",
   "acceptButton": "Accept",
   "deleteButton": "Delete",
@@ -46,6 +47,26 @@
   "maxOutputTokensLabel": "Max output tokens",
   "openAiTimeoutSecondsLabel": "Timeout (seconds)",
   "metabolicProfileTitle": "Metabolic profile",
+  "metabolicProfileHistoryTitle": "Profile history",
+  "profileDateLabel": "Profile date",
+  "editButton": "Edit",
+  "editingProfileDateLabel": "Editing profile date: {date}",
+  "@editingProfileDateLabel": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "resetToTodayButton": "Reset to today",
+  "deleteProfileEntryTitle": "Delete profile entry",
+  "deleteProfileEntryConfirmMessage": "Are you sure you want to delete the profile for {date}?",
+  "@deleteProfileEntryConfirmMessage": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "noMetabolicProfileHistory": "No profile history entries yet.",
+  "invalidMetabolicProfileInput": "Please enter valid profile values.",
+  "metabolicProfileDateMustBeTodayOrExisting": "Date must be today or an existing profile date.",
   "ageLabel": "Age",
   "sexLabel": "Sex",
   "sexMale": "Male",

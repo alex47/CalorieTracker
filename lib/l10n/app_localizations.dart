@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get addButton;
 
+  /// No description provided for @saveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveButton;
+
   /// No description provided for @cancelButton.
   ///
   /// In en, this message translates to:
@@ -313,6 +319,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Metabolic profile'**
   String get metabolicProfileTitle;
+
+  /// No description provided for @metabolicProfileHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile history'**
+  String get metabolicProfileHistoryTitle;
+
+  /// No description provided for @profileDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile date'**
+  String get profileDateLabel;
+
+  /// No description provided for @editButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editButton;
+
+  /// No description provided for @editingProfileDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing profile date: {date}'**
+  String editingProfileDateLabel(Object date);
+
+  /// No description provided for @resetToTodayButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to today'**
+  String get resetToTodayButton;
+
+  /// No description provided for @deleteProfileEntryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete profile entry'**
+  String get deleteProfileEntryTitle;
+
+  /// No description provided for @deleteProfileEntryConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the profile for {date}?'**
+  String deleteProfileEntryConfirmMessage(Object date);
+
+  /// No description provided for @noMetabolicProfileHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No profile history entries yet.'**
+  String get noMetabolicProfileHistory;
+
+  /// No description provided for @invalidMetabolicProfileInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid profile values.'**
+  String get invalidMetabolicProfileInput;
+
+  /// No description provided for @metabolicProfileDateMustBeTodayOrExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Date must be today or an existing profile date.'**
+  String get metabolicProfileDateMustBeTodayOrExisting;
 
   /// No description provided for @ageLabel.
   ///

@@ -6,6 +6,7 @@
   "weeklySummaryTitle": "Heti összesítés",
   "weeklyDeficitTitle": "Heti deficit",
   "addButton": "Hozzáadás",
+  "saveButton": "Mentés",
   "cancelButton": "Mégse",
   "acceptButton": "Elfogadás",
   "deleteButton": "Törlés",
@@ -46,6 +47,26 @@
   "maxOutputTokensLabel": "Maximális kimeneti tokenek",
   "openAiTimeoutSecondsLabel": "Időkorlát (másodperc)",
   "metabolicProfileTitle": "Anyagcsere profil",
+  "metabolicProfileHistoryTitle": "Profil előzmények",
+  "profileDateLabel": "Profil dátuma",
+  "editButton": "Szerkesztés",
+  "editingProfileDateLabel": "Szerkesztett profil dátuma: {date}",
+  "@editingProfileDateLabel": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "resetToTodayButton": "Vissza mára",
+  "deleteProfileEntryTitle": "Profil bejegyzés törlése",
+  "deleteProfileEntryConfirmMessage": "Biztosan törölni szeretnéd a(z) {date} napi profilt?",
+  "@deleteProfileEntryConfirmMessage": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "noMetabolicProfileHistory": "Még nincs profil előzmény bejegyzés.",
+  "invalidMetabolicProfileInput": "Kérlek, adj meg érvényes profil adatokat.",
+  "metabolicProfileDateMustBeTodayOrExisting": "A dátum csak mai vagy meglévő profil dátum lehet.",
   "ageLabel": "Életkor",
   "sexLabel": "Nem",
   "sexMale": "Férfi",

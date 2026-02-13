@@ -27,6 +27,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addButton => 'Add';
 
   @override
+  String get saveButton => 'Save';
+
+  @override
   String get cancelButton => 'Cancel';
 
   @override
@@ -120,6 +123,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get metabolicProfileTitle => 'Metabolic profile';
+
+  @override
+  String get metabolicProfileHistoryTitle => 'Profile history';
+
+  @override
+  String get profileDateLabel => 'Profile date';
+
+  @override
+  String get editButton => 'Edit';
+
+  @override
+  String editingProfileDateLabel(Object date) {
+    return 'Editing profile date: $date';
+  }
+
+  @override
+  String get resetToTodayButton => 'Reset to today';
+
+  @override
+  String get deleteProfileEntryTitle => 'Delete profile entry';
+
+  @override
+  String deleteProfileEntryConfirmMessage(Object date) {
+    return 'Are you sure you want to delete the profile for $date?';
+  }
+
+  @override
+  String get noMetabolicProfileHistory => 'No profile history entries yet.';
+
+  @override
+  String get invalidMetabolicProfileInput =>
+      'Please enter valid profile values.';
+
+  @override
+  String get metabolicProfileDateMustBeTodayOrExisting =>
+      'Date must be today or an existing profile date.';
 
   @override
   String get ageLabel => 'Age';
