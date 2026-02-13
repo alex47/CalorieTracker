@@ -538,14 +538,14 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
                 ),
               ),
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.smallSpacing),
             LabeledInputBox(
               label: l10n.ageLabel,
               controller: _ageController,
               contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.smallSpacing),
             LabeledDropdownBox<String>(
               label: l10n.sexLabel,
               value: _selectedSex,
@@ -561,21 +561,21 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
                 setState(() => _selectedSex = value);
               },
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.smallSpacing),
             LabeledInputBox(
               label: l10n.heightCmLabel,
               controller: _heightController,
               contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.smallSpacing),
             LabeledInputBox(
               label: l10n.weightKgLabel,
               controller: _weightController,
               contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.smallSpacing),
             LabeledDropdownBox<String>(
               label: l10n.activityLevelLabel,
               value: _selectedActivityLevel,
@@ -595,7 +595,7 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
                 setState(() => _selectedActivityLevel = value);
               },
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.smallSpacing),
             LabeledDropdownBox<String>(
               label: l10n.macroPresetLabel,
               value: _selectedMacroPresetKey,
