@@ -87,6 +87,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get openAiSectionTitle => 'OpenAI';
 
   @override
+  String get generalSectionTitle => 'Általános';
+
+  @override
   String get languageLabel => 'Nyelv';
 
   @override

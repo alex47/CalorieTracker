@@ -242,6 +242,12 @@ abstract class AppLocalizations {
   /// **'OpenAI'**
   String get openAiSectionTitle;
 
+  /// No description provided for @generalSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get generalSectionTitle;
+
   /// No description provided for @languageLabel.
   ///
   /// In en, this message translates to:

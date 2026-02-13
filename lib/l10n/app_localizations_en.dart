@@ -86,6 +86,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openAiSectionTitle => 'OpenAI';
 
   @override
+  String get generalSectionTitle => 'General';
+
+  @override
   String get languageLabel => 'Language';
 
   @override
