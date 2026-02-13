@@ -361,27 +361,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<bool?> _confirmIncludeApiKeyInExport(AppLocalizations l10n) {
+  Future<bool?> _showBooleanDecisionDialog({
+    required String title,
+    required String body,
+    required String trueLabel,
+    required IconData trueIcon,
+    required String falseLabel,
+    required IconData falseIcon,
+    required String cancelLabel,
+  }) {
     return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AppDialog(
-        title: Text(l10n.exportIncludeApiKeyDialogTitle),
-        content: Text(l10n.exportIncludeApiKeyDialogBody),
+        title: Text(title),
+        content: Text(body),
         actionItems: [
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, true),
-              icon: const Icon(Icons.vpn_key),
-              label: Text(l10n.exportWithApiKeyButton, textAlign: TextAlign.center),
+              icon: Icon(trueIcon),
+              label: Text(trueLabel, textAlign: TextAlign.center),
             ),
           ),
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext, false),
-              icon: const Icon(Icons.download),
-              label: Text(l10n.exportWithoutApiKeyButton, textAlign: TextAlign.center),
+              icon: Icon(falseIcon),
+              label: Text(falseLabel, textAlign: TextAlign.center),
             ),
           ),
           DialogActionItem(
@@ -389,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
-              label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+              label: Text(cancelLabel, textAlign: TextAlign.center),
             ),
           ),
         ],
@@ -397,41 +405,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<bool?> _confirmIncludeApiKeyInExport(AppLocalizations l10n) {
+    return _showBooleanDecisionDialog(
+      title: l10n.exportIncludeApiKeyDialogTitle,
+      body: l10n.exportIncludeApiKeyDialogBody,
+      trueLabel: l10n.exportWithApiKeyButton,
+      trueIcon: Icons.vpn_key,
+      falseLabel: l10n.exportWithoutApiKeyButton,
+      falseIcon: Icons.download,
+      cancelLabel: l10n.cancelButton,
+    );
+  }
+
   Future<bool?> _confirmOverwriteApiKeyOnImport({
     required AppLocalizations l10n,
   }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AppDialog(
-        title: Text(l10n.importApiKeyDetectedDialogTitle),
-        content: Text(l10n.importApiKeyDetectedDialogBody),
-        actionItems: [
-          DialogActionItem(
-            width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              icon: const Icon(Icons.vpn_key),
-              label: Text(l10n.importOverwriteApiKeyButton, textAlign: TextAlign.center),
-            ),
-          ),
-          DialogActionItem(
-            width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              icon: const Icon(Icons.lock_open),
-              label: Text(l10n.importKeepCurrentApiKeyButton, textAlign: TextAlign.center),
-            ),
-          ),
-          DialogActionItem(
-            width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
-              onPressed: () => Navigator.pop(dialogContext),
-              icon: const Icon(Icons.close),
-              label: Text(l10n.cancelButton, textAlign: TextAlign.center),
-            ),
-          ),
-        ],
-      ),
+    return _showBooleanDecisionDialog(
+      title: l10n.importApiKeyDetectedDialogTitle,
+      body: l10n.importApiKeyDetectedDialogBody,
+      trueLabel: l10n.importOverwriteApiKeyButton,
+      trueIcon: Icons.vpn_key,
+      falseLabel: l10n.importKeepCurrentApiKeyButton,
+      falseIcon: Icons.lock_open,
+      cancelLabel: l10n.cancelButton,
     );
   }
 
