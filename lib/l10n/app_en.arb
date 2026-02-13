@@ -188,12 +188,7 @@
       "latestVersion": {}
     }
   },
-  "upToDateStatus": "You are up to date ({currentVersion}).",
-  "@upToDateStatus": {
-    "placeholders": {
-      "currentVersion": {}
-    }
-  },
+  "upToDateStatus": "You are up to date.",
   "installLatestApkButton": "Install latest APK",
   "downloadingUpdate": "Downloading update...",
   "downloadingUpdateProgress": "Downloading update... {percent}%",

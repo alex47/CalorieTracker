@@ -188,12 +188,7 @@
       "latestVersion": {}
     }
   },
-  "upToDateStatus": "Naprakész ({currentVersion}).",
-  "@upToDateStatus": {
-    "placeholders": {
-      "currentVersion": {}
-    }
-  },
+  "upToDateStatus": "Naprakész.",
   "installLatestApkButton": "Legfrissebb APK telepítése",
   "downloadingUpdate": "Frissítés letöltése...",
   "downloadingUpdateProgress": "Frissítés letöltése... {percent}%",

@@ -269,7 +269,7 @@ class _AboutScreenState extends State<AboutScreen> {
                         ? l10n.updateAvailableStatus(
                             _updateResult!.latestVersion,
                           )
-                        : l10n.upToDateStatus(_updateResult!.currentVersion),
+                        : l10n.upToDateStatus,
                   ),
                   if (_updateResult!.updateAvailable) ...[
                     const SizedBox(height: UiConstants.buttonSpacing),

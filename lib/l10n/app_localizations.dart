@@ -683,8 +683,8 @@ abstract class AppLocalizations {
   /// No description provided for @upToDateStatus.
   ///
   /// In en, this message translates to:
-  /// **'You are up to date ({currentVersion}).'**
-  String upToDateStatus(Object currentVersion);
+  /// **'You are up to date.'**
+  String get upToDateStatus;
 
   /// No description provided for @installLatestApkButton.
   ///

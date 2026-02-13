@@ -350,9 +350,7 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String upToDateStatus(Object currentVersion) {
-    return 'Naprakész ($currentVersion).';
-  }
+  String get upToDateStatus => 'Naprakész.';
 
   @override
   String get installLatestApkButton => 'Legfrissebb APK telepítése';

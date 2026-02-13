@@ -345,9 +345,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String upToDateStatus(Object currentVersion) {
-    return 'You are up to date ($currentVersion).';
-  }
+  String get upToDateStatus => 'You are up to date.';
 
   @override
   String get installLatestApkButton => 'Install latest APK';
