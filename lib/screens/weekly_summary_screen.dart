@@ -324,6 +324,22 @@ class _CombinedMetricWeekChart extends StatelessWidget {
   final List<_DayMetricTotals> days;
   final String languageCode;
 
+  String _formatDailyDeficit(_DayMetricTotals day) {
+    if (day.targets == null) {
+      return '--';
+    }
+    final deficit = day.targets!.calories - day.calories;
+    return '$deficit kcal';
+  }
+
+  String _formatDayName(DateTime date) {
+    final value = DateFormat.EEEE(languageCode).format(date);
+    if (value.isEmpty) {
+      return value;
+    }
+    return value[0].toUpperCase() + value.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -339,10 +355,21 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 44,
-                      child: Text(
-                        DateFormat.E(languageCode).format(days[i].date),
-                        style: Theme.of(context).textTheme.bodySmall,
+                      width: 78,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _formatDayName(days[i].date),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: UiConstants.xxSmallSpacing),
+                          Text(
+                            _formatDailyDeficit(days[i]),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
