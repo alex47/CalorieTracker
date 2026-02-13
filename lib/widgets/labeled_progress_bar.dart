@@ -14,6 +14,7 @@ class LabeledProgressBar extends StatelessWidget {
     this.unit = 'g',
     this.height = UiConstants.progressBarHeight,
     this.animationDuration = UiConstants.progressBarAnimationDuration,
+    this.inlineStatusText,
     this.onTap,
   });
 
@@ -24,6 +25,7 @@ class LabeledProgressBar extends StatelessWidget {
   final String unit;
   final double height;
   final Duration animationDuration;
+  final String? inlineStatusText;
   final VoidCallback? onTap;
 
   String _format(double v) {
@@ -79,7 +81,9 @@ class LabeledProgressBar extends StatelessWidget {
               height: height,
               child: Center(
                 child: Text(
-                  '${_format(value)}/${_format(goal)} $unit',
+                  '${_format(value)}/${_format(goal)} $unit${inlineStatusText == null ? '' : ' - $inlineStatusText'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: borderColor),
                 ),
               ),
