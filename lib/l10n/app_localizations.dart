@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @macroPresetFatLossHigherProtein.
   ///
   /// In en, this message translates to:
-  /// **'Fat loss (higher protein)'**
+  /// **'Weight loss (higher protein)'**
   String get macroPresetFatLossHigherProtein;
 
   /// No description provided for @macroPresetBodyRecompositionTraining.

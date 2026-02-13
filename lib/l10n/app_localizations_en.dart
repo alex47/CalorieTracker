@@ -191,7 +191,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get macroPresetBalancedDefault => 'Balanced default';
 
   @override
-  String get macroPresetFatLossHigherProtein => 'Fat loss (higher protein)';
+  String get macroPresetFatLossHigherProtein => 'Weight loss (higher protein)';
 
   @override
   String get macroPresetBodyRecompositionTraining =>

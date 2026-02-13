@@ -194,8 +194,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get macroPresetBalancedDefault => 'Kiegyensúlyozott alap';
 
   @override
-  String get macroPresetFatLossHigherProtein =>
-      'Zsírvesztés (magasabb fehérje)';
+  String get macroPresetFatLossHigherProtein => 'Fogyás (magasabb fehérje)';
 
   @override
   String get macroPresetBodyRecompositionTraining => 'Testkompozíció / edzés';
