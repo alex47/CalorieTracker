@@ -73,7 +73,6 @@ class SettingsService extends ChangeNotifier {
 
   Future<void> updateSettings(AppSettings settings) async {
     final previous = _settings;
-    _settings = settings;
     final db = await DatabaseService.instance.database;
     await db.transaction((txn) async {
       await txn.insert(
@@ -132,6 +131,7 @@ class SettingsService extends ChangeNotifier {
         goals: DailyGoals.fromSettings(settings),
       );
     }
+    _settings = settings;
     notifyListeners();
   }
 
