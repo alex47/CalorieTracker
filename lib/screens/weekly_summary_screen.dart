@@ -112,25 +112,61 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
   bool _isCurrentWeekSelected() => _selectedPage == _maxPage;
 
-  String _weeklyDeficitDisplay(List<_DayMetricTotals> dailyTotals, AppLocalizations l10n) {
+  List<int>? _resolvedDailyDeficits(List<_DayMetricTotals> dailyTotals) {
     final deficitValues = dailyTotals
         .where((day) => day.itemCount > 0 && day.targets != null)
         .map((day) => day.targets!.calories - day.calories)
         .toList(growable: false);
     if (deficitValues.isEmpty) {
-      return '-';
+      return null;
     }
 
     final average = deficitValues.reduce((a, b) => a + b) / deficitValues.length;
-    var weeklyDeficit = 0;
-    for (final day in dailyTotals) {
+    return dailyTotals.map((day) {
       if (day.itemCount > 0 && day.targets != null) {
-        weeklyDeficit += day.targets!.calories - day.calories;
+        return day.targets!.calories - day.calories;
+      }
+      return average.round();
+    }).toList(growable: false);
+  }
+
+  String _weeklyDeficitDisplay(
+    List<_DayMetricTotals> dailyTotals,
+    AppLocalizations l10n,
+  ) {
+    final resolvedDeficits = _resolvedDailyDeficits(dailyTotals);
+    if (resolvedDeficits == null) {
+      return '-';
+    }
+    final weeklyDeficit = resolvedDeficits.fold<int>(0, (sum, value) => sum + value);
+    return l10n.caloriesKcalValue(weeklyDeficit);
+  }
+
+  List<_DisplayedDailyDeficit>? _dailyDeficitDisplayValues(List<_DayMetricTotals> dailyTotals) {
+    final resolvedDeficits = _resolvedDailyDeficits(dailyTotals);
+    if (resolvedDeficits == null) {
+      return null;
+    }
+    final result = <_DisplayedDailyDeficit>[];
+    for (var i = 0; i < dailyTotals.length; i++) {
+      final day = dailyTotals[i];
+      if (day.itemCount > 0 && day.targets != null) {
+        result.add(
+          _DisplayedDailyDeficit(
+            value: day.targets!.calories - day.calories,
+            estimated: false,
+          ),
+        );
       } else {
-        weeklyDeficit += average.round();
+        result.add(
+          _DisplayedDailyDeficit(
+            value: resolvedDeficits[i],
+            estimated: true,
+          ),
+        );
       }
     }
-    return l10n.caloriesKcalValue(weeklyDeficit);
+    return result;
   }
 
   @override
@@ -198,6 +234,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
                   final dailyTotals = snapshot.data ?? const <_DayMetricTotals>[];
                   final hasAnyTargets = dailyTotals.any((day) => day.targets != null);
+                  final displayDailyDeficits = _dailyDeficitDisplayValues(dailyTotals);
 
                   final specs = <_WeeklyMetricSpec>[
                     _WeeklyMetricSpec(
@@ -313,6 +350,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                               specs: specs,
                               days: dailyTotals,
                               languageCode: languageCode,
+                              dailyDeficits: displayDailyDeficits,
                             ),
                           ),
                         ),
@@ -350,18 +388,21 @@ class _CombinedMetricWeekChart extends StatelessWidget {
     required this.specs,
     required this.days,
     required this.languageCode,
+    required this.dailyDeficits,
   });
 
   final List<_WeeklyMetricSpec> specs;
   final List<_DayMetricTotals> days;
   final String languageCode;
+  final List<_DisplayedDailyDeficit>? dailyDeficits;
 
-  String _formatDailyDeficit(_DayMetricTotals day) {
-    if (day.targets == null) {
+  String _formatDailyDeficit(int dayIndex) {
+    if (dailyDeficits == null || dayIndex < 0 || dayIndex >= dailyDeficits!.length) {
       return '--';
     }
-    final deficit = day.targets!.calories - day.calories;
-    return '$deficit kcal';
+    final deficit = dailyDeficits![dayIndex];
+    final text = '${deficit.value} kcal';
+    return deficit.estimated ? '($text)' : text;
   }
 
   String _formatDayName(DateTime date) {
@@ -398,7 +439,7 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                           ),
                           const SizedBox(height: UiConstants.xxSmallSpacing),
                           Text(
-                            _formatDailyDeficit(days[i]),
+                            _formatDailyDeficit(i),
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -468,6 +509,16 @@ class _CombinedMetricWeekChart extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DisplayedDailyDeficit {
+  const _DisplayedDailyDeficit({
+    required this.value,
+    required this.estimated,
+  });
+
+  final int value;
+  final bool estimated;
 }
 
 class _WeeklyMetricSpec {
