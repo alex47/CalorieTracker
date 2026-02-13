@@ -112,6 +112,27 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
   bool _isCurrentWeekSelected() => _selectedPage == _maxPage;
 
+  String _weeklyDeficitDisplay(List<_DayMetricTotals> dailyTotals, AppLocalizations l10n) {
+    final deficitValues = dailyTotals
+        .where((day) => day.itemCount > 0 && day.targets != null)
+        .map((day) => day.targets!.calories - day.calories)
+        .toList(growable: false);
+    if (deficitValues.isEmpty) {
+      return '-';
+    }
+
+    final average = deficitValues.reduce((a, b) => a + b) / deficitValues.length;
+    var weeklyDeficit = 0;
+    for (final day in dailyTotals) {
+      if (day.itemCount > 0 && day.targets != null) {
+        weeklyDeficit += day.targets!.calories - day.calories;
+      } else {
+        weeklyDeficit += average.round();
+      }
+    }
+    return l10n.caloriesKcalValue(weeklyDeficit);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -221,70 +242,81 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     ),
                   ];
 
-                  return LayoutBuilder(
-                    builder: (context, constraints) {
-                      const headerHeightEstimate = 90.0;
-                      final chartHeight = (constraints.maxHeight - headerHeightEstimate)
-                          .clamp(220.0, 10000.0)
-                          .toDouble();
-
-                      return ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: UiConstants.smallSpacing,
-                                  vertical: UiConstants.xxSmallSpacing,
-                                ),
-                                child: Text(
-                                  _formatWeekRange(languageCode, weekStart, weekEnd),
-                                  style: Theme.of(context).textTheme.headlineSmall,
-                                  textAlign: TextAlign.center,
-                                ),
+                  return CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: UiConstants.largeSpacing,
+                            left: UiConstants.pagePadding,
+                            right: UiConstants.pagePadding,
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: UiConstants.smallSpacing,
+                                vertical: UiConstants.xxSmallSpacing,
+                              ),
+                              child: Text(
+                                _formatWeekRange(languageCode, weekStart, weekEnd),
+                                style: Theme.of(context).textTheme.headlineSmall,
+                                textAlign: TextAlign.center,
                               ),
                             ),
                           ),
-                          const SizedBox(height: UiConstants.mediumSpacing),
-                          if (!hasAnyTargets)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: UiConstants.pagePadding,
-                                right: UiConstants.pagePadding,
-                                bottom: UiConstants.mediumSpacing,
-                              ),
-                              child: Text(l10n.setMetabolicProfileHint),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                          child: Text(
+                            '${l10n.weeklyDeficitTitle}: ${_weeklyDeficitDisplay(dailyTotals, l10n)}',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ),
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: UiConstants.mediumSpacing),
+                      ),
+                      if (!hasAnyTargets)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: UiConstants.pagePadding,
                             ),
-                          if (hasAnyTargets)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: UiConstants.pagePadding,
-                              ),
-                              child: SizedBox(
-                                height: chartHeight,
-                                child: _CombinedMetricWeekChart(
-                                  specs: specs,
-                                  days: dailyTotals,
-                                  languageCode: languageCode,
-                                ),
-                              ),
+                            child: Text(l10n.setMetabolicProfileHint),
+                          ),
+                        ),
+                      if (dailyTotals.every((day) => day.itemCount == 0))
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              top: UiConstants.largeSpacing,
+                              left: UiConstants.pagePadding,
+                              right: UiConstants.pagePadding,
                             ),
-                          if (dailyTotals.every((day) => day.itemCount == 0))
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: UiConstants.largeSpacing,
-                                left: UiConstants.pagePadding,
-                                right: UiConstants.pagePadding,
-                              ),
-                              child: Text(l10n.noEntriesForWeek),
+                            child: Text(l10n.noEntriesForWeek),
+                          ),
+                        ),
+                      if (hasAnyTargets)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              left: UiConstants.pagePadding,
+                              right: UiConstants.pagePadding,
+                              bottom: UiConstants.pagePadding,
                             ),
-                        ],
-                      );
-                    },
+                            child: _CombinedMetricWeekChart(
+                              specs: specs,
+                              days: dailyTotals,
+                              languageCode: languageCode,
+                            ),
+                          ),
+                        ),
+                    ],
                   );
                 },
               ),

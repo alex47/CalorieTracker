@@ -122,6 +122,12 @@ abstract class AppLocalizations {
   /// **'Weekly summary'**
   String get weeklySummaryTitle;
 
+  /// No description provided for @weeklyDeficitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly deficit'**
+  String get weeklyDeficitTitle;
+
   /// No description provided for @addButton.
   ///
   /// In en, this message translates to:

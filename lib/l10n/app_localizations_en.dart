@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklySummaryTitle => 'Weekly summary';
 
   @override
+  String get weeklyDeficitTitle => 'Weekly deficit';
+
+  @override
   String get addButton => 'Add';
 
   @override

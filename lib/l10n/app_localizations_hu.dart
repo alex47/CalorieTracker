@@ -21,6 +21,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get weeklySummaryTitle => 'Heti összesítés';
 
   @override
+  String get weeklyDeficitTitle => 'Heti deficit';
+
+  @override
   String get addButton => 'Hozzáadás';
 
   @override
