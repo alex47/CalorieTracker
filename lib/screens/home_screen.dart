@@ -287,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
             itemBuilder: (context, page) {
               final pageDate = _dateForPage(page);
               return RefreshIndicator(
-                color: Colors.white,
+                color: AppColors.text,
                 onRefresh: () => _reloadDate(pageDate),
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),

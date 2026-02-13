@@ -9,6 +9,7 @@ import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 
 class WeeklySummaryScreen extends StatefulWidget {
@@ -152,7 +153,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             final weekEnd = weekStart.add(const Duration(days: 6));
 
             return RefreshIndicator(
-              color: Colors.white,
+              color: AppColors.text,
               onRefresh: () => _reloadWeek(weekStart),
               child: FutureBuilder<List<_DayMetricTotals>>(
                 future: _totalsForWeek(weekStart),
