@@ -17,6 +17,7 @@ class UiConstants {
   static const double tableRowHorizontalPadding = 12;
 
   static const double cornerRadius = 6;
+  static const double borderWidth = 1;
   static const double buttonMinWidth = 110;
   static const double buttonSpacing = smallSpacing;
   static const double metricGroupMinWidth = 100;

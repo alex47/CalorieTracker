@@ -202,7 +202,7 @@ class NotchedBorderPainter extends CustomPainter {
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
+      ..strokeWidth = UiConstants.borderWidth
       ..color = color;
     canvas.drawPath(path, paint);
   }

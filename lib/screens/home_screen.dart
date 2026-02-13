@@ -10,6 +10,7 @@ import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/food_table_card.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
@@ -157,6 +158,23 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
 
   double _totalCarbs(List<FoodItem> items) {
     return items.fold<double>(0, (sum, item) => sum + item.carbs);
+  }
+
+  Color? _dominantMacroColor(FoodItem item) {
+    final fat = item.fat;
+    final protein = item.protein;
+    final carbs = item.carbs;
+    final maxValue = [fat, protein, carbs].reduce((a, b) => a > b ? a : b);
+    if (maxValue <= 0) {
+      return null;
+    }
+    if (carbs == maxValue) {
+      return AppColors.carbs;
+    }
+    if (protein == maxValue) {
+      return AppColors.protein;
+    }
+    return AppColors.fat;
   }
 
   Future<void> _navigateToAdd() async {
@@ -428,32 +446,63 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                         }
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                          child: _ItemsTable(
-                            l10n: l10n,
-                            items: items,
-                            onItemTap: (item) async {
-                              final result = await Navigator.push<dynamic>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      FoodItemDetailScreen(item: item, itemDate: pageDate),
-                                ),
-                              );
-                              if (result == true) {
-                                await _reloadDate(pageDate);
-                                return;
-                              }
-                              if (result is Map && result['reloadToday'] == true) {
-                                await _reloadDate(DateTime.now());
-                                if (!_isTodaySelected()) {
-                                  await _pageController.animateToPage(
-                                    _initialPage,
-                                    duration: UiConstants.homePageSnapDuration,
-                                    curve: Curves.easeOutCubic,
+                          child: FoodTableCard(
+                            columns: buildStandardFoodTableColumns(
+                              firstLabel: l10n.foodLabel,
+                              secondLabel: l10n.amountLabel,
+                              thirdLabel: l10n.caloriesLabel,
+                            ),
+                            rows: items.map((item) {
+                              final dominantColor = _dominantMacroColor(item);
+                              final rowTextStyle =
+                                  Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: dominantColor,
+                                      );
+                              return FoodTableRowData(
+                                onTap: () async {
+                                  final result = await Navigator.push<dynamic>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          FoodItemDetailScreen(item: item, itemDate: pageDate),
+                                    ),
                                   );
-                                }
-                              }
-                            },
+                                  if (result == true) {
+                                    await _reloadDate(pageDate);
+                                    return;
+                                  }
+                                  if (result is Map && result['reloadToday'] == true) {
+                                    await _reloadDate(DateTime.now());
+                                    if (!_isTodaySelected()) {
+                                      await _pageController.animateToPage(
+                                        _initialPage,
+                                        duration: UiConstants.homePageSnapDuration,
+                                        curve: Curves.easeOutCubic,
+                                      );
+                                    }
+                                  }
+                                },
+                                textStyle: rowTextStyle,
+                                cells: [
+                                  FoodTableCell(
+                                    text: item.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  FoodTableCell(
+                                    text: item.amount,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  FoodTableCell(
+                                    text: '${item.calories}',
+                                    textAlign: TextAlign.end,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              );
+                            }).toList(),
                           ),
                         );
                       },
@@ -484,40 +533,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
       color: AppColors.calories,
       height: _progressBarHeight,
       onTap: onTap,
-    );
-  }
-}
-
-class _ItemsTable extends StatelessWidget {
-  const _ItemsTable({
-    required this.l10n,
-    required this.items,
-    required this.onItemTap,
-  });
-
-  final AppLocalizations l10n;
-  final List<FoodItem> items;
-  final Future<void> Function(FoodItem) onItemTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Column(
-        children: [
-          _ItemsHeaderRow(
-            l10n: l10n,
-            textTheme: Theme.of(context).textTheme,
-          ),
-          const Divider(height: 1),
-          ...items.map(
-            (item) => InkWell(
-              onTap: () async => onItemTap(item),
-              child: _ItemsDataRow(item: item),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -586,89 +601,6 @@ class _DailyMacrosRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ItemsHeaderRow extends StatelessWidget {
-  const _ItemsHeaderRow({
-    required this.l10n,
-    required this.textTheme,
-  });
-
-  final AppLocalizations l10n;
-  final TextTheme textTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: UiConstants.tableRowHorizontalPadding,
-        vertical: UiConstants.tableRowVerticalPadding,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(l10n.foodLabel, style: textTheme.labelLarge),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(l10n.amountLabel, style: textTheme.labelLarge),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              l10n.caloriesLabel,
-              style: textTheme.labelLarge,
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ItemsDataRow extends StatelessWidget {
-  const _ItemsDataRow({required this.item});
-
-  final FoodItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: UiConstants.tableRowHorizontalPadding,
-        vertical: UiConstants.tableRowVerticalPadding,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: Text(
-              item.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              item.amount,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${item.calories}',
-              textAlign: TextAlign.end,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

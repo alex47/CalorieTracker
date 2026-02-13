@@ -8,6 +8,7 @@ import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/food_table_card.dart';
 import '../widgets/labeled_progress_bar.dart';
 import '../main.dart';
 import 'food_item_detail_screen.dart';
@@ -244,101 +245,39 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
               else
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                  child: Card(
-                    margin: EdgeInsets.zero,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: UiConstants.tableRowHorizontalPadding,
-                            vertical: UiConstants.tableRowVerticalPadding,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                flex: 5,
-                                child: Text(
-                                  l10n.foodLabel,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  metricLabel,
-                                  textAlign: TextAlign.end,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Text(
-                                  '%',
-                                  textAlign: TextAlign.end,
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Divider(height: 1),
-                        ...contributors.map((entry) {
-                          final percent = total > 0 ? (entry.value / total) * 100 : 0.0;
-                          return InkWell(
-                            onTap: () {
-                              Navigator.push<dynamic>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      FoodItemDetailScreen(item: entry.item, itemDate: widget.date),
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: UiConstants.tableRowHorizontalPadding,
-                                vertical: UiConstants.tableRowVerticalPadding,
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 5,
-                                    child: Text(
-                                      entry.item.name,
-                                      style: Theme.of(context).textTheme.bodyMedium,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text(
-                                      '${_formatValue(entry.value)} $metricUnit',
-                                      textAlign: TextAlign.end,
-                                      style: Theme.of(context).textTheme.bodyMedium,
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 2,
-                                    child: Text(
-                                      '${percent.toStringAsFixed(1)}%',
-                                      textAlign: TextAlign.end,
-                                      style: Theme.of(context).textTheme.bodyMedium,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                  child: FoodTableCard(
+                    borderColor: metricColor,
+                    columns: buildStandardFoodTableColumns(
+                      firstLabel: l10n.foodLabel,
+                      secondLabel: metricLabel,
+                      thirdLabel: '%',
+                    ),
+                    rows: contributors.map((entry) {
+                      final percent = total > 0 ? (entry.value / total) * 100 : 0.0;
+                      return FoodTableRowData(
+                        onTap: () {
+                          Navigator.push<dynamic>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  FoodItemDetailScreen(item: entry.item, itemDate: widget.date),
                             ),
                           );
-                        }),
-                      ],
-                    ),
+                        },
+                        cells: [
+                          FoodTableCell(text: entry.item.name),
+                          FoodTableCell(
+                            text: '${_formatValue(entry.value)} $metricUnit',
+                          ),
+                          FoodTableCell(
+                            text: '${percent.toStringAsFixed(1)}%',
+                            textAlign: TextAlign.end,
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ),
             ],
               );
             },
