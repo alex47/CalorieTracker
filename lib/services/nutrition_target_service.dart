@@ -2,38 +2,31 @@ import '../models/daily_targets.dart';
 import '../models/metabolic_profile.dart';
 import 'calorie_deficit_service.dart';
 
-class MacroRatioConfig {
-  const MacroRatioConfig({
-    required this.protein,
-    required this.fat,
-    required this.carbs,
-  });
-
-  final double protein;
-  final double fat;
-  final double carbs;
-
-  static const MacroRatioConfig placeholder = MacroRatioConfig(
-    protein: 0.30,
-    fat: 0.30,
-    carbs: 0.40,
-  );
-}
-
 class NutritionTargetService {
   NutritionTargetService._();
 
-  static const MacroRatioConfig macroRatios = MacroRatioConfig.placeholder;
-
   static DailyTargets targetsFromProfile(MetabolicProfile profile) {
     final maintenanceCalories = CalorieDeficitService.maintenanceCalories(profile);
-    return targetsFromCalories(maintenanceCalories);
+    final proteinRatio = profile.proteinRatioPercent / 100.0;
+    final fatRatio = profile.fatRatioPercent / 100.0;
+    final carbsRatio = profile.carbsRatioPercent / 100.0;
+    return targetsFromCalories(
+      maintenanceCalories,
+      proteinRatio: proteinRatio,
+      fatRatio: fatRatio,
+      carbsRatio: carbsRatio,
+    );
   }
 
-  static DailyTargets targetsFromCalories(int calories) {
-    final proteinGrams = ((calories * macroRatios.protein) / 4).round();
-    final fatGrams = ((calories * macroRatios.fat) / 9).round();
-    final carbsGrams = ((calories * macroRatios.carbs) / 4).round();
+  static DailyTargets targetsFromCalories(
+    int calories, {
+    required double proteinRatio,
+    required double fatRatio,
+    required double carbsRatio,
+  }) {
+    final proteinGrams = ((calories * proteinRatio) / 4).round();
+    final fatGrams = ((calories * fatRatio) / 9).round();
+    final carbsGrams = ((calories * carbsRatio) / 4).round();
     return DailyTargets(
       calories: calories,
       fat: fatGrams,

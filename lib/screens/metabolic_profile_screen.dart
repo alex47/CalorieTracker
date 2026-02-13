@@ -25,6 +25,46 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   Timer? _autosaveTimer;
   String _selectedSex = 'male';
   String _selectedActivityLevel = 'moderate';
+  String _selectedMacroPresetKey = _MacroRatioPreset.balancedDefaultKey;
+
+  static const List<_MacroRatioPreset> _macroRatioPresets = [
+    _MacroRatioPreset(
+      key: _MacroRatioPreset.balancedDefaultKey,
+      fatPercent: 30,
+      proteinPercent: 20,
+      carbsPercent: 50,
+    ),
+    _MacroRatioPreset(
+      key: _MacroRatioPreset.fatLossHigherProteinKey,
+      fatPercent: 30,
+      proteinPercent: 30,
+      carbsPercent: 40,
+    ),
+    _MacroRatioPreset(
+      key: _MacroRatioPreset.bodyRecompositionTrainingKey,
+      fatPercent: 30,
+      proteinPercent: 35,
+      carbsPercent: 35,
+    ),
+    _MacroRatioPreset(
+      key: _MacroRatioPreset.enduranceHighActivityKey,
+      fatPercent: 30,
+      proteinPercent: 15,
+      carbsPercent: 55,
+    ),
+    _MacroRatioPreset(
+      key: _MacroRatioPreset.lowerCarbAppetiteControlKey,
+      fatPercent: 40,
+      proteinPercent: 35,
+      carbsPercent: 25,
+    ),
+    _MacroRatioPreset(
+      key: _MacroRatioPreset.highCarbPerformanceKey,
+      fatPercent: 20,
+      proteinPercent: 20,
+      carbsPercent: 60,
+    ),
+  ];
 
   @override
   void initState() {
@@ -47,6 +87,11 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
           : profile.weightKg.toStringAsFixed(1);
       _selectedSex = profile.sex;
       _selectedActivityLevel = profile.activityLevel;
+      _selectedMacroPresetKey = _presetKeyForRatios(
+        fatPercent: profile.fatRatioPercent,
+        proteinPercent: profile.proteinRatioPercent,
+        carbsPercent: profile.carbsRatioPercent,
+      );
     });
   }
 
@@ -76,13 +121,58 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
     if (age <= 0 || heightCm <= 0 || weightKg <= 0) {
       return null;
     }
+    final preset = _selectedMacroPreset;
     return MetabolicProfile(
       age: age,
       sex: _selectedSex,
       heightCm: heightCm,
       weightKg: weightKg,
       activityLevel: _selectedActivityLevel,
+      fatRatioPercent: preset.fatPercent,
+      proteinRatioPercent: preset.proteinPercent,
+      carbsRatioPercent: preset.carbsPercent,
     );
+  }
+
+  _MacroRatioPreset get _selectedMacroPreset {
+    return _macroRatioPresets.firstWhere(
+      (preset) => preset.key == _selectedMacroPresetKey,
+      orElse: () => _macroRatioPresets.first,
+    );
+  }
+
+  String _presetKeyForRatios({
+    required int fatPercent,
+    required int proteinPercent,
+    required int carbsPercent,
+  }) {
+    for (final preset in _macroRatioPresets) {
+      if (preset.fatPercent == fatPercent &&
+          preset.proteinPercent == proteinPercent &&
+          preset.carbsPercent == carbsPercent) {
+        return preset.key;
+      }
+    }
+    return _MacroRatioPreset.balancedDefaultKey;
+  }
+
+  String _presetLabel(AppLocalizations l10n, String key) {
+    switch (key) {
+      case _MacroRatioPreset.balancedDefaultKey:
+        return l10n.macroPresetBalancedDefault;
+      case _MacroRatioPreset.fatLossHigherProteinKey:
+        return l10n.macroPresetFatLossHigherProtein;
+      case _MacroRatioPreset.bodyRecompositionTrainingKey:
+        return l10n.macroPresetBodyRecompositionTraining;
+      case _MacroRatioPreset.enduranceHighActivityKey:
+        return l10n.macroPresetEnduranceHighActivity;
+      case _MacroRatioPreset.lowerCarbAppetiteControlKey:
+        return l10n.macroPresetLowerCarbAppetiteControl;
+      case _MacroRatioPreset.highCarbPerformanceKey:
+        return l10n.macroPresetHighCarbPerformance;
+      default:
+        return l10n.macroPresetBalancedDefault;
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -175,8 +265,48 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
               _scheduleAutosave();
             },
           ),
+          const SizedBox(height: controlSpacing),
+          LabeledDropdownBox<String>(
+            label: l10n.macroPresetLabel,
+            value: _selectedMacroPresetKey,
+            contentHeight: UiConstants.settingsFieldHeight,
+            items: _macroRatioPresets.map((preset) {
+              return DropdownMenuItem<String>(
+                value: preset.key,
+                child: Text(_presetLabel(l10n, preset.key)),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() => _selectedMacroPresetKey = value);
+              _scheduleAutosave();
+            },
+          ),
         ],
       ),
     );
   }
+}
+
+class _MacroRatioPreset {
+  const _MacroRatioPreset({
+    required this.key,
+    required this.fatPercent,
+    required this.proteinPercent,
+    required this.carbsPercent,
+  });
+
+  static const String balancedDefaultKey = 'balanced_default';
+  static const String fatLossHigherProteinKey = 'fat_loss_higher_protein';
+  static const String bodyRecompositionTrainingKey = 'body_recomposition_training';
+  static const String enduranceHighActivityKey = 'endurance_high_activity';
+  static const String lowerCarbAppetiteControlKey = 'lower_carb_appetite_control';
+  static const String highCarbPerformanceKey = 'high_carb_performance';
+
+  final String key;
+  final int fatPercent;
+  final int proteinPercent;
+  final int carbsPercent;
 }

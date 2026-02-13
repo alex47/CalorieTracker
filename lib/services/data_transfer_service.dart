@@ -195,6 +195,9 @@ class DataTransferService {
             'height_cm': (profile['height_cm'] as num).toDouble(),
             'weight_kg': (profile['weight_kg'] as num).toDouble(),
             'activity_level': profile['activity_level'] as String,
+            'fat_ratio_percent': (profile['fat_ratio_percent'] as num?)?.round() ?? 30,
+            'protein_ratio_percent': (profile['protein_ratio_percent'] as num?)?.round() ?? 30,
+            'carbs_ratio_percent': (profile['carbs_ratio_percent'] as num?)?.round() ?? 40,
             'created_at': profile['created_at'] as String,
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
@@ -238,6 +241,9 @@ class DataTransferService {
       _requireNum(profile, 'height_cm', table: 'metabolic_profile_history');
       _requireNum(profile, 'weight_kg', table: 'metabolic_profile_history');
       _requireString(profile, 'activity_level', table: 'metabolic_profile_history');
+      _requireOptionalNum(profile, 'fat_ratio_percent', table: 'metabolic_profile_history');
+      _requireOptionalNum(profile, 'protein_ratio_percent', table: 'metabolic_profile_history');
+      _requireOptionalNum(profile, 'carbs_ratio_percent', table: 'metabolic_profile_history');
       _requireString(profile, 'created_at', table: 'metabolic_profile_history');
     }
   }

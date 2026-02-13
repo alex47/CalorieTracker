@@ -141,6 +141,30 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityLevelLabel => 'Aktivitási szint';
 
   @override
+  String get macroPresetLabel => 'Cél';
+
+  @override
+  String get macroPresetBalancedDefault => 'Kiegyensúlyozott alap';
+
+  @override
+  String get macroPresetFatLossHigherProtein =>
+      'Zsírvesztés (magasabb fehérje)';
+
+  @override
+  String get macroPresetBodyRecompositionTraining => 'Testkompozíció / edzés';
+
+  @override
+  String get macroPresetEnduranceHighActivity =>
+      'Állóképesség / magas aktivitás';
+
+  @override
+  String get macroPresetLowerCarbAppetiteControl =>
+      'Alacsony szénhidrát, étvágykontroll';
+
+  @override
+  String get macroPresetHighCarbPerformance => 'Magas szénhidrát, teljesítmény';
+
+  @override
   String get activityBmr => 'BMR (nyugalmi)';
 
   @override

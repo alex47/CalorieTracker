@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 5,
+      version: 6,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -65,6 +65,9 @@ class DatabaseService {
             height_cm REAL NOT NULL,
             weight_kg REAL NOT NULL,
             activity_level TEXT NOT NULL,
+            fat_ratio_percent INTEGER NOT NULL DEFAULT 30,
+            protein_ratio_percent INTEGER NOT NULL DEFAULT 30,
+            carbs_ratio_percent INTEGER NOT NULL DEFAULT 40,
             created_at TEXT NOT NULL
           )
           ''',
@@ -100,6 +103,17 @@ class DatabaseService {
         }
         if (oldVersion < 5) {
           await db.execute('DROP TABLE IF EXISTS goal_history');
+        }
+        if (oldVersion < 6) {
+          await db.execute(
+            'ALTER TABLE metabolic_profile_history ADD COLUMN fat_ratio_percent INTEGER NOT NULL DEFAULT 30',
+          );
+          await db.execute(
+            'ALTER TABLE metabolic_profile_history ADD COLUMN protein_ratio_percent INTEGER NOT NULL DEFAULT 30',
+          );
+          await db.execute(
+            'ALTER TABLE metabolic_profile_history ADD COLUMN carbs_ratio_percent INTEGER NOT NULL DEFAULT 40',
+          );
         }
       },
     );

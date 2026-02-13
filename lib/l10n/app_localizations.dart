@@ -350,6 +350,48 @@ abstract class AppLocalizations {
   /// **'Activity level'**
   String get activityLevelLabel;
 
+  /// No description provided for @macroPresetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get macroPresetLabel;
+
+  /// No description provided for @macroPresetBalancedDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced default'**
+  String get macroPresetBalancedDefault;
+
+  /// No description provided for @macroPresetFatLossHigherProtein.
+  ///
+  /// In en, this message translates to:
+  /// **'Fat loss (higher protein)'**
+  String get macroPresetFatLossHigherProtein;
+
+  /// No description provided for @macroPresetBodyRecompositionTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Body recomposition / training'**
+  String get macroPresetBodyRecompositionTraining;
+
+  /// No description provided for @macroPresetEnduranceHighActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Endurance / high activity'**
+  String get macroPresetEnduranceHighActivity;
+
+  /// No description provided for @macroPresetLowerCarbAppetiteControl.
+  ///
+  /// In en, this message translates to:
+  /// **'Lower-carb appetite control'**
+  String get macroPresetLowerCarbAppetiteControl;
+
+  /// No description provided for @macroPresetHighCarbPerformance.
+  ///
+  /// In en, this message translates to:
+  /// **'High-carb performance'**
+  String get macroPresetHighCarbPerformance;
+
   /// No description provided for @activityBmr.
   ///
   /// In en, this message translates to:

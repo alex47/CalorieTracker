@@ -29,6 +29,9 @@ class MetabolicProfileHistoryService {
         'height_cm': profile.heightCm,
         'weight_kg': profile.weightKg,
         'activity_level': profile.activityLevel,
+        'fat_ratio_percent': profile.fatRatioPercent,
+        'protein_ratio_percent': profile.proteinRatioPercent,
+        'carbs_ratio_percent': profile.carbsRatioPercent,
         'created_at': DateTime.now().toIso8601String(),
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -108,6 +111,9 @@ class MetabolicProfileHistoryService {
       heightCm: (row['height_cm'] as num?)?.toDouble() ?? 0,
       weightKg: (row['weight_kg'] as num?)?.toDouble() ?? 0,
       activityLevel: (row['activity_level'] as String?) ?? 'moderate',
+      fatRatioPercent: ((row['fat_ratio_percent'] as num?)?.round()) ?? 30,
+      proteinRatioPercent: ((row['protein_ratio_percent'] as num?)?.round()) ?? 30,
+      carbsRatioPercent: ((row['carbs_ratio_percent'] as num?)?.round()) ?? 40,
     );
   }
 

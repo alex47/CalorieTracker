@@ -5,6 +5,9 @@ class MetabolicProfile {
     required this.heightCm,
     required this.weightKg,
     required this.activityLevel,
+    required this.fatRatioPercent,
+    required this.proteinRatioPercent,
+    required this.carbsRatioPercent,
   });
 
   final int age;
@@ -12,4 +15,7 @@ class MetabolicProfile {
   final double heightCm;
   final double weightKg;
   final String activityLevel;
+  final int fatRatioPercent;
+  final int proteinRatioPercent;
+  final int carbsRatioPercent;
 }

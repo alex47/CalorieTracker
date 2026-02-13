@@ -140,6 +140,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityLevelLabel => 'Activity level';
 
   @override
+  String get macroPresetLabel => 'Goal';
+
+  @override
+  String get macroPresetBalancedDefault => 'Balanced default';
+
+  @override
+  String get macroPresetFatLossHigherProtein => 'Fat loss (higher protein)';
+
+  @override
+  String get macroPresetBodyRecompositionTraining =>
+      'Body recomposition / training';
+
+  @override
+  String get macroPresetEnduranceHighActivity => 'Endurance / high activity';
+
+  @override
+  String get macroPresetLowerCarbAppetiteControl =>
+      'Lower-carb appetite control';
+
+  @override
+  String get macroPresetHighCarbPerformance => 'High-carb performance';
+
+  @override
   String get activityBmr => 'BMR (resting)';
 
   @override
