@@ -260,7 +260,6 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                                 child: Text(
                                   l10n.foodLabel,
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: metricColor,
                                         fontWeight: FontWeight.w600,
                                       ),
                                 ),
@@ -271,7 +270,6 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                                   metricLabel,
                                   textAlign: TextAlign.end,
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: metricColor,
                                         fontWeight: FontWeight.w600,
                                       ),
                                 ),
@@ -282,7 +280,6 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                                   '%',
                                   textAlign: TextAlign.end,
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: metricColor,
                                         fontWeight: FontWeight.w600,
                                       ),
                                 ),
