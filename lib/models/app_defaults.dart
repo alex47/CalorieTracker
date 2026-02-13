@@ -18,8 +18,4 @@ class AppDefaults {
   static const int minOutputTokens = 16;
   static const int maxOutputTokens = 5000;
 
-  static const int dailyCalories = 2000;
-  static const int dailyFatGrams = 70;
-  static const int dailyProteinGrams = 150;
-  static const int dailyCarbsGrams = 250;
 }

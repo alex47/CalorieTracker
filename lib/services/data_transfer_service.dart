@@ -23,7 +23,6 @@ class ImportSummary {
 class ImportPayload {
   const ImportPayload({
     required this.settings,
-    required this.goalHistory,
     required this.metabolicProfileHistory,
     required this.entries,
     required this.entryItems,
@@ -31,7 +30,6 @@ class ImportPayload {
   });
 
   final Map<String, String> settings;
-  final List<Map<String, dynamic>> goalHistory;
   final List<Map<String, dynamic>> metabolicProfileHistory;
   final List<Map<String, dynamic>> entries;
   final List<Map<String, dynamic>> entryItems;
@@ -56,7 +54,6 @@ class DataTransferService {
     final entries = await db.query('entries');
     final entryItems = await db.query('entry_items');
     final settingsRows = await db.query('settings');
-    final goalHistory = await db.query('goal_history');
     final metabolicProfileHistory = await db.query('metabolic_profile_history');
     final settings = {
       for (final row in settingsRows) row['key'] as String: row['value'] as String,
@@ -66,7 +63,6 @@ class DataTransferService {
       'format_version': _formatVersion,
       'exported_at': DateTime.now().toIso8601String(),
       'settings': settings,
-      'goal_history': goalHistory,
       'metabolic_profile_history': metabolicProfileHistory,
       'entries': entries,
       'entry_items': entryItems,
@@ -125,7 +121,6 @@ class DataTransferService {
     }
 
     final settings = _readSettings(decoded['settings']);
-    final goalHistory = _readRows(decoded['goal_history'] ?? const []);
     final metabolicProfileHistory = _readRows(decoded['metabolic_profile_history'] ?? const []);
     final entries = _readRows(decoded['entries']);
     final entryItems = _readRows(decoded['entry_items']);
@@ -133,7 +128,6 @@ class DataTransferService {
 
     return ImportPayload(
       settings: settings,
-      goalHistory: goalHistory,
       metabolicProfileHistory: metabolicProfileHistory,
       entries: entries,
       entryItems: entryItems,
@@ -148,7 +142,6 @@ class DataTransferService {
       await txn.delete('entry_items');
       await txn.delete('entries');
       await txn.delete('settings');
-      await txn.delete('goal_history');
       await txn.delete('metabolic_profile_history');
 
       for (final entry in payload.entries) {
@@ -187,22 +180,6 @@ class DataTransferService {
         await txn.insert(
           'settings',
           {'key': setting.key, 'value': setting.value},
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      }
-
-      for (final goal in payload.goalHistory) {
-        await txn.insert(
-          'goal_history',
-          {
-            'id': goal['id'] as int?,
-            'goal_date': goal['goal_date'] as String,
-            'calories': (goal['calories'] as num).round(),
-            'fat': (goal['fat'] as num).round(),
-            'protein': (goal['protein'] as num).round(),
-            'carbs': (goal['carbs'] as num).round(),
-            'created_at': goal['created_at'] as String,
-          },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }
@@ -251,16 +228,6 @@ class DataTransferService {
       _requireOptionalNum(item, 'protein', table: 'entry_items');
       _requireOptionalNum(item, 'carbs', table: 'entry_items');
       _requireOptionalString(item, 'notes', table: 'entry_items');
-    }
-
-    for (final goal in payload.goalHistory) {
-      _requireOptionalInt(goal, 'id', table: 'goal_history');
-      _requireString(goal, 'goal_date', table: 'goal_history');
-      _requireNum(goal, 'calories', table: 'goal_history');
-      _requireNum(goal, 'fat', table: 'goal_history');
-      _requireNum(goal, 'protein', table: 'goal_history');
-      _requireNum(goal, 'carbs', table: 'goal_history');
-      _requireString(goal, 'created_at', table: 'goal_history');
     }
 
     for (final profile in payload.metabolicProfileHistory) {

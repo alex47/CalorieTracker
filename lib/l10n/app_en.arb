@@ -44,7 +44,6 @@
   "reasoningEffortLabel": "Reasoning effort",
   "maxOutputTokensLabel": "Max output tokens",
   "openAiTimeoutSecondsLabel": "Timeout (seconds)",
-  "goalsSectionTitle": "Goals",
   "metabolicProfileTitle": "Metabolic profile",
   "ageLabel": "Age",
   "sexLabel": "Sex",
@@ -72,10 +71,6 @@
       "calories": {}
     }
   },
-  "dailyCalorieGoalLabel": "Daily calorie goal (kcal)",
-  "dailyFatGoalLabel": "Daily fat goal (g)",
-  "dailyProteinGoalLabel": "Daily protein goal (g)",
-  "dailyCarbsGoalLabel": "Daily carbs goal (g)",
   "dataToolsSectionTitle": "Data tools",
   "exportDataButton": "Export data",
   "importDataButton": "Import data",

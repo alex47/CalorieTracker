@@ -6,7 +6,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'screens/about_screen.dart';
 import 'screens/add_entry_screen.dart';
-import 'screens/goals_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/metabolic_profile_screen.dart';
 import 'screens/settings_screen.dart';
@@ -283,7 +282,6 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
       themeMode: ThemeMode.dark,
       routes: {
         SettingsScreen.routeName: (_) => const SettingsScreen(),
-        GoalsScreen.routeName: (_) => const GoalsScreen(),
         MetabolicProfileScreen.routeName: (_) => const MetabolicProfileScreen(),
         AboutScreen.routeName: (_) => const AboutScreen(),
       },

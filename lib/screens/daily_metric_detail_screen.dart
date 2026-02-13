@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
-import '../models/daily_goals.dart';
+import '../models/daily_targets.dart';
 import '../models/food_item.dart';
 import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
-import '../services/goal_history_service.dart';
+import '../services/metabolic_profile_history_service.dart';
+import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/food_table_card.dart';
@@ -29,27 +30,31 @@ class DailyMetricDetailScreen extends StatefulWidget {
 
 class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with RouteAware {
   late Future<List<FoodItem>> _itemsFuture;
-  late Future<DailyGoals> _goalsFuture;
+  late Future<DailyTargets?> _targetsFuture;
   PageRoute<dynamic>? _route;
 
   @override
   void initState() {
     super.initState();
     _itemsFuture = EntriesRepository.instance.fetchItemsForDate(widget.date);
-    _goalsFuture = GoalHistoryService.instance.getEffectiveGoalsForDate(
-      date: widget.date,
-      fallback: DailyGoals.fromSettings(SettingsService.instance.settings),
-    );
+    _targetsFuture = _loadTargets();
   }
 
   void _reload() {
     setState(() {
       _itemsFuture = EntriesRepository.instance.fetchItemsForDate(widget.date);
-      _goalsFuture = GoalHistoryService.instance.getEffectiveGoalsForDate(
-        date: widget.date,
-        fallback: DailyGoals.fromSettings(SettingsService.instance.settings),
-      );
+      _targetsFuture = _loadTargets();
     });
+  }
+
+  Future<DailyTargets?> _loadTargets() async {
+    final profile = await MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(
+      date: widget.date,
+    );
+    if (profile == null) {
+      return null;
+    }
+    return NutritionTargetService.targetsFromProfile(profile);
   }
 
   @override
@@ -129,16 +134,17 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
               .toList()
             ..sort((a, b) => b.value.compareTo(a.value));
 
-          return FutureBuilder<DailyGoals>(
-            future: _goalsFuture,
-            builder: (context, goalSnapshot) {
-              if (goalSnapshot.connectionState == ConnectionState.waiting &&
-                  !goalSnapshot.hasData) {
+          return FutureBuilder<DailyTargets?>(
+            future: _targetsFuture,
+            builder: (context, targetSnapshot) {
+              if (targetSnapshot.connectionState == ConnectionState.waiting &&
+                  !targetSnapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              final goals =
-                  goalSnapshot.data ?? DailyGoals.fromSettings(SettingsService.instance.settings);
-              final metricGoal = widget.metricType.goalFromDailyGoals(goals);
+              final targets = targetSnapshot.data;
+              final metricGoal = targets == null
+                  ? null
+                  : widget.metricType.goalFromDailyTargets(targets);
               return ListView(
                 padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
                 children: [
@@ -164,13 +170,21 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
               const SizedBox(height: UiConstants.mediumSpacing),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                child: LabeledProgressBar(
-                  label: metricLabel,
-                  value: total,
-                  goal: metricGoal,
-                  unit: metricUnit,
-                  color: metricColor,
-                ),
+                child: metricGoal == null
+                    ? Card(
+                        margin: EdgeInsets.zero,
+                        child: Padding(
+                          padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+                          child: Text(l10n.setMetabolicProfileHint),
+                        ),
+                      )
+                    : LabeledProgressBar(
+                        label: metricLabel,
+                        value: total,
+                        goal: metricGoal,
+                        unit: metricUnit,
+                        color: metricColor,
+                      ),
               ),
               const SizedBox(height: UiConstants.largeSpacing),
               if (contributors.isEmpty)
@@ -191,14 +205,17 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                     rows: contributors.map((entry) {
                       final percent = total > 0 ? (entry.value / total) * 100 : 0.0;
                       return FoodTableRowData(
-                        onTap: () {
-                          Navigator.push<dynamic>(
+                        onTap: () async {
+                          final result = await Navigator.push<dynamic>(
                             context,
                             MaterialPageRoute(
                               builder: (_) =>
                                   FoodItemDetailScreen(item: entry.item, itemDate: widget.date),
                             ),
                           );
+                          if (result == true || (result is Map && result['reloadToday'] == true)) {
+                            _reload();
+                          }
                         },
                         fat: entry.item.fat,
                         protein: entry.item.protein,

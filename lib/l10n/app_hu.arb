@@ -44,7 +44,6 @@
   "reasoningEffortLabel": "Következtetési szint",
   "maxOutputTokensLabel": "Maximális kimeneti tokenek",
   "openAiTimeoutSecondsLabel": "Időkorlát (másodperc)",
-  "goalsSectionTitle": "Célok",
   "metabolicProfileTitle": "Anyagcsere profil",
   "ageLabel": "Életkor",
   "sexLabel": "Nem",
@@ -72,10 +71,6 @@
       "calories": {}
     }
   },
-  "dailyCalorieGoalLabel": "Napi kalóriacél (kcal)",
-  "dailyFatGoalLabel": "Napi zsírcél (g)",
-  "dailyProteinGoalLabel": "Napi fehérjecél (g)",
-  "dailyCarbsGoalLabel": "Napi szénhidrátcél (g)",
   "dataToolsSectionTitle": "Adateszközök",
   "exportDataButton": "Adatok exportálása",
   "importDataButton": "Adatok importálása",

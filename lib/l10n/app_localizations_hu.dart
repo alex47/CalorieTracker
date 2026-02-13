@@ -117,9 +117,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String get openAiTimeoutSecondsLabel => 'Időkorlát (másodperc)';
 
   @override
-  String get goalsSectionTitle => 'Célok';
-
-  @override
   String get metabolicProfileTitle => 'Anyagcsere profil';
 
   @override
@@ -174,18 +171,6 @@ class AppLocalizationsHu extends AppLocalizations {
   String maintenanceCaloriesLabel(Object calories) {
     return 'Fenntartó: $calories kcal/nap';
   }
-
-  @override
-  String get dailyCalorieGoalLabel => 'Napi kalóriacél (kcal)';
-
-  @override
-  String get dailyFatGoalLabel => 'Napi zsírcél (g)';
-
-  @override
-  String get dailyProteinGoalLabel => 'Napi fehérjecél (g)';
-
-  @override
-  String get dailyCarbsGoalLabel => 'Napi szénhidrátcél (g)';
 
   @override
   String get dataToolsSectionTitle => 'Adateszközök';

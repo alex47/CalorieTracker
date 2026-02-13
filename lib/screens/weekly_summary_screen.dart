@@ -3,11 +3,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../models/daily_goals.dart';
+import '../models/daily_targets.dart';
 import '../models/food_item.dart';
 import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
-import '../services/goal_history_service.dart';
+import '../services/metabolic_profile_history_service.dart';
+import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -67,20 +68,20 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     );
     final dailyItems = await Future.wait(futures);
     final weekEnd = weekStart.add(const Duration(days: 6));
-    final fallbackGoals = DailyGoals.fromSettings(SettingsService.instance.settings);
-    final goalsByDate = await GoalHistoryService.instance.getEffectiveGoalsForDateRange(
+    final profilesByDate = await MetabolicProfileHistoryService.instance.getEffectiveProfileForDateRange(
       startDate: weekStart,
       endDate: weekEnd,
-      fallback: fallbackGoals,
     );
     return List<_DayMetricTotals>.generate(
       7,
       (index) {
         final date = weekStart.add(Duration(days: index));
         final dateKey = _weekKey(date);
+        final profile = profilesByDate[dateKey];
+        final targets = profile == null ? null : NutritionTargetService.targetsFromProfile(profile);
         return _DayMetricTotals.fromItems(
           date: date,
-          goals: goalsByDate[dateKey] ?? fallbackGoals,
+          targets: targets,
           items: dailyItems[index],
         );
       },
@@ -175,11 +176,12 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                   }
 
                   final dailyTotals = snapshot.data ?? const <_DayMetricTotals>[];
+                  final hasAnyTargets = dailyTotals.any((day) => day.targets != null);
 
                   final specs = <_WeeklyMetricSpec>[
                     _WeeklyMetricSpec(
                       color: MetricType.calories.color,
-                      goalForDay: (day) => day.goals.calories.toDouble(),
+                      goalForDay: (day) => day.targets?.calories.toDouble() ?? 0,
                       valueForDay: (day) => MetricType.calories.valueFromTotals(
                         calories: day.calories,
                         fat: day.fat,
@@ -189,7 +191,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     ),
                     _WeeklyMetricSpec(
                       color: MetricType.fat.color,
-                      goalForDay: (day) => day.goals.fat.toDouble(),
+                      goalForDay: (day) => day.targets?.fat.toDouble() ?? 0,
                       valueForDay: (day) => MetricType.fat.valueFromTotals(
                         calories: day.calories,
                         fat: day.fat,
@@ -199,7 +201,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     ),
                     _WeeklyMetricSpec(
                       color: MetricType.protein.color,
-                      goalForDay: (day) => day.goals.protein.toDouble(),
+                      goalForDay: (day) => day.targets?.protein.toDouble() ?? 0,
                       valueForDay: (day) => MetricType.protein.valueFromTotals(
                         calories: day.calories,
                         fat: day.fat,
@@ -209,7 +211,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     ),
                     _WeeklyMetricSpec(
                       color: MetricType.carbs.color,
-                      goalForDay: (day) => day.goals.carbs.toDouble(),
+                      goalForDay: (day) => day.targets?.carbs.toDouble() ?? 0,
                       valueForDay: (day) => MetricType.carbs.valueFromTotals(
                         calories: day.calories,
                         fat: day.fat,
@@ -248,18 +250,29 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                             ),
                           ),
                           const SizedBox(height: UiConstants.mediumSpacing),
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                            child: SizedBox(
-                              height: chartHeight,
-                              child: _CombinedMetricWeekChart(
-                                specs: specs,
-                                days: dailyTotals,
-                                languageCode: languageCode,
+                          if (!hasAnyTargets)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: UiConstants.pagePadding,
+                                right: UiConstants.pagePadding,
+                                bottom: UiConstants.mediumSpacing,
+                              ),
+                              child: Text(l10n.setMetabolicProfileHint),
+                            ),
+                          if (hasAnyTargets)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: UiConstants.pagePadding,
+                              ),
+                              child: SizedBox(
+                                height: chartHeight,
+                                child: _CombinedMetricWeekChart(
+                                  specs: specs,
+                                  days: dailyTotals,
+                                  languageCode: languageCode,
+                                ),
                               ),
                             ),
-                          ),
                           if (dailyTotals.every((day) => day.itemCount == 0))
                             Padding(
                               padding: const EdgeInsets.only(
@@ -413,7 +426,7 @@ class _WeeklyMetricSpec {
 class _DayMetricTotals {
   const _DayMetricTotals({
     required this.date,
-    required this.goals,
+    required this.targets,
     required this.itemCount,
     required this.calories,
     required this.fat,
@@ -422,7 +435,7 @@ class _DayMetricTotals {
   });
 
   final DateTime date;
-  final DailyGoals goals;
+  final DailyTargets? targets;
   final int itemCount;
   final int calories;
   final double fat;
@@ -431,12 +444,12 @@ class _DayMetricTotals {
 
   factory _DayMetricTotals.fromItems({
     required DateTime date,
-    required DailyGoals goals,
+    required DailyTargets? targets,
     required List<FoodItem> items,
   }) {
     return _DayMetricTotals(
       date: date,
-      goals: goals,
+      targets: targets,
       itemCount: items.length,
       calories: items.fold<int>(0, (sum, item) => sum + item.calories),
       fat: items.fold<double>(0, (sum, item) => sum + item.fat),

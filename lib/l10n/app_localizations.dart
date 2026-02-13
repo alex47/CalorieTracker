@@ -302,12 +302,6 @@ abstract class AppLocalizations {
   /// **'Timeout (seconds)'**
   String get openAiTimeoutSecondsLabel;
 
-  /// No description provided for @goalsSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Goals'**
-  String get goalsSectionTitle;
-
   /// No description provided for @metabolicProfileTitle.
   ///
   /// In en, this message translates to:
@@ -409,30 +403,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Maintenance: {calories} kcal/day'**
   String maintenanceCaloriesLabel(Object calories);
-
-  /// No description provided for @dailyCalorieGoalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily calorie goal (kcal)'**
-  String get dailyCalorieGoalLabel;
-
-  /// No description provided for @dailyFatGoalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily fat goal (g)'**
-  String get dailyFatGoalLabel;
-
-  /// No description provided for @dailyProteinGoalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily protein goal (g)'**
-  String get dailyProteinGoalLabel;
-
-  /// No description provided for @dailyCarbsGoalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Daily carbs goal (g)'**
-  String get dailyCarbsGoalLabel;
 
   /// No description provided for @dataToolsSectionTitle.
   ///

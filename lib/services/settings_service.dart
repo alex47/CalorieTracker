@@ -5,9 +5,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
-import '../models/daily_goals.dart';
 import 'database_service.dart';
-import 'goal_history_service.dart';
 
 class SettingsService extends ChangeNotifier {
   SettingsService._();
@@ -18,10 +16,6 @@ class SettingsService extends ChangeNotifier {
   static const _reasoningEffortKey = 'reasoning_effort';
   static const _maxOutputTokensKey = 'max_output_tokens';
   static const _openAiTimeoutSecondsKey = 'openai_timeout_seconds';
-  static const _dailyGoalKey = 'daily_goal';
-  static const _dailyFatGoalKey = 'daily_fat_goal';
-  static const _dailyProteinGoalKey = 'daily_protein_goal';
-  static const _dailyCarbsGoalKey = 'daily_carbs_goal';
 
   static final SettingsService instance = SettingsService._();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
@@ -32,10 +26,6 @@ class SettingsService extends ChangeNotifier {
     reasoningEffort: AppDefaults.reasoningEffort,
     maxOutputTokens: AppDefaults.maxOutputTokens,
     openAiTimeoutSeconds: AppDefaults.openAiRequestTimeoutSeconds,
-    dailyGoal: AppDefaults.dailyCalories,
-    dailyFatGoal: AppDefaults.dailyFatGrams,
-    dailyProteinGoal: AppDefaults.dailyProteinGrams,
-    dailyCarbsGoal: AppDefaults.dailyCarbsGrams,
   );
 
   AppSettings get settings => _settings;
@@ -54,25 +44,11 @@ class SettingsService extends ChangeNotifier {
           : AppDefaults.reasoningEffort,
       maxOutputTokens: _parseMaxOutputTokens(settingsMap[_maxOutputTokensKey]),
       openAiTimeoutSeconds: _parseOpenAiTimeoutSeconds(settingsMap[_openAiTimeoutSecondsKey]),
-      dailyGoal: int.tryParse(settingsMap[_dailyGoalKey] ?? '') ?? AppDefaults.dailyCalories,
-      dailyFatGoal: int.tryParse(settingsMap[_dailyFatGoalKey] ?? '') ?? AppDefaults.dailyFatGrams,
-      dailyProteinGoal:
-          int.tryParse(settingsMap[_dailyProteinGoalKey] ?? '') ?? AppDefaults.dailyProteinGrams,
-      dailyCarbsGoal:
-          int.tryParse(settingsMap[_dailyCarbsGoalKey] ?? '') ?? AppDefaults.dailyCarbsGrams,
     );
-    final hasGoalHistory = await db.query('goal_history', limit: 1);
-    if (hasGoalHistory.isEmpty) {
-      await GoalHistoryService.instance.upsertGoalsForDate(
-        date: DateTime.now(),
-        goals: DailyGoals.fromSettings(_settings),
-      );
-    }
     notifyListeners();
   }
 
   Future<void> updateSettings(AppSettings settings) async {
-    final previous = _settings;
     final db = await DatabaseService.instance.database;
     await db.transaction((txn) async {
       await txn.insert(
@@ -100,37 +76,7 @@ class SettingsService extends ChangeNotifier {
         {'key': _openAiTimeoutSecondsKey, 'value': settings.openAiTimeoutSeconds.toString()},
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      await txn.insert(
-        'settings',
-        {'key': _dailyGoalKey, 'value': settings.dailyGoal.toString()},
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-      await txn.insert(
-        'settings',
-        {'key': _dailyFatGoalKey, 'value': settings.dailyFatGoal.toString()},
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-      await txn.insert(
-        'settings',
-        {'key': _dailyProteinGoalKey, 'value': settings.dailyProteinGoal.toString()},
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-      await txn.insert(
-        'settings',
-        {'key': _dailyCarbsGoalKey, 'value': settings.dailyCarbsGoal.toString()},
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
     });
-    final goalsChanged = previous.dailyGoal != settings.dailyGoal ||
-        previous.dailyFatGoal != settings.dailyFatGoal ||
-        previous.dailyProteinGoal != settings.dailyProteinGoal ||
-        previous.dailyCarbsGoal != settings.dailyCarbsGoal;
-    if (goalsChanged) {
-      await GoalHistoryService.instance.upsertGoalsForDate(
-        date: DateTime.now(),
-        goals: DailyGoals.fromSettings(settings),
-      );
-    }
     _settings = settings;
     notifyListeners();
   }
@@ -154,10 +100,6 @@ class SettingsService extends ChangeNotifier {
       _reasoningEffortKey: _settings.reasoningEffort,
       _maxOutputTokensKey: _settings.maxOutputTokens.toString(),
       _openAiTimeoutSecondsKey: _settings.openAiTimeoutSeconds.toString(),
-      _dailyGoalKey: _settings.dailyGoal.toString(),
-      _dailyFatGoalKey: _settings.dailyFatGoal.toString(),
-      _dailyProteinGoalKey: _settings.dailyProteinGoal.toString(),
-      _dailyCarbsGoalKey: _settings.dailyCarbsGoal.toString(),
     };
   }
 

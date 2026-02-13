@@ -116,9 +116,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openAiTimeoutSecondsLabel => 'Timeout (seconds)';
 
   @override
-  String get goalsSectionTitle => 'Goals';
-
-  @override
   String get metabolicProfileTitle => 'Metabolic profile';
 
   @override
@@ -173,18 +170,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String maintenanceCaloriesLabel(Object calories) {
     return 'Maintenance: $calories kcal/day';
   }
-
-  @override
-  String get dailyCalorieGoalLabel => 'Daily calorie goal (kcal)';
-
-  @override
-  String get dailyFatGoalLabel => 'Daily fat goal (g)';
-
-  @override
-  String get dailyProteinGoalLabel => 'Daily protein goal (g)';
-
-  @override
-  String get dailyCarbsGoalLabel => 'Daily carbs goal (g)';
 
   @override
   String get dataToolsSectionTitle => 'Data tools';

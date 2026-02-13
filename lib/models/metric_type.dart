@@ -2,7 +2,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import 'daily_goals.dart';
+import 'daily_targets.dart';
 import 'food_item.dart';
 
 enum MetricType { calories, fat, protein, carbs }
@@ -45,7 +45,7 @@ extension MetricTypeX on MetricType {
     }
   }
 
-  double goalFromDailyGoals(DailyGoals goals) {
+  double goalFromDailyTargets(DailyTargets goals) {
     switch (this) {
       case MetricType.calories:
         return goals.calories.toDouble();

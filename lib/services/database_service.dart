@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 4,
+      version: 5,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -57,19 +57,6 @@ class DatabaseService {
         );
         await db.execute(
           '''
-          CREATE TABLE goal_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            goal_date TEXT NOT NULL UNIQUE,
-            calories INTEGER NOT NULL,
-            fat INTEGER NOT NULL,
-            protein INTEGER NOT NULL,
-            carbs INTEGER NOT NULL,
-            created_at TEXT NOT NULL
-          )
-          ''',
-        );
-        await db.execute(
-          '''
           CREATE TABLE metabolic_profile_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             profile_date TEXT NOT NULL UNIQUE,
@@ -95,21 +82,6 @@ class DatabaseService {
             'ALTER TABLE entry_items ADD COLUMN carbs REAL NOT NULL DEFAULT 0',
           );
         }
-        if (oldVersion < 3) {
-          await db.execute(
-            '''
-            CREATE TABLE goal_history (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              goal_date TEXT NOT NULL UNIQUE,
-              calories INTEGER NOT NULL,
-              fat INTEGER NOT NULL,
-              protein INTEGER NOT NULL,
-              carbs INTEGER NOT NULL,
-              created_at TEXT NOT NULL
-            )
-            ''',
-          );
-        }
         if (oldVersion < 4) {
           await db.execute(
             '''
@@ -125,6 +97,9 @@ class DatabaseService {
             )
             ''',
           );
+        }
+        if (oldVersion < 5) {
+          await db.execute('DROP TABLE IF EXISTS goal_history');
         }
       },
     );

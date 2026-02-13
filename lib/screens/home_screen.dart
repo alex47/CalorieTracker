@@ -3,14 +3,13 @@ import 'package:flutter/gestures.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../main.dart';
-import '../models/daily_goals.dart';
+import '../models/daily_targets.dart';
 import '../models/food_item.dart';
 import '../models/metabolic_profile.dart';
 import '../models/metric_type.dart';
-import '../services/calorie_deficit_service.dart';
 import '../services/entries_repository.dart';
-import '../services/goal_history_service.dart';
 import '../services/metabolic_profile_history_service.dart';
+import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -21,7 +20,6 @@ import 'about_screen.dart';
 import 'add_entry_screen.dart';
 import 'daily_metric_detail_screen.dart';
 import 'food_item_detail_screen.dart';
-import 'goals_screen.dart';
 import 'metabolic_profile_screen.dart';
 import 'settings_screen.dart';
 import 'weekly_summary_screen.dart';
@@ -43,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   late final PageController _pageController;
   late DateTime _selectedDate;
   final Map<String, Future<List<FoodItem>>> _dayFutures = {};
-  final Map<String, Future<DailyGoals>> _goalFutures = {};
+  final Map<String, Future<DailyTargets?>> _targetFutures = {};
   final Map<String, Future<MetabolicProfile?>> _profileFutures = {};
   PageRoute<dynamic>? _route;
 
@@ -83,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   @override
   void didPopNext() {
     _syncToTodayIfNeeded();
-    _goalFutures.clear();
+    _targetFutures.clear();
     _profileFutures.clear();
     _reloadDate(_selectedDate);
   }
@@ -116,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     }
 
     _dayFutures.clear();
-    _goalFutures.clear();
+    _targetFutures.clear();
     _profileFutures.clear();
     setState(() {
       _baseDate = today;
@@ -135,14 +133,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     );
   }
 
-  Future<DailyGoals> _goalsForDate(DateTime date, DailyGoals fallback) {
+  Future<DailyTargets?> _targetsForDate(DateTime date) {
     final key = _dateKey(date);
-    return _goalFutures.putIfAbsent(
+    return _targetFutures.putIfAbsent(
       key,
-      () => GoalHistoryService.instance.getEffectiveGoalsForDate(
-        date: date,
-        fallback: fallback,
-      ),
+      () async {
+        final profile = await _profileForDate(date);
+        if (profile == null) {
+          return null;
+        }
+        return NutritionTargetService.targetsFromProfile(profile);
+      },
     );
   }
 
@@ -157,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   Future<void> _reloadDate(DateTime date) async {
     final day = _dayOnly(date);
     _dayFutures.remove(_dateKey(day));
-    _goalFutures.remove(_dateKey(day));
+    _targetFutures.remove(_dateKey(day));
     _profileFutures.remove(_dateKey(day));
     setState(() {});
     await _itemsForDate(day);
@@ -248,19 +249,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                 if (value == SettingsScreen.routeName) {
                   await Navigator.pushNamed(context, SettingsScreen.routeName);
                   if (mounted) {
-                    _goalFutures.clear();
-                    setState(() {});
-                  }
-                } else if (value == GoalsScreen.routeName) {
-                  await Navigator.pushNamed(context, GoalsScreen.routeName);
-                  if (mounted) {
-                    _goalFutures.clear();
-                    _profileFutures.clear();
+                    _targetFutures.clear();
                     setState(() {});
                   }
                 } else if (value == MetabolicProfileScreen.routeName) {
                   await Navigator.pushNamed(context, MetabolicProfileScreen.routeName);
                   if (mounted) {
+                    _targetFutures.clear();
                     _profileFutures.clear();
                     setState(() {});
                   }
@@ -275,41 +270,32 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                 final menuTextStyle = Theme.of(context).popupMenuTheme.textStyle;
                 return [
                   PopupMenuItem(
-                  value: SettingsScreen.routeName,
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.settings),
-                    title: Text(l10n.settingsTitle, style: menuTextStyle),
+                    value: SettingsScreen.routeName,
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.settings),
+                      title: Text(l10n.settingsTitle, style: menuTextStyle),
+                    ),
                   ),
-                ),
                   PopupMenuItem(
-                  value: GoalsScreen.routeName,
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.flag_outlined),
-                    title: Text(l10n.goalsSectionTitle, style: menuTextStyle),
+                    value: MetabolicProfileScreen.routeName,
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.monitor_weight_outlined),
+                      title: Text(l10n.metabolicProfileTitle, style: menuTextStyle),
+                    ),
                   ),
-                ),
                   PopupMenuItem(
-                  value: MetabolicProfileScreen.routeName,
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.monitor_weight_outlined),
-                    title: Text(l10n.metabolicProfileTitle, style: menuTextStyle),
+                    value: AboutScreen.routeName,
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.info_outline),
+                      title: Text(l10n.aboutTitle, style: menuTextStyle),
+                    ),
                   ),
-                ),
-                  PopupMenuItem(
-                  value: AboutScreen.routeName,
-                  child: ListTile(
-                    dense: true,
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.info_outline),
-                    title: Text(l10n.aboutTitle, style: menuTextStyle),
-                  ),
-                ),
                 ];
               },
             ),
@@ -379,109 +365,92 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                           }
                           if (snapshot.hasError) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
                               child: Text(
                                 l10n.failedToLoadDailyTotals,
                                 style: TextStyle(color: Theme.of(context).colorScheme.error),
                               ),
                             );
-                        }
-                        final items = snapshot.data ?? const <FoodItem>[];
-                        final totalCalories = _totalCalories(items);
-                        final totalFat = _totalFat(items);
-                        final totalProtein = _totalProtein(items);
-                        final totalCarbs = _totalCarbs(items);
-                        return FutureBuilder<DailyGoals>(
-                          future: _goalsForDate(pageDate, DailyGoals.fromSettings(settings)),
-                          builder: (context, goalSnapshot) {
-                            if (goalSnapshot.connectionState == ConnectionState.waiting &&
-                                !goalSnapshot.hasData) {
-                              return const Padding(
-                                padding:
-                                    EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            }
-                            final goals =
-                                goalSnapshot.data ?? DailyGoals.fromSettings(settings);
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildTotalCard(
-                                  l10n,
-                                  goals.calories,
-                                  totalCalories,
-                                  onTap: () => _openMetricDetails(
-                                    pageDate,
-                                    MetricType.calories,
+                          }
+                          final items = snapshot.data ?? const <FoodItem>[];
+                          final totalCalories = _totalCalories(items);
+                          final totalFat = _totalFat(items);
+                          final totalProtein = _totalProtein(items);
+                          final totalCarbs = _totalCarbs(items);
+                          return FutureBuilder<DailyTargets?>(
+                            future: _targetsForDate(pageDate),
+                            builder: (context, targetSnapshot) {
+                              if (targetSnapshot.connectionState == ConnectionState.waiting &&
+                                  !targetSnapshot.hasData) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: UiConstants.smallSpacing,
                                   ),
-                                ),
-                                const SizedBox(height: UiConstants.smallSpacing),
-                                _DailyMacrosRow(
-                                  l10n: l10n,
-                                  fat: totalFat,
-                                  fatGoal: goals.fat.toDouble(),
-                                  protein: totalProtein,
-                                  proteinGoal: goals.protein.toDouble(),
-                                  carbs: totalCarbs,
-                                  carbsGoal: goals.carbs.toDouble(),
-                                  height: _progressBarHeight,
-                                  onFatTap: () => _openMetricDetails(pageDate, MetricType.fat),
-                                  onProteinTap: () =>
-                                      _openMetricDetails(pageDate, MetricType.protein),
-                                  onCarbsTap: () =>
-                                      _openMetricDetails(pageDate, MetricType.carbs),
-                                ),
-                                const SizedBox(height: UiConstants.smallSpacing),
-                                FutureBuilder<MetabolicProfile?>(
-                                  future: _profileForDate(pageDate),
-                                  builder: (context, profileSnapshot) {
-                                    if (profileSnapshot.connectionState == ConnectionState.waiting &&
-                                        !profileSnapshot.hasData) {
-                                      return const Card(
-                                        margin: EdgeInsets.zero,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(UiConstants.mediumSpacing),
-                                          child: Center(child: CircularProgressIndicator()),
+                                  child: Center(child: CircularProgressIndicator()),
+                                );
+                              }
+                              final targets = targetSnapshot.data;
+                              if (targets == null) {
+                                return Card(
+                                  margin: EdgeInsets.zero,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+                                    child: Text(l10n.setMetabolicProfileHint),
+                                  ),
+                                );
+                              }
+                              final deficit = targets.calories - totalCalories;
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildTotalCard(
+                                    l10n,
+                                    targets.calories,
+                                    totalCalories,
+                                    onTap: () => _openMetricDetails(
+                                      pageDate,
+                                      MetricType.calories,
+                                    ),
+                                  ),
+                                  const SizedBox(height: UiConstants.smallSpacing),
+                                  _DailyMacrosRow(
+                                    l10n: l10n,
+                                    fat: totalFat,
+                                    fatGoal: targets.fat.toDouble(),
+                                    protein: totalProtein,
+                                    proteinGoal: targets.protein.toDouble(),
+                                    carbs: totalCarbs,
+                                    carbsGoal: targets.carbs.toDouble(),
+                                    height: _progressBarHeight,
+                                    onFatTap: () => _openMetricDetails(pageDate, MetricType.fat),
+                                    onProteinTap: () =>
+                                        _openMetricDetails(pageDate, MetricType.protein),
+                                    onCarbsTap: () =>
+                                        _openMetricDetails(pageDate, MetricType.carbs),
+                                  ),
+                                  const SizedBox(height: UiConstants.smallSpacing),
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final singleMacroWidth =
+                                          (constraints.maxWidth -
+                                                  (UiConstants.smallSpacing * 2)) /
+                                              3;
+                                      return SizedBox(
+                                        width: singleMacroWidth,
+                                        child: MetricGroupBox(
+                                          label: l10n.dailyDeficitTitle,
+                                          value: l10n.caloriesKcalValue(deficit),
+                                          color: AppColors.calories,
                                         ),
                                       );
-                                    }
-                                    final profile = profileSnapshot.data;
-                                    if (profile == null) {
-                                      return Card(
-                                        margin: EdgeInsets.zero,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(UiConstants.mediumSpacing),
-                                          child: Text(l10n.setMetabolicProfileHint),
-                                        ),
-                                      );
-                                    }
-                                    final deficit = CalorieDeficitService.dailyDeficit(
-                                      consumedCalories: totalCalories,
-                                      profile: profile,
-                                    );
-                                    return LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        final singleMacroWidth =
-                                            (constraints.maxWidth - (UiConstants.smallSpacing * 2)) /
-                                                3;
-                                        return SizedBox(
-                                          width: singleMacroWidth,
-                                          child: MetricGroupBox(
-                                            label: l10n.dailyDeficitTitle,
-                                            value: l10n.caloriesKcalValue(deficit),
-                                            color: AppColors.calories,
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: UiConstants.largeSpacing),
@@ -596,11 +565,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   Widget _buildTotalCard(
     AppLocalizations l10n,
     int dailyGoal,
-    int total,
-    {
+    int total, {
     VoidCallback? onTap,
-  }
-  ) {
+  }) {
     return LabeledProgressBar(
       label: l10n.caloriesLabel,
       value: total.toDouble(),

@@ -46,10 +46,18 @@ class MetabolicProfileHistoryService {
       orderBy: 'profile_date DESC',
       limit: 1,
     );
-    if (rows.isEmpty) {
+    if (rows.isNotEmpty) {
+      return _profileFromRow(rows.first);
+    }
+    final earliestRows = await db.query(
+      'metabolic_profile_history',
+      orderBy: 'profile_date ASC',
+      limit: 1,
+    );
+    if (earliestRows.isEmpty) {
       return null;
     }
-    return _profileFromRow(rows.first);
+    return _profileFromRow(earliestRows.first);
   }
 
   Future<Map<String, MetabolicProfile?>> getEffectiveProfileForDateRange({
@@ -65,10 +73,16 @@ class MetabolicProfileHistoryService {
       whereArgs: [_dayKey(end)],
       orderBy: 'profile_date ASC',
     );
+    final earliestRows = await db.query(
+      'metabolic_profile_history',
+      orderBy: 'profile_date ASC',
+      limit: 1,
+    );
+    final fallbackProfile = earliestRows.isNotEmpty ? _profileFromRow(earliestRows.first) : null;
 
     final result = <String, MetabolicProfile?>{};
     var cursor = 0;
-    MetabolicProfile? active;
+    MetabolicProfile? active = fallbackProfile;
 
     for (var date = start; !date.isAfter(end); date = date.add(const Duration(days: 1))) {
       final dateKey = _dayKey(date);
