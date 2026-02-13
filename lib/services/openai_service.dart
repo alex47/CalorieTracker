@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
+import '../models/day_summary.dart';
 
 class AiParseException implements Exception {
   const AiParseException(
@@ -60,6 +61,27 @@ class OpenAIService {
     'required': ['items', 'error'],
   };
 
+  static const Map<String, dynamic> daySummarySchema = {
+    'type': 'object',
+    'additionalProperties': false,
+    'properties': {
+      'summary': {'type': 'string'},
+      'highlights': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'issues': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+      'suggestions': {
+        'type': 'array',
+        'items': {'type': 'string'},
+      },
+    },
+    'required': ['summary', 'highlights', 'issues', 'suggestions'],
+  };
+
   static const String systemPrompt = '''
 You are a nutrition estimation assistant.
 Rules:
@@ -83,6 +105,19 @@ Rules:
 - If you cannot extract at least one valid food name + amount pair, return:
   { "items": [], "error": "<a short natural-language explanation of what is missing and what the user should clarify>" }
 - The "error" text must sound natural and helpful, not templated.
+''';
+
+  static const String daySummarySystemPrompt = '''
+You are a concise nutrition coach summarizing one day of food intake.
+Rules:
+- Use only the provided JSON data.
+- Keep output practical and brief.
+- Return strict JSON only.
+- "summary": 1-2 short sentences.
+- "highlights": up to 4 short bullets.
+- "issues": up to 4 short bullets.
+- "suggestions": up to 4 short action-oriented bullets.
+- Do not include medical advice or diagnosis.
 ''';
 
   Future<void> testConnection({required String model}) async {
@@ -200,6 +235,100 @@ Rules:
       'Failed to parse AI response after $maxAttempts attempts: $lastError',
       rawResponseText: lastError?.toString(),
     );
+  }
+
+  Future<DaySummary> summarizeDay({
+    required String model,
+    required String languageCode,
+    required String reasoningEffort,
+    required int maxOutputTokens,
+    required Map<String, dynamic> daySnapshot,
+  }) async {
+    final effort = reasoningEffortOptions.contains(reasoningEffort)
+        ? reasoningEffort
+        : AppDefaults.reasoningEffort;
+    final outputTokens = maxOutputTokens < AppDefaults.minOutputTokens
+        ? defaultEstimateMaxOutputTokens
+        : maxOutputTokens;
+    final languageName = _languageNameEnglish(languageCode);
+    final localizedSystemPrompt =
+        '$daySummarySystemPrompt\n- Always output all text fields in $languageName.';
+    final compactSnapshot = jsonEncode(daySnapshot);
+    final response = await http
+        .post(
+          Uri.parse('https://api.openai.com/v1/responses'),
+          headers: {
+            'Authorization': 'Bearer $apiKey',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'model': model,
+            'input': [
+              {'role': 'system', 'content': localizedSystemPrompt},
+              {
+                'role': 'user',
+                'content':
+                    'Summarize this day using the required JSON schema.\n\nDay data JSON:\n$compactSnapshot',
+              },
+            ],
+            'store': false,
+            'max_output_tokens': outputTokens,
+            'reasoning': {'effort': effort},
+            'text': {
+              'format': {
+                'type': 'json_schema',
+                'name': 'day_summary',
+                'strict': true,
+                'schema': daySummarySchema,
+              },
+            },
+          }),
+        )
+        .timeout(requestTimeout, onTimeout: () {
+          throw StateError('OpenAI request timed out.');
+        });
+
+    if (response.statusCode >= 400) {
+      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+    }
+
+    final decodedBody = response.body;
+    Map<String, dynamic> parsedBody;
+    try {
+      parsedBody = jsonDecode(decodedBody) as Map<String, dynamic>;
+    } catch (_) {
+      throw AiParseException(
+        'Failed to parse AI response.',
+        rawResponseText: decodedBody,
+      );
+    }
+
+    final content = _extractResponseText(parsedBody);
+    if (content == null || content.isEmpty) {
+      throw AiParseException(
+        'Empty content in response.',
+        rawResponseText: decodedBody,
+      );
+    }
+
+    Map<String, dynamic> parsed;
+    try {
+      parsed = jsonDecode(content) as Map<String, dynamic>;
+    } catch (_) {
+      throw AiParseException(
+        'Failed to parse AI response.',
+        rawResponseText: content.isNotEmpty ? content : decodedBody,
+      );
+    }
+
+    final summary = DaySummary.fromMap(parsed);
+    if (summary.summary.isEmpty) {
+      throw AiParseException(
+        'Missing summary text.',
+        rawResponseText: content.isNotEmpty ? content : decodedBody,
+      );
+    }
+    return summary;
   }
 
   bool _isNonRetriableRequestError(Object error) {

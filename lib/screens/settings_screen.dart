@@ -7,6 +7,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/app_defaults.dart';
 import '../models/app_settings.dart';
 import '../services/data_transfer_service.dart';
+import '../services/day_summary_service.dart';
 import '../services/entries_repository.dart';
 import '../services/metabolic_profile_history_service.dart';
 import '../services/openai_service.dart';
@@ -250,6 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         settings: Map<String, String>.from(SettingsService.instance.exportSettingsMap()),
         metabolicProfileHistory:
             await MetabolicProfileHistoryService.instance.exportProfileHistoryRows(),
+        daySummaries: await DaySummaryService.instance.exportSummaryRows(),
         entries: (await EntriesRepository.instance.exportEntriesRows())
             .map((row) => Map<String, dynamic>.from(row))
             .toList(),

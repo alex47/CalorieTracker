@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'No entries for this week.'**
   String get noEntriesForWeek;
 
+  /// No description provided for @noEntriesForDaySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries for this day to summarize.'**
+  String get noEntriesForDaySummary;
+
   /// No description provided for @openAiSectionTitle.
   ///
   /// In en, this message translates to:
@@ -512,6 +518,36 @@ abstract class AppLocalizations {
   /// **'Daily deficit'**
   String get dailyDeficitTitle;
 
+  /// No description provided for @summarizeDayButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize'**
+  String get summarizeDayButton;
+
+  /// No description provided for @dailySummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily summary'**
+  String get dailySummaryTitle;
+
+  /// No description provided for @dailySummaryHighlightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights'**
+  String get dailySummaryHighlightsTitle;
+
+  /// No description provided for @dailySummaryIssuesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Issues'**
+  String get dailySummaryIssuesTitle;
+
+  /// No description provided for @dailySummarySuggestionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestions'**
+  String get dailySummarySuggestionsTitle;
+
   /// No description provided for @dataToolsSectionTitle.
   ///
   /// In en, this message translates to:
@@ -655,6 +691,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to fetch calories. {error}'**
   String failedToFetchCalories(Object error);
+
+  /// No description provided for @failedToSummarizeDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to summarize day. {error}'**
+  String failedToSummarizeDay(Object error);
 
   /// No description provided for @requestCaloriesBeforeSaving.
   ///

@@ -89,6 +89,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noEntriesForWeek => 'No entries for this week.';
 
   @override
+  String get noEntriesForDaySummary => 'No entries for this day to summarize.';
+
+  @override
   String get openAiSectionTitle => 'OpenAI';
 
   @override
@@ -230,6 +233,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyDeficitTitle => 'Daily deficit';
 
   @override
+  String get summarizeDayButton => 'Summarize';
+
+  @override
+  String get dailySummaryTitle => 'Daily summary';
+
+  @override
+  String get dailySummaryHighlightsTitle => 'Highlights';
+
+  @override
+  String get dailySummaryIssuesTitle => 'Issues';
+
+  @override
+  String get dailySummarySuggestionsTitle => 'Suggestions';
+
+  @override
   String get dataToolsSectionTitle => 'Data tools';
 
   @override
@@ -316,6 +334,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String failedToFetchCalories(Object error) {
     return 'Failed to fetch calories. $error';
+  }
+
+  @override
+  String failedToSummarizeDay(Object error) {
+    return 'Failed to summarize day. $error';
   }
 
   @override

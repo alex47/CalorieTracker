@@ -24,6 +24,7 @@ class ImportPayload {
   const ImportPayload({
     required this.settings,
     required this.metabolicProfileHistory,
+    required this.daySummaries,
     required this.entries,
     required this.entryItems,
     this.apiKeyFromBackup,
@@ -31,6 +32,7 @@ class ImportPayload {
 
   final Map<String, String> settings;
   final List<Map<String, dynamic>> metabolicProfileHistory;
+  final List<Map<String, dynamic>> daySummaries;
   final List<Map<String, dynamic>> entries;
   final List<Map<String, dynamic>> entryItems;
   final String? apiKeyFromBackup;
@@ -55,6 +57,7 @@ class DataTransferService {
     final entryItems = await db.query('entry_items');
     final settingsRows = await db.query('settings');
     final metabolicProfileHistory = await db.query('metabolic_profile_history');
+    final daySummaries = await db.query('day_summary');
     final settings = {
       for (final row in settingsRows) row['key'] as String: row['value'] as String,
     };
@@ -64,6 +67,7 @@ class DataTransferService {
       'exported_at': DateTime.now().toIso8601String(),
       'settings': settings,
       'metabolic_profile_history': metabolicProfileHistory,
+      'day_summary': daySummaries,
       'entries': entries,
       'entry_items': entryItems,
       if (includeApiKey && apiKey != null && apiKey.trim().isNotEmpty)
@@ -122,6 +126,7 @@ class DataTransferService {
 
     final settings = _readSettings(decoded['settings']);
     final metabolicProfileHistory = _readRows(decoded['metabolic_profile_history'] ?? const []);
+    final daySummaries = _readRows(decoded['day_summary'] ?? const []);
     final entries = _readRows(decoded['entries']);
     final entryItems = _readRows(decoded['entry_items']);
     final apiKeyFromBackup = _readApiKeyFromBackup(decoded['secure']);
@@ -129,6 +134,7 @@ class DataTransferService {
     return ImportPayload(
       settings: settings,
       metabolicProfileHistory: metabolicProfileHistory,
+      daySummaries: daySummaries,
       entries: entries,
       entryItems: entryItems,
       apiKeyFromBackup: apiKeyFromBackup,
@@ -143,6 +149,7 @@ class DataTransferService {
       await txn.delete('entries');
       await txn.delete('settings');
       await txn.delete('metabolic_profile_history');
+      await txn.delete('day_summary');
 
       for (final entry in payload.entries) {
         await txn.insert(
@@ -203,6 +210,22 @@ class DataTransferService {
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }
+
+      for (final summary in payload.daySummaries) {
+        await txn.insert(
+          'day_summary',
+          {
+            'summary_date': summary['summary_date'] as String,
+            'language_code': summary['language_code'] as String,
+            'model': summary['model'] as String? ?? '',
+            'source_hash': summary['source_hash'] as String,
+            'summary_json': summary['summary_json'] as String,
+            'created_at': summary['created_at'] as String,
+            'updated_at': summary['updated_at'] as String,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
     });
 
     return ImportSummary(
@@ -246,6 +269,16 @@ class DataTransferService {
       _requireOptionalNum(profile, 'carbs_ratio_percent', table: 'metabolic_profile_history');
       _requireString(profile, 'created_at', table: 'metabolic_profile_history');
       _validateMacroRatios(profile);
+    }
+
+    for (final summary in payload.daySummaries) {
+      _requireString(summary, 'summary_date', table: 'day_summary');
+      _requireString(summary, 'language_code', table: 'day_summary');
+      _requireOptionalString(summary, 'model', table: 'day_summary');
+      _requireString(summary, 'source_hash', table: 'day_summary');
+      _requireString(summary, 'summary_json', table: 'day_summary');
+      _requireString(summary, 'created_at', table: 'day_summary');
+      _requireString(summary, 'updated_at', table: 'day_summary');
     }
   }
 

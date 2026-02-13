@@ -35,6 +35,7 @@
   "failedToLoadEntries": "A bejegyzések betöltése sikertelen.",
   "emptyEntriesHint": "Erre a napra még nincs bejegyzés. Koppints a Hozzáadás gombra.",
   "noEntriesForWeek": "Erre a hétre nincs bejegyzés.",
+  "noEntriesForDaySummary": "Erre a napra nincs bejegyzés az összegzéshez.",
   "openAiSectionTitle": "OpenAI",
   "generalSectionTitle": "Általános",
   "languageLabel": "Nyelv",
@@ -89,6 +90,11 @@
   "activityVeryActive": "Nagyon aktív",
   "setMetabolicProfileHint": "Állítsd be az anyagcsere profilodat a kalóriadeficit követéséhez.",
   "dailyDeficitTitle": "Napi deficit",
+  "summarizeDayButton": "Összegzés",
+  "dailySummaryTitle": "Napi összegzés",
+  "dailySummaryHighlightsTitle": "Pozitívumok",
+  "dailySummaryIssuesTitle": "Kockázatok",
+  "dailySummarySuggestionsTitle": "Javaslatok",
   "dataToolsSectionTitle": "Adateszközök",
   "exportDataButton": "Adatok exportálása",
   "importDataButton": "Adatok importálása",
@@ -145,6 +151,12 @@
   "setApiKeyInSettings": "Állítsd be az OpenAI API kulcsot a Beállításokban.",
   "failedToFetchCalories": "A kalóriák lekérése sikertelen. {error}",
   "@failedToFetchCalories": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSummarizeDay": "A napi összegzés sikertelen. {error}",
+  "@failedToSummarizeDay": {
     "placeholders": {
       "error": {}
     }

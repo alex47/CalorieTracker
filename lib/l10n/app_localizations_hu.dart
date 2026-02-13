@@ -90,6 +90,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get noEntriesForWeek => 'Erre a hétre nincs bejegyzés.';
 
   @override
+  String get noEntriesForDaySummary =>
+      'Erre a napra nincs bejegyzés az összegzéshez.';
+
+  @override
   String get openAiSectionTitle => 'OpenAI';
 
   @override
@@ -233,6 +237,21 @@ class AppLocalizationsHu extends AppLocalizations {
   String get dailyDeficitTitle => 'Napi deficit';
 
   @override
+  String get summarizeDayButton => 'Összegzés';
+
+  @override
+  String get dailySummaryTitle => 'Napi összegzés';
+
+  @override
+  String get dailySummaryHighlightsTitle => 'Pozitívumok';
+
+  @override
+  String get dailySummaryIssuesTitle => 'Kockázatok';
+
+  @override
+  String get dailySummarySuggestionsTitle => 'Javaslatok';
+
+  @override
   String get dataToolsSectionTitle => 'Adateszközök';
 
   @override
@@ -321,6 +340,11 @@ class AppLocalizationsHu extends AppLocalizations {
   @override
   String failedToFetchCalories(Object error) {
     return 'A kalóriák lekérése sikertelen. $error';
+  }
+
+  @override
+  String failedToSummarizeDay(Object error) {
+    return 'A napi összegzés sikertelen. $error';
   }
 
   @override

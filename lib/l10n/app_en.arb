@@ -35,6 +35,7 @@
   "failedToLoadEntries": "Failed to load entries.",
   "emptyEntriesHint": "No entries for this day yet. Tap Add to log food.",
   "noEntriesForWeek": "No entries for this week.",
+  "noEntriesForDaySummary": "No entries for this day to summarize.",
   "openAiSectionTitle": "OpenAI",
   "generalSectionTitle": "General",
   "languageLabel": "Language",
@@ -89,6 +90,11 @@
   "activityVeryActive": "Very active",
   "setMetabolicProfileHint": "Set your metabolic profile to track calorie deficit.",
   "dailyDeficitTitle": "Daily deficit",
+  "summarizeDayButton": "Summarize",
+  "dailySummaryTitle": "Daily summary",
+  "dailySummaryHighlightsTitle": "Highlights",
+  "dailySummaryIssuesTitle": "Issues",
+  "dailySummarySuggestionsTitle": "Suggestions",
   "dataToolsSectionTitle": "Data tools",
   "exportDataButton": "Export data",
   "importDataButton": "Import data",
@@ -145,6 +151,12 @@
   "setApiKeyInSettings": "Please set your OpenAI API key in Settings.",
   "failedToFetchCalories": "Failed to fetch calories. {error}",
   "@failedToFetchCalories": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToSummarizeDay": "Failed to summarize day. {error}",
+  "@failedToSummarizeDay": {
     "placeholders": {
       "error": {}
     }

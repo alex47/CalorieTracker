@@ -28,6 +28,9 @@ String localizeError(Object error, AppLocalizations l10n) {
   if (raw.startsWith('Failed to parse AI response.')) {
     return l10n.errorFailedParseAiResponse;
   }
+  if (raw.startsWith('Missing summary text.')) {
+    return l10n.errorFailedParseAiResponse;
+  }
   if (raw.startsWith('Empty content in response.')) {
     return l10n.errorEmptyAiContent;
   }

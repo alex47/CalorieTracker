@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 6,
+      version: 7,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -72,6 +72,19 @@ class DatabaseService {
           )
           ''',
         );
+        await db.execute(
+          '''
+          CREATE TABLE day_summary (
+            summary_date TEXT PRIMARY KEY,
+            language_code TEXT NOT NULL,
+            model TEXT NOT NULL,
+            source_hash TEXT NOT NULL,
+            summary_json TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+          )
+          ''',
+        );
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -113,6 +126,21 @@ class DatabaseService {
           );
           await db.execute(
             'ALTER TABLE metabolic_profile_history ADD COLUMN carbs_ratio_percent INTEGER NOT NULL DEFAULT 40',
+          );
+        }
+        if (oldVersion < 7) {
+          await db.execute(
+            '''
+            CREATE TABLE day_summary (
+              summary_date TEXT PRIMARY KEY,
+              language_code TEXT NOT NULL,
+              model TEXT NOT NULL,
+              source_hash TEXT NOT NULL,
+              summary_json TEXT NOT NULL,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL
+            )
+            ''',
           );
         }
       },

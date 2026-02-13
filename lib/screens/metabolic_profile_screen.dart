@@ -397,10 +397,10 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
         return Theme(
           data: baseTheme.copyWith(
             datePickerTheme: baseTheme.datePickerTheme.copyWith(
-              cancelButtonStyle: ButtonStyle(
+              cancelButtonStyle: const ButtonStyle(
                 foregroundColor: WidgetStatePropertyAll<Color>(AppColors.text),
               ),
-              confirmButtonStyle: ButtonStyle(
+              confirmButtonStyle: const ButtonStyle(
                 foregroundColor: WidgetStatePropertyAll<Color>(AppColors.text),
               ),
             ),
