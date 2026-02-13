@@ -136,6 +136,7 @@ class DataTransferService {
   }
 
   Future<ImportSummary> applyImportData(ImportPayload payload) async {
+    _validateImportPayload(payload);
     final db = await DatabaseService.instance.database;
     await db.transaction((txn) async {
       await txn.delete('entry_items');
@@ -205,6 +206,104 @@ class DataTransferService {
       itemsCount: payload.itemsCount,
       apiKeyFromBackup: payload.apiKeyFromBackup,
     );
+  }
+
+  void _validateImportPayload(ImportPayload payload) {
+    for (final entry in payload.entries) {
+      _requireInt(entry, 'id', table: 'entries');
+      _requireString(entry, 'entry_date', table: 'entries');
+      _requireString(entry, 'created_at', table: 'entries');
+      _requireString(entry, 'prompt', table: 'entries');
+      _requireString(entry, 'response', table: 'entries');
+    }
+
+    for (final item in payload.entryItems) {
+      _requireInt(item, 'id', table: 'entry_items');
+      _requireInt(item, 'entry_id', table: 'entry_items');
+      _requireString(item, 'name', table: 'entry_items');
+      _requireString(item, 'amount', table: 'entry_items');
+      _requireNum(item, 'calories', table: 'entry_items');
+      _requireOptionalNum(item, 'fat', table: 'entry_items');
+      _requireOptionalNum(item, 'protein', table: 'entry_items');
+      _requireOptionalNum(item, 'carbs', table: 'entry_items');
+      _requireOptionalString(item, 'notes', table: 'entry_items');
+    }
+
+    for (final goal in payload.goalHistory) {
+      _requireOptionalInt(goal, 'id', table: 'goal_history');
+      _requireString(goal, 'goal_date', table: 'goal_history');
+      _requireNum(goal, 'calories', table: 'goal_history');
+      _requireNum(goal, 'fat', table: 'goal_history');
+      _requireNum(goal, 'protein', table: 'goal_history');
+      _requireNum(goal, 'carbs', table: 'goal_history');
+      _requireString(goal, 'created_at', table: 'goal_history');
+    }
+  }
+
+  void _requireString(
+    Map<String, dynamic> row,
+    String key, {
+    required String table,
+  }) {
+    final value = row[key];
+    if (value is! String) {
+      throw FormatException('Invalid "$table.$key" in backup payload.');
+    }
+  }
+
+  void _requireOptionalString(
+    Map<String, dynamic> row,
+    String key, {
+    required String table,
+  }) {
+    final value = row[key];
+    if (value != null && value is! String) {
+      throw FormatException('Invalid "$table.$key" in backup payload.');
+    }
+  }
+
+  void _requireInt(
+    Map<String, dynamic> row,
+    String key, {
+    required String table,
+  }) {
+    final value = row[key];
+    if (value is! int) {
+      throw FormatException('Invalid "$table.$key" in backup payload.');
+    }
+  }
+
+  void _requireOptionalInt(
+    Map<String, dynamic> row,
+    String key, {
+    required String table,
+  }) {
+    final value = row[key];
+    if (value != null && value is! int) {
+      throw FormatException('Invalid "$table.$key" in backup payload.');
+    }
+  }
+
+  void _requireNum(
+    Map<String, dynamic> row,
+    String key, {
+    required String table,
+  }) {
+    final value = row[key];
+    if (value is! num) {
+      throw FormatException('Invalid "$table.$key" in backup payload.');
+    }
+  }
+
+  void _requireOptionalNum(
+    Map<String, dynamic> row,
+    String key, {
+    required String table,
+  }) {
+    final value = row[key];
+    if (value != null && value is! num) {
+      throw FormatException('Invalid "$table.$key" in backup payload.');
+    }
   }
 
   Map<String, String> _readSettings(Object? rawSettings) {
