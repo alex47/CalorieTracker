@@ -17,6 +17,7 @@ import 'about_screen.dart';
 import 'add_entry_screen.dart';
 import 'daily_metric_detail_screen.dart';
 import 'food_item_detail_screen.dart';
+import 'goals_screen.dart';
 import 'settings_screen.dart';
 import 'weekly_summary_screen.dart';
 
@@ -233,6 +234,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     _goalFutures.clear();
                     setState(() {});
                   }
+                } else if (value == GoalsScreen.routeName) {
+                  await Navigator.pushNamed(context, GoalsScreen.routeName);
+                  if (mounted) {
+                    _goalFutures.clear();
+                    setState(() {});
+                  }
                 } else if (value == AboutScreen.routeName) {
                   await Navigator.pushNamed(context, AboutScreen.routeName);
                   if (mounted) {
@@ -250,6 +257,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.settings),
                     title: Text(l10n.settingsTitle, style: menuTextStyle),
+                  ),
+                ),
+                  PopupMenuItem(
+                  value: GoalsScreen.routeName,
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.flag_outlined),
+                    title: Text(l10n.goalsSectionTitle, style: menuTextStyle),
                   ),
                 ),
                   PopupMenuItem(

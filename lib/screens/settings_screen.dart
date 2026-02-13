@@ -11,7 +11,6 @@ import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
-import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
 import '../widgets/app_dialog.dart';
@@ -32,10 +31,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _apiKeyController = TextEditingController();
   final TextEditingController _maxOutputTokensController = TextEditingController();
   final TextEditingController _openAiTimeoutController = TextEditingController();
-  final TextEditingController _calorieGoalController = TextEditingController();
-  final TextEditingController _fatGoalController = TextEditingController();
-  final TextEditingController _proteinGoalController = TextEditingController();
-  final TextEditingController _carbsGoalController = TextEditingController();
   Timer? _autosaveTimer;
   late String _selectedLanguageCode;
   late String _selectedModel;
@@ -54,10 +49,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _selectedReasoningEffort = settings.reasoningEffort;
     _maxOutputTokensController.text = settings.maxOutputTokens.toString();
     _openAiTimeoutController.text = settings.openAiTimeoutSeconds.toString();
-    _calorieGoalController.text = settings.dailyGoal.toString();
-    _fatGoalController.text = settings.dailyFatGoal.toString();
-    _proteinGoalController.text = settings.dailyProteinGoal.toString();
-    _carbsGoalController.text = settings.dailyCarbsGoal.toString();
     _loadApiKey();
   }
 
@@ -80,10 +71,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _apiKeyController.dispose();
     _maxOutputTokensController.dispose();
     _openAiTimeoutController.dispose();
-    _calorieGoalController.dispose();
-    _fatGoalController.dispose();
-    _proteinGoalController.dispose();
-    _carbsGoalController.dispose();
     super.dispose();
   }
 
@@ -95,11 +82,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         int.tryParse(_maxOutputTokensController.text.trim()) ?? current.maxOutputTokens;
     final openAiTimeoutSeconds =
         int.tryParse(_openAiTimeoutController.text.trim()) ?? current.openAiTimeoutSeconds;
-    final dailyGoal = int.tryParse(_calorieGoalController.text.trim()) ?? current.dailyGoal;
-    final dailyFatGoal = int.tryParse(_fatGoalController.text.trim()) ?? current.dailyFatGoal;
-    final dailyProteinGoal =
-        int.tryParse(_proteinGoalController.text.trim()) ?? current.dailyProteinGoal;
-    final dailyCarbsGoal = int.tryParse(_carbsGoalController.text.trim()) ?? current.dailyCarbsGoal;
     await SettingsService.instance.updateSettings(
       AppSettings(
         languageCode: _selectedLanguageCode,
@@ -110,10 +92,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             : maxOutputTokens,
         openAiTimeoutSeconds:
             openAiTimeoutSeconds <= 0 ? current.openAiTimeoutSeconds : openAiTimeoutSeconds,
-        dailyGoal: dailyGoal,
-        dailyFatGoal: dailyFatGoal,
-        dailyProteinGoal: dailyProteinGoal,
-        dailyCarbsGoal: dailyCarbsGoal,
+        dailyGoal: current.dailyGoal,
+        dailyFatGoal: current.dailyFatGoal,
+        dailyProteinGoal: current.dailyProteinGoal,
+        dailyCarbsGoal: current.dailyCarbsGoal,
       ),
     );
   }
@@ -314,10 +296,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _selectedReasoningEffort = current.reasoningEffort;
           _maxOutputTokensController.text = current.maxOutputTokens.toString();
           _openAiTimeoutController.text = current.openAiTimeoutSeconds.toString();
-          _calorieGoalController.text = current.dailyGoal.toString();
-          _fatGoalController.text = current.dailyFatGoal.toString();
-          _proteinGoalController.text = current.dailyProteinGoal.toString();
-          _carbsGoalController.text = current.dailyCarbsGoal.toString();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -589,55 +567,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             controller: _openAiTimeoutController,
             enabled: !isAnyBusy,
             contentHeight: UiConstants.settingsFieldHeight,
-            keyboardType: TextInputType.number,
-            onChanged: (_) => _scheduleSettingsAutosave(),
-          ),
-          const SizedBox(height: sectionSpacing),
-          Text(
-            l10n.goalsSectionTitle,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: headerToContentSpacing),
-          LabeledInputBox(
-            label: l10n.dailyCalorieGoalLabel,
-            controller: _calorieGoalController,
-            enabled: !isAnyBusy,
-            contentHeight: UiConstants.settingsFieldHeight,
-            borderColor: AppColors.calories,
-            textColor: AppColors.calories,
-            keyboardType: TextInputType.number,
-            onChanged: (_) => _scheduleSettingsAutosave(),
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledInputBox(
-            label: l10n.dailyFatGoalLabel,
-            controller: _fatGoalController,
-            enabled: !isAnyBusy,
-            contentHeight: UiConstants.settingsFieldHeight,
-            borderColor: AppColors.fat,
-            textColor: AppColors.fat,
-            keyboardType: TextInputType.number,
-            onChanged: (_) => _scheduleSettingsAutosave(),
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledInputBox(
-            label: l10n.dailyProteinGoalLabel,
-            controller: _proteinGoalController,
-            enabled: !isAnyBusy,
-            contentHeight: UiConstants.settingsFieldHeight,
-            borderColor: AppColors.protein,
-            textColor: AppColors.protein,
-            keyboardType: TextInputType.number,
-            onChanged: (_) => _scheduleSettingsAutosave(),
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledInputBox(
-            label: l10n.dailyCarbsGoalLabel,
-            controller: _carbsGoalController,
-            enabled: !isAnyBusy,
-            contentHeight: UiConstants.settingsFieldHeight,
-            borderColor: AppColors.carbs,
-            textColor: AppColors.carbs,
             keyboardType: TextInputType.number,
             onChanged: (_) => _scheduleSettingsAutosave(),
           ),

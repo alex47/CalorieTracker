@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'screens/about_screen.dart';
 import 'screens/add_entry_screen.dart';
+import 'screens/goals_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/database_service.dart';
@@ -281,6 +282,7 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
       themeMode: ThemeMode.dark,
       routes: {
         SettingsScreen.routeName: (_) => const SettingsScreen(),
+        GoalsScreen.routeName: (_) => const GoalsScreen(),
         AboutScreen.routeName: (_) => const AboutScreen(),
       },
       onGenerateRoute: (settings) {
