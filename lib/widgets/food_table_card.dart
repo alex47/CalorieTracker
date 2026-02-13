@@ -88,7 +88,15 @@ class FoodTableCard extends StatelessWidget {
                       .toList(),
                 ),
               ),
-              const Divider(height: 1),
+              SizedBox(
+                width: double.infinity,
+                height: UiConstants.borderWidth,
+                child: CustomPaint(
+                  painter: _HorizontalDividerPainter(
+                    color: resolvedBorderColor,
+                  ),
+                ),
+              ),
               ...rows.map((row) {
                 final content = Padding(
                   padding: const EdgeInsets.symmetric(
@@ -139,6 +147,29 @@ class FoodTableCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _HorizontalDividerPainter extends CustomPainter {
+  const _HorizontalDividerPainter({
+    required this.color,
+  });
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final y = size.height / 2;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = UiConstants.borderWidth
+      ..color = color;
+    canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HorizontalDividerPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }
 
