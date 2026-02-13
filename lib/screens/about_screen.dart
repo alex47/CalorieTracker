@@ -252,14 +252,16 @@ class _AboutScreenState extends State<AboutScreen> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _checkForUpdates,
-                    icon: const Icon(Icons.update_outlined),
-                    label: _checkingUpdates
+                    icon: _checkingUpdates
                         ? const SizedBox(
                             height: UiConstants.loadingIndicatorSize,
                             width: UiConstants.loadingIndicatorSize,
-                            child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
+                            child: CircularProgressIndicator(
+                              strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                            ),
                           )
-                        : Text(l10n.checkForUpdatesButton, textAlign: TextAlign.center),
+                        : const Icon(Icons.update_outlined),
+                    label: Text(l10n.checkForUpdatesButton, textAlign: TextAlign.center),
                     ),
                   ),
                 if (_updateResult != null) ...[
@@ -277,14 +279,16 @@ class _AboutScreenState extends State<AboutScreen> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         onPressed: isBusy ? null : _downloadUpdate,
-                        icon: const Icon(Icons.system_update_alt_outlined),
-                        label: _installingUpdate
+                        icon: _installingUpdate
                             ? const SizedBox(
                                 height: UiConstants.loadingIndicatorSize,
                                 width: UiConstants.loadingIndicatorSize,
-                                child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                                ),
                               )
-                            : Text(l10n.installLatestApkButton, textAlign: TextAlign.center),
+                            : const Icon(Icons.system_update_alt_outlined),
+                        label: Text(l10n.installLatestApkButton, textAlign: TextAlign.center),
                       ),
                     ),
                     if (_installingUpdate) ...[

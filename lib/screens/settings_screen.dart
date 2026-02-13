@@ -492,14 +492,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: UiConstants.mediumSpacing),
           FilledButton.icon(
             onPressed: isAnyBusy ? null : _testKey,
-            icon: const Icon(Icons.key_outlined),
-            label: _testing
+            icon: _testing
                 ? const SizedBox(
                     height: UiConstants.loadingIndicatorSize,
                     width: UiConstants.loadingIndicatorSize,
-                    child: CircularProgressIndicator(strokeWidth: UiConstants.loadingIndicatorStrokeWidth),
+                    child: CircularProgressIndicator(
+                      strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                    ),
                   )
-                : Text(l10n.testKeyButton, textAlign: TextAlign.center),
+                : const Icon(Icons.key_outlined),
+            label: Text(l10n.testKeyButton, textAlign: TextAlign.center),
           ),
           const SizedBox(height: controlSpacing),
           LabeledDropdownBox<String>(
