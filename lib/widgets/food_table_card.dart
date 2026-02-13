@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
-import 'labeled_group_box.dart';
+import 'painters/notched_border_painter.dart';
 
 class FoodTableColumn {
   const FoodTableColumn({
