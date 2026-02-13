@@ -246,7 +246,6 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                   child: FoodTableCard(
-                    borderColor: metricColor,
                     columns: buildStandardFoodTableColumns(
                       firstLabel: l10n.foodLabel,
                       secondLabel: metricLabel,
