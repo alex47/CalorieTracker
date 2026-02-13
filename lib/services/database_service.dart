@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 7,
+      version: 8,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -65,6 +65,7 @@ class DatabaseService {
             height_cm REAL NOT NULL,
             weight_kg REAL NOT NULL,
             activity_level TEXT NOT NULL,
+            macro_preset_key TEXT NOT NULL DEFAULT 'balanced_default',
             fat_ratio_percent INTEGER NOT NULL DEFAULT 30,
             protein_ratio_percent INTEGER NOT NULL DEFAULT 30,
             carbs_ratio_percent INTEGER NOT NULL DEFAULT 40,
@@ -140,6 +141,25 @@ class DatabaseService {
               created_at TEXT NOT NULL,
               updated_at TEXT NOT NULL
             )
+            ''',
+          );
+        }
+        if (oldVersion < 8) {
+          await db.execute(
+            "ALTER TABLE metabolic_profile_history ADD COLUMN macro_preset_key TEXT NOT NULL DEFAULT 'balanced_default'",
+          );
+          await db.execute(
+            '''
+            UPDATE metabolic_profile_history
+            SET macro_preset_key = CASE
+              WHEN fat_ratio_percent = 30 AND protein_ratio_percent = 20 AND carbs_ratio_percent = 50 THEN 'balanced_default'
+              WHEN fat_ratio_percent = 30 AND protein_ratio_percent = 30 AND carbs_ratio_percent = 40 THEN 'fat_loss_higher_protein'
+              WHEN fat_ratio_percent = 30 AND protein_ratio_percent = 35 AND carbs_ratio_percent = 35 THEN 'body_recomposition_training'
+              WHEN fat_ratio_percent = 30 AND protein_ratio_percent = 15 AND carbs_ratio_percent = 55 THEN 'endurance_high_activity'
+              WHEN fat_ratio_percent = 40 AND protein_ratio_percent = 35 AND carbs_ratio_percent = 25 THEN 'lower_carb_appetite_control'
+              WHEN fat_ratio_percent = 20 AND protein_ratio_percent = 20 AND carbs_ratio_percent = 60 THEN 'high_carb_performance'
+              ELSE 'balanced_default'
+            END
             ''',
           );
         }

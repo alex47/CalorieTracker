@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../models/metabolic_profile.dart';
+import 'macro_ratio_preset_catalog.dart';
 import 'database_service.dart';
 
 class MetabolicProfileHistoryEntry {
@@ -32,6 +33,11 @@ class MetabolicProfileHistoryService {
     required MetabolicProfile profile,
   }) async {
     final db = await DatabaseService.instance.database;
+    final macroPresetKey = MacroRatioPresetCatalog.keyForRatios(
+      fatPercent: profile.fatRatioPercent,
+      proteinPercent: profile.proteinRatioPercent,
+      carbsPercent: profile.carbsRatioPercent,
+    );
     await db.insert(
       'metabolic_profile_history',
       {
@@ -41,6 +47,7 @@ class MetabolicProfileHistoryService {
         'height_cm': profile.heightCm,
         'weight_kg': profile.weightKg,
         'activity_level': profile.activityLevel,
+        'macro_preset_key': macroPresetKey,
         'fat_ratio_percent': profile.fatRatioPercent,
         'protein_ratio_percent': profile.proteinRatioPercent,
         'carbs_ratio_percent': profile.carbsRatioPercent,
@@ -117,6 +124,9 @@ class MetabolicProfileHistoryService {
   }
 
   MetabolicProfile _profileFromRow(Map<String, Object?> row) {
+    final presetKey = row['macro_preset_key'] as String?;
+    final preset = MacroRatioPresetCatalog.presetForKey(presetKey);
+
     final fatRatio = ((row['fat_ratio_percent'] as num?)?.round()) ?? 30;
     final proteinRatio = ((row['protein_ratio_percent'] as num?)?.round()) ?? 30;
     final carbsRatio = ((row['carbs_ratio_percent'] as num?)?.round()) ?? 40;
@@ -134,9 +144,15 @@ class MetabolicProfileHistoryService {
       heightCm: (row['height_cm'] as num?)?.toDouble() ?? 0,
       weightKg: (row['weight_kg'] as num?)?.toDouble() ?? 0,
       activityLevel: (row['activity_level'] as String?) ?? 'bmr',
-      fatRatioPercent: validRatios ? fatRatio : 30,
-      proteinRatioPercent: validRatios ? proteinRatio : 30,
-      carbsRatioPercent: validRatios ? carbsRatio : 40,
+      fatRatioPercent: presetKey == null || presetKey.isEmpty
+          ? (validRatios ? fatRatio : 30)
+          : preset.fatPercent,
+      proteinRatioPercent: presetKey == null || presetKey.isEmpty
+          ? (validRatios ? proteinRatio : 30)
+          : preset.proteinPercent,
+      carbsRatioPercent: presetKey == null || presetKey.isEmpty
+          ? (validRatios ? carbsRatio : 40)
+          : preset.carbsPercent,
     );
   }
 

@@ -24,4 +24,8 @@ class AppColors {
   static const progressTrackOverlay = Color(0x99FFFFFF);
   static const progressFillAlpha = 0.28;
   static const weeklyChartStripeAlpha = 0.42;
+
+  static const daySummaryHighlights = Color(0xFF4FAF9A);
+  static const daySummaryIssues = Color(0xFFD08A5B);
+  static const daySummarySuggestions = Color(0xFF6AA9D8);
 }

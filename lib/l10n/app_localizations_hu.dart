@@ -240,7 +240,17 @@ class AppLocalizationsHu extends AppLocalizations {
   String get summarizeDayButton => 'Összegzés';
 
   @override
+  String get summarizeAgainButton => 'Újra összegzés';
+
+  @override
   String get dailySummaryTitle => 'Napi összegzés';
+
+  @override
+  String get dailySummaryOverviewTitle => 'Áttekintés';
+
+  @override
+  String get noDailySummaryYet =>
+      'Még nincs összegzés. Koppints az Összegzés gombra.';
 
   @override
   String get dailySummaryHighlightsTitle => 'Pozitívumok';

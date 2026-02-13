@@ -236,7 +236,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get summarizeDayButton => 'Summarize';
 
   @override
+  String get summarizeAgainButton => 'Summarize again';
+
+  @override
   String get dailySummaryTitle => 'Daily summary';
+
+  @override
+  String get dailySummaryOverviewTitle => 'Overview';
+
+  @override
+  String get noDailySummaryYet => 'No summary yet. Tap Summarize.';
 
   @override
   String get dailySummaryHighlightsTitle => 'Highlights';

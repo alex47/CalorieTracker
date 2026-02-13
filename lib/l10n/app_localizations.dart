@@ -524,11 +524,29 @@ abstract class AppLocalizations {
   /// **'Summarize'**
   String get summarizeDayButton;
 
+  /// No description provided for @summarizeAgainButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize again'**
+  String get summarizeAgainButton;
+
   /// No description provided for @dailySummaryTitle.
   ///
   /// In en, this message translates to:
   /// **'Daily summary'**
   String get dailySummaryTitle;
+
+  /// No description provided for @dailySummaryOverviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get dailySummaryOverviewTitle;
+
+  /// No description provided for @noDailySummaryYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No summary yet. Tap Summarize.'**
+  String get noDailySummaryYet;
 
   /// No description provided for @dailySummaryHighlightsTitle.
   ///

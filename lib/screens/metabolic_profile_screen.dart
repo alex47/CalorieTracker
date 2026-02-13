@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/metabolic_profile.dart';
+import '../services/macro_ratio_preset_catalog.dart';
 import '../services/metabolic_profile_history_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
@@ -23,45 +24,6 @@ class MetabolicProfileScreen extends StatefulWidget {
 
 class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   late Future<List<MetabolicProfileHistoryEntry>> _historyFuture;
-
-  static const List<_MacroRatioPreset> _macroRatioPresets = [
-    _MacroRatioPreset(
-      key: _MacroRatioPreset.balancedDefaultKey,
-      fatPercent: 30,
-      proteinPercent: 20,
-      carbsPercent: 50,
-    ),
-    _MacroRatioPreset(
-      key: _MacroRatioPreset.fatLossHigherProteinKey,
-      fatPercent: 30,
-      proteinPercent: 30,
-      carbsPercent: 40,
-    ),
-    _MacroRatioPreset(
-      key: _MacroRatioPreset.bodyRecompositionTrainingKey,
-      fatPercent: 30,
-      proteinPercent: 35,
-      carbsPercent: 35,
-    ),
-    _MacroRatioPreset(
-      key: _MacroRatioPreset.enduranceHighActivityKey,
-      fatPercent: 30,
-      proteinPercent: 15,
-      carbsPercent: 55,
-    ),
-    _MacroRatioPreset(
-      key: _MacroRatioPreset.lowerCarbAppetiteControlKey,
-      fatPercent: 40,
-      proteinPercent: 35,
-      carbsPercent: 25,
-    ),
-    _MacroRatioPreset(
-      key: _MacroRatioPreset.highCarbPerformanceKey,
-      fatPercent: 20,
-      proteinPercent: 20,
-      carbsPercent: 60,
-    ),
-  ];
 
   @override
   void initState() {
@@ -89,33 +51,15 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
     required int proteinPercent,
     required int carbsPercent,
   }) {
-    for (final preset in _macroRatioPresets) {
-      if (preset.fatPercent == fatPercent &&
-          preset.proteinPercent == proteinPercent &&
-          preset.carbsPercent == carbsPercent) {
-        return preset.key;
-      }
-    }
-    return _MacroRatioPreset.balancedDefaultKey;
+    return MacroRatioPresetCatalog.keyForRatios(
+      fatPercent: fatPercent,
+      proteinPercent: proteinPercent,
+      carbsPercent: carbsPercent,
+    );
   }
 
   String _presetLabel(AppLocalizations l10n, String key) {
-    switch (key) {
-      case _MacroRatioPreset.balancedDefaultKey:
-        return l10n.macroPresetBalancedDefault;
-      case _MacroRatioPreset.fatLossHigherProteinKey:
-        return l10n.macroPresetFatLossHigherProtein;
-      case _MacroRatioPreset.bodyRecompositionTrainingKey:
-        return l10n.macroPresetBodyRecompositionTraining;
-      case _MacroRatioPreset.enduranceHighActivityKey:
-        return l10n.macroPresetEnduranceHighActivity;
-      case _MacroRatioPreset.lowerCarbAppetiteControlKey:
-        return l10n.macroPresetLowerCarbAppetiteControl;
-      case _MacroRatioPreset.highCarbPerformanceKey:
-        return l10n.macroPresetHighCarbPerformance;
-      default:
-        return l10n.macroPresetBalancedDefault;
-    }
+    return MacroRatioPresetCatalog.localizedLabel(l10n, key);
   }
 
   Future<MetabolicProfile> _defaultProfileForAdd() async {
@@ -156,7 +100,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
         ),
         isEditing: false,
         existingDateKeys: existingDateKeys,
-        macroRatioPresets: _macroRatioPresets,
+        macroRatioPresets: MacroRatioPresetCatalog.presets,
         formatDateKey: _formatDateKey,
         presetLabel: _presetLabel,
       ),
@@ -180,7 +124,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
         ),
         isEditing: true,
         existingDateKeys: existingDateKeys,
-        macroRatioPresets: _macroRatioPresets,
+        macroRatioPresets: MacroRatioPresetCatalog.presets,
         formatDateKey: _formatDateKey,
         presetLabel: _presetLabel,
       ),
@@ -334,7 +278,7 @@ class _MetabolicProfileEditorDialog extends StatefulWidget {
   final String initialPresetKey;
   final bool isEditing;
   final Set<String> existingDateKeys;
-  final List<_MacroRatioPreset> macroRatioPresets;
+  final List<MacroRatioPreset> macroRatioPresets;
   final String Function(DateTime) formatDateKey;
   final String Function(AppLocalizations l10n, String key) presetLabel;
 
@@ -418,7 +362,7 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
     });
   }
 
-  _MacroRatioPreset get _selectedMacroPreset {
+  MacroRatioPreset get _selectedMacroPreset {
     return widget.macroRatioPresets.firstWhere(
       (preset) => preset.key == _selectedMacroPresetKey,
       orElse: () => widget.macroRatioPresets.first,
@@ -688,25 +632,4 @@ class _MetabolicProfileEditorResult {
   final DateTime profileDate;
   final MetabolicProfile? profile;
   final bool delete;
-}
-
-class _MacroRatioPreset {
-  const _MacroRatioPreset({
-    required this.key,
-    required this.fatPercent,
-    required this.proteinPercent,
-    required this.carbsPercent,
-  });
-
-  static const String balancedDefaultKey = 'balanced_default';
-  static const String fatLossHigherProteinKey = 'fat_loss_higher_protein';
-  static const String bodyRecompositionTrainingKey = 'body_recomposition_training';
-  static const String enduranceHighActivityKey = 'endurance_high_activity';
-  static const String lowerCarbAppetiteControlKey = 'lower_carb_appetite_control';
-  static const String highCarbPerformanceKey = 'high_carb_performance';
-
-  final String key;
-  final int fatPercent;
-  final int proteinPercent;
-  final int carbsPercent;
 }

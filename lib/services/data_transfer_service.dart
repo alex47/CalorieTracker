@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'database_service.dart';
+import 'macro_ratio_preset_catalog.dart';
 
 class ImportSummary {
   const ImportSummary({
@@ -192,6 +193,19 @@ class DataTransferService {
       }
 
       for (final profile in payload.metabolicProfileHistory) {
+        final importedFat = (profile['fat_ratio_percent'] as num?)?.round() ?? 30;
+        final importedProtein = (profile['protein_ratio_percent'] as num?)?.round() ?? 30;
+        final importedCarbs = (profile['carbs_ratio_percent'] as num?)?.round() ?? 40;
+        final presetKey = (profile['macro_preset_key'] as String?)?.trim();
+        final resolvedPreset = (presetKey == null || presetKey.isEmpty)
+            ? MacroRatioPresetCatalog.presetForKey(
+                MacroRatioPresetCatalog.keyForRatios(
+                  fatPercent: importedFat,
+                  proteinPercent: importedProtein,
+                  carbsPercent: importedCarbs,
+                ),
+              )
+            : MacroRatioPresetCatalog.presetForKey(presetKey);
         await txn.insert(
           'metabolic_profile_history',
           {
@@ -202,9 +216,10 @@ class DataTransferService {
             'height_cm': (profile['height_cm'] as num).toDouble(),
             'weight_kg': (profile['weight_kg'] as num).toDouble(),
             'activity_level': profile['activity_level'] as String,
-            'fat_ratio_percent': (profile['fat_ratio_percent'] as num?)?.round() ?? 30,
-            'protein_ratio_percent': (profile['protein_ratio_percent'] as num?)?.round() ?? 30,
-            'carbs_ratio_percent': (profile['carbs_ratio_percent'] as num?)?.round() ?? 40,
+            'macro_preset_key': resolvedPreset.key,
+            'fat_ratio_percent': resolvedPreset.fatPercent,
+            'protein_ratio_percent': resolvedPreset.proteinPercent,
+            'carbs_ratio_percent': resolvedPreset.carbsPercent,
             'created_at': profile['created_at'] as String,
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
@@ -264,6 +279,7 @@ class DataTransferService {
       _requireNum(profile, 'height_cm', table: 'metabolic_profile_history');
       _requireNum(profile, 'weight_kg', table: 'metabolic_profile_history');
       _requireString(profile, 'activity_level', table: 'metabolic_profile_history');
+      _requireOptionalString(profile, 'macro_preset_key', table: 'metabolic_profile_history');
       _requireOptionalNum(profile, 'fat_ratio_percent', table: 'metabolic_profile_history');
       _requireOptionalNum(profile, 'protein_ratio_percent', table: 'metabolic_profile_history');
       _requireOptionalNum(profile, 'carbs_ratio_percent', table: 'metabolic_profile_history');
@@ -283,6 +299,14 @@ class DataTransferService {
   }
 
   void _validateMacroRatios(Map<String, dynamic> row) {
+    final presetKey = (row['macro_preset_key'] as String?)?.trim();
+    if (presetKey != null && presetKey.isNotEmpty) {
+      final preset = MacroRatioPresetCatalog.presetForKey(presetKey);
+      if (preset.key != presetKey) {
+        throw const FormatException('Invalid macro preset key in backup payload.');
+      }
+      return;
+    }
     final fat = (row['fat_ratio_percent'] as num?)?.round() ?? 30;
     final protein = (row['protein_ratio_percent'] as num?)?.round() ?? 30;
     final carbs = (row['carbs_ratio_percent'] as num?)?.round() ?? 40;

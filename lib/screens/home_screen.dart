@@ -3,28 +3,22 @@ import 'package:flutter/gestures.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../main.dart';
-import '../models/day_summary.dart';
 import '../models/daily_targets.dart';
 import '../models/food_item.dart';
 import '../models/metabolic_profile.dart';
 import '../models/metric_type.dart';
-import '../services/day_summary_service.dart';
 import '../services/entries_repository.dart';
 import '../services/metabolic_profile_history_service.dart';
 import '../services/nutrition_target_service.dart';
-import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
-import '../utils/error_localizer.dart';
-import '../widgets/app_dialog.dart';
-import '../widgets/day_summary_dialog.dart';
-import '../widgets/dialog_action_row.dart';
 import '../widgets/food_table_card.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
 import 'daily_metric_detail_screen.dart';
+import 'day_summary_screen.dart';
 import 'food_item_detail_screen.dart';
 import 'metabolic_profile_screen.dart';
 import 'settings_screen.dart';
@@ -49,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   final Map<String, Future<List<FoodItem>>> _dayFutures = {};
   final Map<String, Future<DailyTargets?>> _targetFutures = {};
   final Map<String, Future<MetabolicProfile?>> _profileFutures = {};
-  final Set<String> _summaryBusyDates = {};
   PageRoute<dynamic>? _route;
 
   @override
@@ -221,177 +214,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     await _reloadDate(_selectedDate);
   }
 
-  Future<void> _summarizeDay(DateTime date) async {
-    final l10n = AppLocalizations.of(context)!;
-    final summaryDate = _dayOnly(date);
-    final summaryDateKey = DaySummaryService.instance.dayKey(summaryDate);
-    final apiKey = await SettingsService.instance.getApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.setApiKeyInSettings)),
-      );
-      return;
-    }
-
-    setState(() => _summaryBusyDates.add(summaryDateKey));
-    try {
-      final items = await _itemsForDate(summaryDate);
-      if (items.isEmpty) {
-        if (!mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.noEntriesForDaySummary)),
-        );
-        return;
-      }
-
-      final profile = await _profileForDate(summaryDate);
-      final targets = await _targetsForDate(summaryDate);
-      final settings = SettingsService.instance.settings;
-      final snapshot = _buildSummarySnapshot(
-        date: summaryDate,
-        items: items,
-        profile: profile,
-        targets: targets,
-        languageCode: settings.languageCode,
-      );
-      final sourceHash = DaySummaryService.instance.computeSourceHash(snapshot);
-      final cached = await DaySummaryService.instance.fetchForDate(summaryDate);
-      final isCacheValid = cached != null &&
-          cached.sourceHash == sourceHash &&
-          cached.languageCode == settings.languageCode;
-      if (isCacheValid) {
-        if (!mounted) {
-          return;
-        }
-        await showDaySummaryDialog(context: context, summary: cached.summary);
-        return;
-      }
-
-      final openAi = OpenAIService(
-        apiKey,
-        requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
-      );
-      final DaySummary summary = await openAi.summarizeDay(
-        model: settings.model,
-        languageCode: settings.languageCode,
-        reasoningEffort: settings.reasoningEffort,
-        maxOutputTokens: settings.maxOutputTokens,
-        daySnapshot: snapshot,
-      );
-      await DaySummaryService.instance.upsert(
-        date: summaryDate,
-        languageCode: settings.languageCode,
-        model: settings.model,
-        sourceHash: sourceHash,
-        summary: summary,
-      );
-      if (!mounted) {
-        return;
-      }
-      await showDaySummaryDialog(context: context, summary: summary);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.failedToSummarizeDay(localizeError(error, l10n)))),
-      );
-      final raw = error is AiParseException ? error.rawResponseText : null;
-      if (raw != null && raw.trim().isNotEmpty) {
-        await _showRawSummaryResponse(raw);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _summaryBusyDates.remove(summaryDateKey));
-      }
-    }
-  }
-
-  Map<String, dynamic> _buildSummarySnapshot({
-    required DateTime date,
-    required List<FoodItem> items,
-    required MetabolicProfile? profile,
-    required DailyTargets? targets,
-    required String languageCode,
-  }) {
-    final sortedItems = [...items]..sort((a, b) => a.id.compareTo(b.id));
-    final calories = _totalCalories(sortedItems);
-    final fat = _totalFat(sortedItems);
-    final protein = _totalProtein(sortedItems);
-    final carbs = _totalCarbs(sortedItems);
-    final summaryDateKey = DaySummaryService.instance.dayKey(date);
-    return {
-      'date': summaryDateKey,
-      'language_code': languageCode,
-      'entries': sortedItems
-          .map(
-            (item) => {
-              'id': item.id,
-              'name': item.name,
-              'amount': item.amount,
-              'calories': item.calories,
-              'fat': item.fat,
-              'protein': item.protein,
-              'carbs': item.carbs,
-              'notes': item.notes,
-            },
-          )
-          .toList(growable: false),
-      'totals': {
-        'calories': calories,
-        'fat': fat,
-        'protein': protein,
-        'carbs': carbs,
-      },
-      'metabolic_profile': profile == null
-          ? null
-          : {
-              'age': profile.age,
-              'sex': profile.sex,
-              'height_cm': profile.heightCm,
-              'weight_kg': profile.weightKg,
-              'activity_level': profile.activityLevel,
-              'fat_ratio_percent': profile.fatRatioPercent,
-              'protein_ratio_percent': profile.proteinRatioPercent,
-              'carbs_ratio_percent': profile.carbsRatioPercent,
-            },
-      'targets': targets == null
-          ? null
-          : {
-              'calories': targets.calories,
-              'fat': targets.fat,
-              'protein': targets.protein,
-              'carbs': targets.carbs,
-            },
-    };
-  }
-
-  Future<void> _showRawSummaryResponse(String raw) async {
-    final l10n = AppLocalizations.of(context)!;
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AppDialog(
-        title: Text(l10n.aiResponseDialogTitle),
-        content: SizedBox(
-          width: UiConstants.reestimateDialogWidth,
-          child: SingleChildScrollView(
-            child: SelectableText(raw),
-          ),
-        ),
-        actionItems: [
-          DialogActionItem(
-            child: FilledButton.icon(
-              onPressed: () => Navigator.pop(dialogContext),
-              icon: const Icon(Icons.close),
-              label: Text(l10n.acceptButton, textAlign: TextAlign.center),
-            ),
-          ),
-        ],
+  Future<void> _openDaySummaryScreen(DateTime date) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => DaySummaryScreen(date: date),
       ),
     );
   }
@@ -492,24 +319,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
               FutureBuilder<List<FoodItem>>(
                 future: _itemsForDate(_selectedDate),
                 builder: (context, snapshot) {
-                  final summaryKey = DaySummaryService.instance.dayKey(_selectedDate);
-                  final isSummaryBusy = _summaryBusyDates.contains(summaryKey);
                   final hasItems = (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
-                  final canSummarize =
-                      !isSummaryBusy && snapshot.connectionState != ConnectionState.waiting && hasItems;
+                  final canSummarize = snapshot.connectionState != ConnectionState.waiting && hasItems;
                   return SizedBox(
                     width: UiConstants.addButtonWidth,
                     child: FilledButton.icon(
-                      onPressed: canSummarize ? () => _summarizeDay(_selectedDate) : null,
-                      icon: isSummaryBusy
-                          ? const SizedBox(
-                              height: UiConstants.loadingIndicatorSize,
-                              width: UiConstants.loadingIndicatorSize,
-                              child: CircularProgressIndicator(
-                                strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
-                              ),
-                            )
-                          : const Icon(Icons.auto_awesome_outlined),
+                      onPressed: canSummarize ? () => _openDaySummaryScreen(_selectedDate) : null,
+                      icon: const Icon(Icons.auto_awesome_outlined),
                       label: Text(l10n.summarizeDayButton, textAlign: TextAlign.center),
                     ),
                   );
