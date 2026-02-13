@@ -5,13 +5,11 @@ import 'package:intl/intl.dart';
 
 import '../models/daily_goals.dart';
 import '../models/food_item.dart';
+import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
-import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
-
-enum WeeklyMetricType { calories, fat, protein, carbs }
 
 class WeeklySummaryScreen extends StatefulWidget {
   const WeeklySummaryScreen({
@@ -110,32 +108,6 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     await _totalsForWeek(weekStart);
   }
 
-  double _metricValue(WeeklyMetricType metric, _DayMetricTotals totals) {
-    switch (metric) {
-      case WeeklyMetricType.calories:
-        return totals.calories.toDouble();
-      case WeeklyMetricType.fat:
-        return totals.fat;
-      case WeeklyMetricType.protein:
-        return totals.protein;
-      case WeeklyMetricType.carbs:
-        return totals.carbs;
-    }
-  }
-
-  Color _metricColor(WeeklyMetricType metric) {
-    switch (metric) {
-      case WeeklyMetricType.calories:
-        return AppColors.calories;
-      case WeeklyMetricType.fat:
-        return AppColors.fat;
-      case WeeklyMetricType.protein:
-        return AppColors.protein;
-      case WeeklyMetricType.carbs:
-        return AppColors.carbs;
-    }
-  }
-
   bool _isCurrentWeekSelected() => _selectedPage == _maxPage;
 
   @override
@@ -205,24 +177,44 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
                   final specs = <_WeeklyMetricSpec>[
                     _WeeklyMetricSpec(
-                      color: _metricColor(WeeklyMetricType.calories),
+                      color: MetricType.calories.color,
                       goalForDay: (day) => day.goals.calories.toDouble(),
-                      valueForDay: (day) => _metricValue(WeeklyMetricType.calories, day),
+                      valueForDay: (day) => MetricType.calories.valueFromTotals(
+                        calories: day.calories,
+                        fat: day.fat,
+                        protein: day.protein,
+                        carbs: day.carbs,
+                      ),
                     ),
                     _WeeklyMetricSpec(
-                      color: _metricColor(WeeklyMetricType.fat),
+                      color: MetricType.fat.color,
                       goalForDay: (day) => day.goals.fat.toDouble(),
-                      valueForDay: (day) => _metricValue(WeeklyMetricType.fat, day),
+                      valueForDay: (day) => MetricType.fat.valueFromTotals(
+                        calories: day.calories,
+                        fat: day.fat,
+                        protein: day.protein,
+                        carbs: day.carbs,
+                      ),
                     ),
                     _WeeklyMetricSpec(
-                      color: _metricColor(WeeklyMetricType.protein),
+                      color: MetricType.protein.color,
                       goalForDay: (day) => day.goals.protein.toDouble(),
-                      valueForDay: (day) => _metricValue(WeeklyMetricType.protein, day),
+                      valueForDay: (day) => MetricType.protein.valueFromTotals(
+                        calories: day.calories,
+                        fat: day.fat,
+                        protein: day.protein,
+                        carbs: day.carbs,
+                      ),
                     ),
                     _WeeklyMetricSpec(
-                      color: _metricColor(WeeklyMetricType.carbs),
+                      color: MetricType.carbs.color,
                       goalForDay: (day) => day.goals.carbs.toDouble(),
-                      valueForDay: (day) => _metricValue(WeeklyMetricType.carbs, day),
+                      valueForDay: (day) => MetricType.carbs.valueFromTotals(
+                        calories: day.calories,
+                        fat: day.fat,
+                        protein: day.protein,
+                        carbs: day.carbs,
+                      ),
                     ),
                   ];
 

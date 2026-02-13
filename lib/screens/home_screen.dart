@@ -5,6 +5,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/daily_goals.dart';
 import '../models/food_item.dart';
+import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
@@ -171,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
 
   Future<void> _openMetricDetails(
     DateTime date,
-    DailyMetricType metricType,
+    MetricType metricType,
   ) async {
     await Navigator.push(
       context,
@@ -363,7 +364,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                   totalCalories,
                                   onTap: () => _openMetricDetails(
                                     pageDate,
-                                    DailyMetricType.calories,
+                                    MetricType.calories,
                                   ),
                                 ),
                                 const SizedBox(height: UiConstants.smallSpacing),
@@ -376,11 +377,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                   carbs: totalCarbs,
                                   carbsGoal: goals.carbs.toDouble(),
                                   height: _progressBarHeight,
-                                  onFatTap: () => _openMetricDetails(pageDate, DailyMetricType.fat),
+                                  onFatTap: () => _openMetricDetails(pageDate, MetricType.fat),
                                   onProteinTap: () =>
-                                      _openMetricDetails(pageDate, DailyMetricType.protein),
+                                      _openMetricDetails(pageDate, MetricType.protein),
                                   onCarbsTap: () =>
-                                      _openMetricDetails(pageDate, DailyMetricType.carbs),
+                                      _openMetricDetails(pageDate, MetricType.carbs),
                                 ),
                               ],
                             );

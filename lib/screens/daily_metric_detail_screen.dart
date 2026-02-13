@@ -3,17 +3,15 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/daily_goals.dart';
 import '../models/food_item.dart';
+import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
 import '../services/settings_service.dart';
-import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/food_table_card.dart';
 import '../widgets/labeled_progress_bar.dart';
 import '../main.dart';
 import 'food_item_detail_screen.dart';
-
-enum DailyMetricType { calories, fat, protein, carbs }
 
 class DailyMetricDetailScreen extends StatefulWidget {
   const DailyMetricDetailScreen({
@@ -23,7 +21,7 @@ class DailyMetricDetailScreen extends StatefulWidget {
   });
 
   final DateTime date;
-  final DailyMetricType metricType;
+  final MetricType metricType;
 
   @override
   State<DailyMetricDetailScreen> createState() => _DailyMetricDetailScreenState();
@@ -81,82 +79,12 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
     _reload();
   }
 
-  String _metricLabel(AppLocalizations l10n) {
-    switch (widget.metricType) {
-      case DailyMetricType.calories:
-        return l10n.caloriesLabel;
-      case DailyMetricType.fat:
-        return l10n.fatLabel;
-      case DailyMetricType.protein:
-        return l10n.proteinLabel;
-      case DailyMetricType.carbs:
-        return l10n.carbsLabel;
-    }
-  }
-
-  String _metricUnit() {
-    switch (widget.metricType) {
-      case DailyMetricType.calories:
-        return 'kcal';
-      case DailyMetricType.fat:
-      case DailyMetricType.protein:
-      case DailyMetricType.carbs:
-        return 'g';
-    }
-  }
-
-  double _metricGoal(DailyGoals goals) {
-    switch (widget.metricType) {
-      case DailyMetricType.calories:
-        return goals.calories.toDouble();
-      case DailyMetricType.fat:
-        return goals.fat.toDouble();
-      case DailyMetricType.protein:
-        return goals.protein.toDouble();
-      case DailyMetricType.carbs:
-        return goals.carbs.toDouble();
-    }
-  }
-
-  Color _metricColor() {
-    switch (widget.metricType) {
-      case DailyMetricType.calories:
-        return AppColors.calories;
-      case DailyMetricType.fat:
-        return AppColors.fat;
-      case DailyMetricType.protein:
-        return AppColors.protein;
-      case DailyMetricType.carbs:
-        return AppColors.carbs;
-    }
-  }
-
-  double _metricValue(FoodItem item) {
-    switch (widget.metricType) {
-      case DailyMetricType.calories:
-        return item.calories.toDouble();
-      case DailyMetricType.fat:
-        return item.fat;
-      case DailyMetricType.protein:
-        return item.protein;
-      case DailyMetricType.carbs:
-        return item.carbs;
-    }
-  }
-
-  String _formatValue(double value) {
-    if (widget.metricType == DailyMetricType.calories) {
-      return value.toInt().toString();
-    }
-    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final metricLabel = _metricLabel(l10n);
-    final metricUnit = _metricUnit();
-    final metricColor = _metricColor();
+    final metricLabel = widget.metricType.label(l10n);
+    final metricUnit = widget.metricType.unit;
+    final metricColor = widget.metricType.color;
 
     return Scaffold(
       appBar: AppBar(
@@ -186,10 +114,18 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
           }
 
           final items = snapshot.data ?? const <FoodItem>[];
-          final total = items.fold<double>(0, (sum, item) => sum + _metricValue(item));
+          final total = items.fold<double>(
+            0,
+            (sum, item) => sum + widget.metricType.valueFromFoodItem(item),
+          );
 
           final contributors = items
-              .map((item) => _MetricContribution(item: item, value: _metricValue(item)))
+              .map(
+                (item) => _MetricContribution(
+                  item: item,
+                  value: widget.metricType.valueFromFoodItem(item),
+                ),
+              )
               .toList()
             ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -202,7 +138,7 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
               }
               final goals =
                   goalSnapshot.data ?? DailyGoals.fromSettings(SettingsService.instance.settings);
-              final metricGoal = _metricGoal(goals);
+              final metricGoal = widget.metricType.goalFromDailyGoals(goals);
               return ListView(
                 padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
                 children: [
@@ -270,7 +206,7 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                         cells: [
                           FoodTableCell(text: entry.item.name),
                           FoodTableCell(
-                            text: '${_formatValue(entry.value)} $metricUnit',
+                            text: '${widget.metricType.formatValue(entry.value)} $metricUnit',
                           ),
                           FoodTableCell(
                             text: '${percent.toStringAsFixed(1)}%',
