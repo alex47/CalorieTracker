@@ -9,6 +9,7 @@ import '../models/app_settings.dart';
 import '../services/data_transfer_service.dart';
 import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
+import '../services/metabolic_profile_history_service.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
@@ -253,6 +254,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final rollbackPayload = ImportPayload(
         settings: Map<String, String>.from(SettingsService.instance.exportSettingsMap()),
         goalHistory: await GoalHistoryService.instance.exportGoalHistoryRows(),
+        metabolicProfileHistory:
+            await MetabolicProfileHistoryService.instance.exportProfileHistoryRows(),
         entries: (await EntriesRepository.instance.exportEntriesRows())
             .map((row) => Map<String, dynamic>.from(row))
             .toList(),

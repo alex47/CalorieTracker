@@ -308,6 +308,108 @@ abstract class AppLocalizations {
   /// **'Goals'**
   String get goalsSectionTitle;
 
+  /// No description provided for @metabolicProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Metabolic profile'**
+  String get metabolicProfileTitle;
+
+  /// No description provided for @ageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get ageLabel;
+
+  /// No description provided for @sexLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex'**
+  String get sexLabel;
+
+  /// No description provided for @sexMale.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get sexMale;
+
+  /// No description provided for @sexFemale.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get sexFemale;
+
+  /// No description provided for @heightCmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get heightCmLabel;
+
+  /// No description provided for @weightKgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get weightKgLabel;
+
+  /// No description provided for @activityLevelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity level'**
+  String get activityLevelLabel;
+
+  /// No description provided for @activitySedentary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sedentary'**
+  String get activitySedentary;
+
+  /// No description provided for @activityLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get activityLight;
+
+  /// No description provided for @activityModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get activityModerate;
+
+  /// No description provided for @activityActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activityActive;
+
+  /// No description provided for @activityVeryActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Very active'**
+  String get activityVeryActive;
+
+  /// No description provided for @setMetabolicProfileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your metabolic profile to track calorie deficit.'**
+  String get setMetabolicProfileHint;
+
+  /// No description provided for @dailyDeficitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily deficit: {deficit} kcal'**
+  String dailyDeficitLabel(Object deficit);
+
+  /// No description provided for @dailyDeficitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily deficit'**
+  String get dailyDeficitTitle;
+
+  /// No description provided for @maintenanceCaloriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance: {calories} kcal/day'**
+  String maintenanceCaloriesLabel(Object calories);
+
   /// No description provided for @dailyCalorieGoalLabel.
   ///
   /// In en, this message translates to:

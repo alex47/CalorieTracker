@@ -45,6 +45,33 @@
   "maxOutputTokensLabel": "Max output tokens",
   "openAiTimeoutSecondsLabel": "Timeout (seconds)",
   "goalsSectionTitle": "Goals",
+  "metabolicProfileTitle": "Metabolic profile",
+  "ageLabel": "Age",
+  "sexLabel": "Sex",
+  "sexMale": "Male",
+  "sexFemale": "Female",
+  "heightCmLabel": "Height (cm)",
+  "weightKgLabel": "Weight (kg)",
+  "activityLevelLabel": "Activity level",
+  "activitySedentary": "Sedentary",
+  "activityLight": "Light",
+  "activityModerate": "Moderate",
+  "activityActive": "Active",
+  "activityVeryActive": "Very active",
+  "setMetabolicProfileHint": "Set your metabolic profile to track calorie deficit.",
+  "dailyDeficitLabel": "Daily deficit: {deficit} kcal",
+  "@dailyDeficitLabel": {
+    "placeholders": {
+      "deficit": {}
+    }
+  },
+  "dailyDeficitTitle": "Daily deficit",
+  "maintenanceCaloriesLabel": "Maintenance: {calories} kcal/day",
+  "@maintenanceCaloriesLabel": {
+    "placeholders": {
+      "calories": {}
+    }
+  },
   "dailyCalorieGoalLabel": "Daily calorie goal (kcal)",
   "dailyFatGoalLabel": "Daily fat goal (g)",
   "dailyProteinGoalLabel": "Daily protein goal (g)",

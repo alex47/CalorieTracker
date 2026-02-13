@@ -45,6 +45,33 @@
   "maxOutputTokensLabel": "Maximális kimeneti tokenek",
   "openAiTimeoutSecondsLabel": "Időkorlát (másodperc)",
   "goalsSectionTitle": "Célok",
+  "metabolicProfileTitle": "Anyagcsere profil",
+  "ageLabel": "Életkor",
+  "sexLabel": "Nem",
+  "sexMale": "Férfi",
+  "sexFemale": "Nő",
+  "heightCmLabel": "Magasság (cm)",
+  "weightKgLabel": "Tömeg (kg)",
+  "activityLevelLabel": "Aktivitási szint",
+  "activitySedentary": "Ülő",
+  "activityLight": "Könnyű",
+  "activityModerate": "Közepes",
+  "activityActive": "Aktív",
+  "activityVeryActive": "Nagyon aktív",
+  "setMetabolicProfileHint": "Állítsd be az anyagcsere profilodat a kalóriadeficit követéséhez.",
+  "dailyDeficitLabel": "Napi deficit: {deficit} kcal",
+  "@dailyDeficitLabel": {
+    "placeholders": {
+      "deficit": {}
+    }
+  },
+  "dailyDeficitTitle": "Napi deficit",
+  "maintenanceCaloriesLabel": "Fenntartó: {calories} kcal/nap",
+  "@maintenanceCaloriesLabel": {
+    "placeholders": {
+      "calories": {}
+    }
+  },
   "dailyCalorieGoalLabel": "Napi kalóriacél (kcal)",
   "dailyFatGoalLabel": "Napi zsírcél (g)",
   "dailyProteinGoalLabel": "Napi fehérjecél (g)",

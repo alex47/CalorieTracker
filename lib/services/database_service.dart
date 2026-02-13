@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -68,6 +68,20 @@ class DatabaseService {
           )
           ''',
         );
+        await db.execute(
+          '''
+          CREATE TABLE metabolic_profile_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            profile_date TEXT NOT NULL UNIQUE,
+            age INTEGER NOT NULL,
+            sex TEXT NOT NULL,
+            height_cm REAL NOT NULL,
+            weight_kg REAL NOT NULL,
+            activity_level TEXT NOT NULL,
+            created_at TEXT NOT NULL
+          )
+          ''',
+        );
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -91,6 +105,22 @@ class DatabaseService {
               fat INTEGER NOT NULL,
               protein INTEGER NOT NULL,
               carbs INTEGER NOT NULL,
+              created_at TEXT NOT NULL
+            )
+            ''',
+          );
+        }
+        if (oldVersion < 4) {
+          await db.execute(
+            '''
+            CREATE TABLE metabolic_profile_history (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              profile_date TEXT NOT NULL UNIQUE,
+              age INTEGER NOT NULL,
+              sex TEXT NOT NULL,
+              height_cm REAL NOT NULL,
+              weight_kg REAL NOT NULL,
+              activity_level TEXT NOT NULL,
               created_at TEXT NOT NULL
             )
             ''',

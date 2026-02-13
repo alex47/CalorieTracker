@@ -24,6 +24,7 @@ class ImportPayload {
   const ImportPayload({
     required this.settings,
     required this.goalHistory,
+    required this.metabolicProfileHistory,
     required this.entries,
     required this.entryItems,
     this.apiKeyFromBackup,
@@ -31,6 +32,7 @@ class ImportPayload {
 
   final Map<String, String> settings;
   final List<Map<String, dynamic>> goalHistory;
+  final List<Map<String, dynamic>> metabolicProfileHistory;
   final List<Map<String, dynamic>> entries;
   final List<Map<String, dynamic>> entryItems;
   final String? apiKeyFromBackup;
@@ -55,6 +57,7 @@ class DataTransferService {
     final entryItems = await db.query('entry_items');
     final settingsRows = await db.query('settings');
     final goalHistory = await db.query('goal_history');
+    final metabolicProfileHistory = await db.query('metabolic_profile_history');
     final settings = {
       for (final row in settingsRows) row['key'] as String: row['value'] as String,
     };
@@ -64,6 +67,7 @@ class DataTransferService {
       'exported_at': DateTime.now().toIso8601String(),
       'settings': settings,
       'goal_history': goalHistory,
+      'metabolic_profile_history': metabolicProfileHistory,
       'entries': entries,
       'entry_items': entryItems,
       if (includeApiKey && apiKey != null && apiKey.trim().isNotEmpty)
@@ -122,6 +126,7 @@ class DataTransferService {
 
     final settings = _readSettings(decoded['settings']);
     final goalHistory = _readRows(decoded['goal_history'] ?? const []);
+    final metabolicProfileHistory = _readRows(decoded['metabolic_profile_history'] ?? const []);
     final entries = _readRows(decoded['entries']);
     final entryItems = _readRows(decoded['entry_items']);
     final apiKeyFromBackup = _readApiKeyFromBackup(decoded['secure']);
@@ -129,6 +134,7 @@ class DataTransferService {
     return ImportPayload(
       settings: settings,
       goalHistory: goalHistory,
+      metabolicProfileHistory: metabolicProfileHistory,
       entries: entries,
       entryItems: entryItems,
       apiKeyFromBackup: apiKeyFromBackup,
@@ -143,6 +149,7 @@ class DataTransferService {
       await txn.delete('entries');
       await txn.delete('settings');
       await txn.delete('goal_history');
+      await txn.delete('metabolic_profile_history');
 
       for (final entry in payload.entries) {
         await txn.insert(
@@ -199,6 +206,23 @@ class DataTransferService {
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
       }
+
+      for (final profile in payload.metabolicProfileHistory) {
+        await txn.insert(
+          'metabolic_profile_history',
+          {
+            'id': profile['id'] as int?,
+            'profile_date': profile['profile_date'] as String,
+            'age': (profile['age'] as num).round(),
+            'sex': profile['sex'] as String,
+            'height_cm': (profile['height_cm'] as num).toDouble(),
+            'weight_kg': (profile['weight_kg'] as num).toDouble(),
+            'activity_level': profile['activity_level'] as String,
+            'created_at': profile['created_at'] as String,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
     });
 
     return ImportSummary(
@@ -237,6 +261,17 @@ class DataTransferService {
       _requireNum(goal, 'protein', table: 'goal_history');
       _requireNum(goal, 'carbs', table: 'goal_history');
       _requireString(goal, 'created_at', table: 'goal_history');
+    }
+
+    for (final profile in payload.metabolicProfileHistory) {
+      _requireOptionalInt(profile, 'id', table: 'metabolic_profile_history');
+      _requireString(profile, 'profile_date', table: 'metabolic_profile_history');
+      _requireInt(profile, 'age', table: 'metabolic_profile_history');
+      _requireString(profile, 'sex', table: 'metabolic_profile_history');
+      _requireNum(profile, 'height_cm', table: 'metabolic_profile_history');
+      _requireNum(profile, 'weight_kg', table: 'metabolic_profile_history');
+      _requireString(profile, 'activity_level', table: 'metabolic_profile_history');
+      _requireString(profile, 'created_at', table: 'metabolic_profile_history');
     }
   }
 

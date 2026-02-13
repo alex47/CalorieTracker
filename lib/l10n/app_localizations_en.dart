@@ -119,6 +119,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goalsSectionTitle => 'Goals';
 
   @override
+  String get metabolicProfileTitle => 'Metabolic profile';
+
+  @override
+  String get ageLabel => 'Age';
+
+  @override
+  String get sexLabel => 'Sex';
+
+  @override
+  String get sexMale => 'Male';
+
+  @override
+  String get sexFemale => 'Female';
+
+  @override
+  String get heightCmLabel => 'Height (cm)';
+
+  @override
+  String get weightKgLabel => 'Weight (kg)';
+
+  @override
+  String get activityLevelLabel => 'Activity level';
+
+  @override
+  String get activitySedentary => 'Sedentary';
+
+  @override
+  String get activityLight => 'Light';
+
+  @override
+  String get activityModerate => 'Moderate';
+
+  @override
+  String get activityActive => 'Active';
+
+  @override
+  String get activityVeryActive => 'Very active';
+
+  @override
+  String get setMetabolicProfileHint =>
+      'Set your metabolic profile to track calorie deficit.';
+
+  @override
+  String dailyDeficitLabel(Object deficit) {
+    return 'Daily deficit: $deficit kcal';
+  }
+
+  @override
+  String get dailyDeficitTitle => 'Daily deficit';
+
+  @override
+  String maintenanceCaloriesLabel(Object calories) {
+    return 'Maintenance: $calories kcal/day';
+  }
+
+  @override
   String get dailyCalorieGoalLabel => 'Daily calorie goal (kcal)';
 
   @override

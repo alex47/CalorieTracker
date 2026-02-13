@@ -5,19 +5,24 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../main.dart';
 import '../models/daily_goals.dart';
 import '../models/food_item.dart';
+import '../models/metabolic_profile.dart';
 import '../models/metric_type.dart';
+import '../services/calorie_deficit_service.dart';
 import '../services/entries_repository.dart';
 import '../services/goal_history_service.dart';
+import '../services/metabolic_profile_history_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/food_table_card.dart';
+import '../widgets/labeled_group_box.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
 import 'daily_metric_detail_screen.dart';
 import 'food_item_detail_screen.dart';
 import 'goals_screen.dart';
+import 'metabolic_profile_screen.dart';
 import 'settings_screen.dart';
 import 'weekly_summary_screen.dart';
 
@@ -39,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   late DateTime _selectedDate;
   final Map<String, Future<List<FoodItem>>> _dayFutures = {};
   final Map<String, Future<DailyGoals>> _goalFutures = {};
+  final Map<String, Future<MetabolicProfile?>> _profileFutures = {};
   PageRoute<dynamic>? _route;
 
   @override
@@ -78,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   void didPopNext() {
     _syncToTodayIfNeeded();
     _goalFutures.clear();
+    _profileFutures.clear();
     _reloadDate(_selectedDate);
   }
 
@@ -110,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
 
     _dayFutures.clear();
     _goalFutures.clear();
+    _profileFutures.clear();
     setState(() {
       _baseDate = today;
       _selectedDate = today;
@@ -138,10 +146,19 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     );
   }
 
+  Future<MetabolicProfile?> _profileForDate(DateTime date) {
+    final key = _dateKey(date);
+    return _profileFutures.putIfAbsent(
+      key,
+      () => MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(date: date),
+    );
+  }
+
   Future<void> _reloadDate(DateTime date) async {
     final day = _dayOnly(date);
     _dayFutures.remove(_dateKey(day));
     _goalFutures.remove(_dateKey(day));
+    _profileFutures.remove(_dateKey(day));
     setState(() {});
     await _itemsForDate(day);
   }
@@ -238,6 +255,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                   await Navigator.pushNamed(context, GoalsScreen.routeName);
                   if (mounted) {
                     _goalFutures.clear();
+                    _profileFutures.clear();
+                    setState(() {});
+                  }
+                } else if (value == MetabolicProfileScreen.routeName) {
+                  await Navigator.pushNamed(context, MetabolicProfileScreen.routeName);
+                  if (mounted) {
+                    _profileFutures.clear();
                     setState(() {});
                   }
                 } else if (value == AboutScreen.routeName) {
@@ -266,6 +290,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.flag_outlined),
                     title: Text(l10n.goalsSectionTitle, style: menuTextStyle),
+                  ),
+                ),
+                  PopupMenuItem(
+                  value: MetabolicProfileScreen.routeName,
+                  child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.monitor_weight_outlined),
+                    title: Text(l10n.metabolicProfileTitle, style: menuTextStyle),
                   ),
                 ),
                   PopupMenuItem(
@@ -398,6 +431,51 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                       _openMetricDetails(pageDate, MetricType.protein),
                                   onCarbsTap: () =>
                                       _openMetricDetails(pageDate, MetricType.carbs),
+                                ),
+                                const SizedBox(height: UiConstants.smallSpacing),
+                                FutureBuilder<MetabolicProfile?>(
+                                  future: _profileForDate(pageDate),
+                                  builder: (context, profileSnapshot) {
+                                    if (profileSnapshot.connectionState == ConnectionState.waiting &&
+                                        !profileSnapshot.hasData) {
+                                      return const Card(
+                                        margin: EdgeInsets.zero,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(UiConstants.mediumSpacing),
+                                          child: Center(child: CircularProgressIndicator()),
+                                        ),
+                                      );
+                                    }
+                                    final profile = profileSnapshot.data;
+                                    if (profile == null) {
+                                      return Card(
+                                        margin: EdgeInsets.zero,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+                                          child: Text(l10n.setMetabolicProfileHint),
+                                        ),
+                                      );
+                                    }
+                                    final deficit = CalorieDeficitService.dailyDeficit(
+                                      consumedCalories: totalCalories,
+                                      profile: profile,
+                                    );
+                                    return LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        final singleMacroWidth =
+                                            (constraints.maxWidth - (UiConstants.smallSpacing * 2)) /
+                                                3;
+                                        return SizedBox(
+                                          width: singleMacroWidth,
+                                          child: MetricGroupBox(
+                                            label: l10n.dailyDeficitTitle,
+                                            value: l10n.caloriesKcalValue(deficit),
+                                            color: AppColors.calories,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
                                 ),
                               ],
                             );

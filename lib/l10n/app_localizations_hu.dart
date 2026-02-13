@@ -120,6 +120,62 @@ class AppLocalizationsHu extends AppLocalizations {
   String get goalsSectionTitle => 'Célok';
 
   @override
+  String get metabolicProfileTitle => 'Anyagcsere profil';
+
+  @override
+  String get ageLabel => 'Életkor';
+
+  @override
+  String get sexLabel => 'Nem';
+
+  @override
+  String get sexMale => 'Férfi';
+
+  @override
+  String get sexFemale => 'Nő';
+
+  @override
+  String get heightCmLabel => 'Magasság (cm)';
+
+  @override
+  String get weightKgLabel => 'Tömeg (kg)';
+
+  @override
+  String get activityLevelLabel => 'Aktivitási szint';
+
+  @override
+  String get activitySedentary => 'Ülő';
+
+  @override
+  String get activityLight => 'Könnyű';
+
+  @override
+  String get activityModerate => 'Közepes';
+
+  @override
+  String get activityActive => 'Aktív';
+
+  @override
+  String get activityVeryActive => 'Nagyon aktív';
+
+  @override
+  String get setMetabolicProfileHint =>
+      'Állítsd be az anyagcsere profilodat a kalóriadeficit követéséhez.';
+
+  @override
+  String dailyDeficitLabel(Object deficit) {
+    return 'Napi deficit: $deficit kcal';
+  }
+
+  @override
+  String get dailyDeficitTitle => 'Napi deficit';
+
+  @override
+  String maintenanceCaloriesLabel(Object calories) {
+    return 'Fenntartó: $calories kcal/nap';
+  }
+
+  @override
   String get dailyCalorieGoalLabel => 'Napi kalóriacél (kcal)';
 
   @override
