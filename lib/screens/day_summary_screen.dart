@@ -208,6 +208,88 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
             proteinPercent: profile.proteinRatioPercent,
             carbsPercent: profile.carbsRatioPercent,
           );
+    String adherenceStatus({
+      required num actual,
+      required num target,
+      double tolerancePercent = 10.0,
+    }) {
+      if (target <= 0) {
+        return 'no_target';
+      }
+      final delta = actual - target;
+      final deviationPercent = (delta.abs() / target) * 100.0;
+      if (deviationPercent <= tolerancePercent) {
+        return 'on_target';
+      }
+      return delta > 0 ? 'over' : 'under';
+    }
+
+    double percentOfTarget({
+      required num actual,
+      required num target,
+    }) {
+      if (target <= 0) {
+        return 0;
+      }
+      return (actual / target) * 100.0;
+    }
+
+    Map<String, dynamic>? goalAdherence;
+    if (targets != null) {
+      final caloriesStatus = adherenceStatus(actual: calories, target: targets.calories);
+      final fatStatus = adherenceStatus(actual: fat, target: targets.fat);
+      final proteinStatus = adherenceStatus(actual: protein, target: targets.protein);
+      final carbsStatus = adherenceStatus(actual: carbs, target: targets.carbs);
+      final hasGoalGap = caloriesStatus != 'on_target' ||
+          fatStatus != 'on_target' ||
+          proteinStatus != 'on_target' ||
+          carbsStatus != 'on_target';
+
+      goalAdherence = {
+        'has_goal_gap': hasGoalGap,
+        'calories': {
+          'actual': calories,
+          'target': targets.calories,
+          'delta': calories - targets.calories,
+          'percent_of_target': percentOfTarget(
+            actual: calories,
+            target: targets.calories,
+          ),
+          'status': caloriesStatus,
+        },
+        'fat': {
+          'actual': fat,
+          'target': targets.fat,
+          'delta': fat - targets.fat,
+          'percent_of_target': percentOfTarget(
+            actual: fat,
+            target: targets.fat,
+          ),
+          'status': fatStatus,
+        },
+        'protein': {
+          'actual': protein,
+          'target': targets.protein,
+          'delta': protein - targets.protein,
+          'percent_of_target': percentOfTarget(
+            actual: protein,
+            target: targets.protein,
+          ),
+          'status': proteinStatus,
+        },
+        'carbs': {
+          'actual': carbs,
+          'target': targets.carbs,
+          'delta': carbs - targets.carbs,
+          'percent_of_target': percentOfTarget(
+            actual: carbs,
+            target: targets.carbs,
+          ),
+          'status': carbsStatus,
+        },
+      };
+    }
+
     return {
       'date': summaryDateKey,
       'language_code': languageCode,
@@ -256,6 +338,7 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
               'protein': targets.protein,
               'carbs': targets.carbs,
             },
+      'goal_adherence': goalAdherence,
     };
   }
 

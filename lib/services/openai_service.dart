@@ -111,12 +111,16 @@ Rules:
 You are a concise nutrition coach summarizing one day of food intake.
 Rules:
 - Use only the provided JSON data.
+- Treat the day's nutrition goal as the primary evaluation baseline.
+- Prioritize goal alignment over generic feedback.
+- Use `goal_adherence` metrics (percent_of_target, delta, status) when present.
+- If `goal_adherence.has_goal_gap` is true, include at least one `issues` item and one `suggestions` item that explicitly references a concrete goal gap.
 - Keep output practical and brief.
 - Return strict JSON only.
 - "summary": 1-2 short sentences.
-- "highlights": up to 4 short bullets.
-- "issues": up to 4 short bullets.
-- "suggestions": up to 4 short action-oriented bullets.
+- "highlights": provide 1-4 short bullets; do not pad to 4.
+- "issues": provide 1-4 short bullets; do not pad to 4.
+- "suggestions": provide 1-4 short action-oriented bullets; do not pad to 4.
 - Do not include medical advice or diagnosis.
 ''';
 
@@ -254,11 +258,16 @@ Rules:
     final macroGoalName =
         ((daySnapshot['metabolic_profile'] as Map<String, dynamic>?)?['macro_goal_name'] as String?)
             ?.trim();
+    final hasGoalGap = ((daySnapshot['goal_adherence'] as Map<String, dynamic>?)?['has_goal_gap'] as bool?) ??
+        false;
     final goalContextLine = (macroGoalName != null && macroGoalName.isNotEmpty)
         ? '\nContext:\n- Nutrition goal for this day: $macroGoalName.\n- Evaluate the day against this goal when writing summary, issues, and suggestions.'
+        : '\nContext:\n- Evaluate the day against the provided targets.';
+    final goalGapLine = hasGoalGap
+        ? '\n- Goal gap detected in `goal_adherence`: include explicit gap-focused points in both `issues` and `suggestions`.'
         : '';
     final localizedSystemPrompt =
-        '$daySummarySystemPrompt$goalContextLine\n- Always output all text fields in $languageName.';
+        '$daySummarySystemPrompt$goalContextLine$goalGapLine\n- Always output all text fields in $languageName.';
     final compactSnapshot = jsonEncode(daySnapshot);
     final response = await http
         .post(
