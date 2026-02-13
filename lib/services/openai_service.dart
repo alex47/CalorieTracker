@@ -251,8 +251,14 @@ Rules:
         ? defaultEstimateMaxOutputTokens
         : maxOutputTokens;
     final languageName = _languageNameEnglish(languageCode);
+    final macroGoalName =
+        ((daySnapshot['metabolic_profile'] as Map<String, dynamic>?)?['macro_goal_name'] as String?)
+            ?.trim();
+    final goalContextLine = (macroGoalName != null && macroGoalName.isNotEmpty)
+        ? '\nContext:\n- Nutrition goal for this day: $macroGoalName.\n- Evaluate the day against this goal when writing summary, issues, and suggestions.'
+        : '';
     final localizedSystemPrompt =
-        '$daySummarySystemPrompt\n- Always output all text fields in $languageName.';
+        '$daySummarySystemPrompt$goalContextLine\n- Always output all text fields in $languageName.';
     final compactSnapshot = jsonEncode(daySnapshot);
     final response = await http
         .post(

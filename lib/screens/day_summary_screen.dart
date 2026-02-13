@@ -234,14 +234,14 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
       'metabolic_profile': profile == null
           ? null
           : {
-              'macro_preset_key': macroPresetKey,
+              'macro_goal_key': macroPresetKey,
               'age': profile.age,
               'sex': profile.sex,
               'height_cm': profile.heightCm,
               'weight_kg': profile.weightKg,
               'activity_level': profile.activityLevel,
-              'macro_preset_name': MacroRatioPresetCatalog.localizedLabelForLanguageCode(
-                languageCode: languageCode,
+              'macro_goal_name': MacroRatioPresetCatalog.localizedLabelForLanguageCode(
+                languageCode: 'en',
                 key: macroPresetKey!,
               ),
               'fat_ratio_percent': profile.fatRatioPercent,
