@@ -32,6 +32,10 @@ class UiConstants {
   static const double menuIconSize = 30;
   static const double loadingIndicatorSize = 16;
   static const double loadingIndicatorStrokeWidth = 2;
+  static const double weeklyChartBarCornerRadius = 3;
+  static const double weeklyChartBarVerticalPadding = 1.0;
+  static const double weeklyChartStripeSpacing = 6;
+  static const double weeklyChartStripeStrokeWidth = 1.2;
 
   static const double groupBoxHeaderTopInset = 8;
   static const double groupBoxHeaderGapStart = 10;

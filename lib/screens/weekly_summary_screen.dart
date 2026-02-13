@@ -339,20 +339,25 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                           final value = spec.valueForDay(days[i]);
                           final goal = spec.goalForDay(days[i]);
                           final isOverGoal = goal > 0 && value > goal;
-                          final stripedFillColor = spec.color.withValues(alpha: 0.42);
+                          final stripedFillColor =
+                              spec.color.withValues(alpha: AppColors.weeklyChartStripeAlpha);
                           final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
                           final max = goal > 0 ? goal : 1.0;
 
                           return Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 1.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: UiConstants.weeklyChartBarVerticalPadding,
+                              ),
                               child: Align(
                                 alignment: Alignment.centerLeft,
                                 child: FractionallySizedBox(
                                   widthFactor: (value / max).clamp(0.0, 1.0),
                                   heightFactor: 1.0,
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
+                                    borderRadius: BorderRadius.circular(
+                                      UiConstants.weeklyChartBarCornerRadius,
+                                    ),
                                     child: Stack(
                                       fit: StackFit.expand,
                                       children: [
@@ -360,7 +365,9 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                                           decoration: BoxDecoration(
                                             color: fillColor,
                                             border: Border.all(color: spec.color),
-                                            borderRadius: BorderRadius.circular(3),
+                                            borderRadius: BorderRadius.circular(
+                                              UiConstants.weeklyChartBarCornerRadius,
+                                            ),
                                           ),
                                         ),
                                         if (isOverGoal)
@@ -448,8 +455,8 @@ class _DiagonalStripePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const double spacing = 6;
-    const double strokeWidth = 1.2;
+    const spacing = UiConstants.weeklyChartStripeSpacing;
+    const strokeWidth = UiConstants.weeklyChartStripeStrokeWidth;
     final paint = Paint()
       ..color = stripeColor
       ..strokeWidth = strokeWidth
