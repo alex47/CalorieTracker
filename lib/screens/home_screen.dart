@@ -14,7 +14,6 @@ import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/food_table_card.dart';
-import '../widgets/labeled_group_box.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
 import 'add_entry_screen.dart';
@@ -400,7 +399,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                   ),
                                 );
                               }
-                              final deficit = targets.calories - totalCalories;
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -428,23 +426,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                         _openMetricDetails(pageDate, MetricType.protein),
                                     onCarbsTap: () =>
                                         _openMetricDetails(pageDate, MetricType.carbs),
-                                  ),
-                                  const SizedBox(height: UiConstants.smallSpacing),
-                                  LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      final singleMacroWidth =
-                                          (constraints.maxWidth -
-                                                  (UiConstants.smallSpacing * 2)) /
-                                              3;
-                                      return SizedBox(
-                                        width: singleMacroWidth,
-                                        child: MetricGroupBox(
-                                          label: l10n.dailyDeficitTitle,
-                                          value: l10n.caloriesKcalValue(deficit),
-                                          color: AppColors.calories,
-                                        ),
-                                      );
-                                    },
                                   ),
                                 ],
                               );
