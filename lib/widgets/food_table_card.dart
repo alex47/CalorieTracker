@@ -35,11 +35,17 @@ class FoodTableRowData {
     required this.cells,
     this.textStyle,
     this.onTap,
+    this.fat,
+    this.protein,
+    this.carbs,
   });
 
   final List<FoodTableCell> cells;
   final TextStyle? textStyle;
   final VoidCallback? onTap;
+  final double? fat;
+  final double? protein;
+  final double? carbs;
 }
 
 class FoodTableCard extends StatelessWidget {
@@ -48,11 +54,33 @@ class FoodTableCard extends StatelessWidget {
     required this.columns,
     required this.rows,
     this.borderColor,
+    this.highlightRowsByDominantMacro = false,
   });
 
   final List<FoodTableColumn> columns;
   final List<FoodTableRowData> rows;
   final Color? borderColor;
+  final bool highlightRowsByDominantMacro;
+
+  Color? _dominantMacroColor(FoodTableRowData row) {
+    final fat = row.fat;
+    final protein = row.protein;
+    final carbs = row.carbs;
+    if (fat == null || protein == null || carbs == null) {
+      return null;
+    }
+    final maxValue = [fat, protein, carbs].reduce((a, b) => a > b ? a : b);
+    if (maxValue <= 0) {
+      return null;
+    }
+    if (carbs == maxValue) {
+      return AppColors.carbs;
+    }
+    if (protein == maxValue) {
+      return AppColors.protein;
+    }
+    return AppColors.fat;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +126,10 @@ class FoodTableCard extends StatelessWidget {
                 ),
               ),
               ...rows.map((row) {
+                final dominantColor =
+                    highlightRowsByDominantMacro ? _dominantMacroColor(row) : null;
+                final effectiveTextStyle =
+                    row.textStyle ?? textTheme.bodyMedium?.copyWith(color: dominantColor);
                 final content = Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: UiConstants.tableRowHorizontalPadding,
@@ -114,7 +146,7 @@ class FoodTableCard extends StatelessWidget {
                           textAlign: cell.textAlign,
                           maxLines: cell.maxLines,
                           overflow: cell.overflow,
-                          style: row.textStyle ?? textTheme.bodyMedium,
+                          style: effectiveTextStyle,
                         ),
                       );
                     }),

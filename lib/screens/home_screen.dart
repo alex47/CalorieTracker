@@ -160,23 +160,6 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     return items.fold<double>(0, (sum, item) => sum + item.carbs);
   }
 
-  Color? _dominantMacroColor(FoodItem item) {
-    final fat = item.fat;
-    final protein = item.protein;
-    final carbs = item.carbs;
-    final maxValue = [fat, protein, carbs].reduce((a, b) => a > b ? a : b);
-    if (maxValue <= 0) {
-      return null;
-    }
-    if (carbs == maxValue) {
-      return AppColors.carbs;
-    }
-    if (protein == maxValue) {
-      return AppColors.protein;
-    }
-    return AppColors.fat;
-  }
-
   Future<void> _navigateToAdd() async {
     await Navigator.pushNamed(
       context,
@@ -447,17 +430,13 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                           child: FoodTableCard(
+                            highlightRowsByDominantMacro: true,
                             columns: buildStandardFoodTableColumns(
                               firstLabel: l10n.foodLabel,
                               secondLabel: l10n.amountLabel,
                               thirdLabel: l10n.caloriesLabel,
                             ),
                             rows: items.map((item) {
-                              final dominantColor = _dominantMacroColor(item);
-                              final rowTextStyle =
-                                  Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: dominantColor,
-                                      );
                               return FoodTableRowData(
                                 onTap: () async {
                                   final result = await Navigator.push<dynamic>(
@@ -482,7 +461,9 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                     }
                                   }
                                 },
-                                textStyle: rowTextStyle,
+                                fat: item.fat,
+                                protein: item.protein,
+                                carbs: item.carbs,
                                 cells: [
                                   FoodTableCell(
                                     text: item.name,

@@ -246,6 +246,7 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                   child: FoodTableCard(
+                    highlightRowsByDominantMacro: true,
                     columns: buildStandardFoodTableColumns(
                       firstLabel: l10n.foodLabel,
                       secondLabel: metricLabel,
@@ -263,6 +264,9 @@ class _DailyMetricDetailScreenState extends State<DailyMetricDetailScreen> with 
                             ),
                           );
                         },
+                        fat: entry.item.fat,
+                        protein: entry.item.protein,
+                        carbs: entry.item.carbs,
                         cells: [
                           FoodTableCell(text: entry.item.name),
                           FoodTableCell(
