@@ -451,12 +451,24 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final windowWidth = MediaQuery.of(context).size.width;
+    const dialogHorizontalPadding = UiConstants.pagePadding;
+    const dialogVerticalPadding = UiConstants.largeSpacing;
+    final maxDialogContentWidth = windowWidth - (dialogHorizontalPadding * 2);
+    final dialogContentWidth = maxDialogContentWidth.clamp(0.0, 560.0).toDouble();
+
     return AppDialog(
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: dialogHorizontalPadding,
+        vertical: dialogVerticalPadding,
+      ),
       title: Text(widget.isEditing ? l10n.editButton : l10n.addButton),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      content: SizedBox(
+        width: dialogContentWidth,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             LabeledGroupBox(
               label: l10n.profileDateLabel,
               value: '',
@@ -557,17 +569,18 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
                 setState(() => _selectedMacroPresetKey = value);
               },
             ),
-            if (_validationMessage != null) ...[
-              const SizedBox(height: UiConstants.mediumSpacing),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  _validationMessage!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+              if (_validationMessage != null) ...[
+                const SizedBox(height: UiConstants.mediumSpacing),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    _validationMessage!,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       actionItems: [
