@@ -414,7 +414,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isAnyBusy = isTesting || isDataTransferBusy;
     const sectionSpacing = UiConstants.sectionSpacing;
     const headerToContentSpacing = UiConstants.mediumSpacing;
-    const controlSpacing = UiConstants.largeSpacing;
+    const controlSpacing = UiConstants.smallSpacing;
     return PopScope(
       canPop: !isAnyBusy,
       child: Scaffold(
