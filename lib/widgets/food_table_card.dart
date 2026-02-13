@@ -84,6 +84,10 @@ class FoodTableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      rows.every((row) => row.cells.length == columns.length),
+      'Each FoodTableRowData must provide exactly one cell per column.',
+    );
     final textTheme = Theme.of(context).textTheme;
     final resolvedBorderColor = borderColor ?? AppColors.tableBorder;
     return Card(
@@ -138,7 +142,9 @@ class FoodTableCard extends StatelessWidget {
                   child: Row(
                     children: List<Widget>.generate(columns.length, (index) {
                       final column = columns[index];
-                      final cell = row.cells[index];
+                      final cell = index < row.cells.length
+                          ? row.cells[index]
+                          : const FoodTableCell(text: '');
                       return Expanded(
                         flex: column.flex,
                         child: Text(
