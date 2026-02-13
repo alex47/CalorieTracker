@@ -85,9 +85,13 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
                 actionItems: [
                   DialogActionItem(
                     width: UiConstants.buttonMinWidth,
-                    child: FilledButton(
+                    child: FilledButton.icon(
                       onPressed: () => Navigator.pop(dialogContext, false),
-                      child: Text(l10n.updateAvailableDialogLater, textAlign: TextAlign.center),
+                      icon: const Icon(Icons.schedule_outlined),
+                      label: Text(
+                        l10n.updateAvailableDialogLater,
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
                   DialogActionItem(
