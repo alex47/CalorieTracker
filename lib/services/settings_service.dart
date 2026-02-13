@@ -75,51 +75,53 @@ class SettingsService extends ChangeNotifier {
     final previous = _settings;
     _settings = settings;
     final db = await DatabaseService.instance.database;
-    await db.insert(
-      'settings',
-      {'key': _languageCodeKey, 'value': settings.languageCode},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _modelKey, 'value': settings.model},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _reasoningEffortKey, 'value': settings.reasoningEffort},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _maxOutputTokensKey, 'value': settings.maxOutputTokens.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _openAiTimeoutSecondsKey, 'value': settings.openAiTimeoutSeconds.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _dailyGoalKey, 'value': settings.dailyGoal.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _dailyFatGoalKey, 'value': settings.dailyFatGoal.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _dailyProteinGoalKey, 'value': settings.dailyProteinGoal.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
-    await db.insert(
-      'settings',
-      {'key': _dailyCarbsGoalKey, 'value': settings.dailyCarbsGoal.toString()},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.transaction((txn) async {
+      await txn.insert(
+        'settings',
+        {'key': _languageCodeKey, 'value': settings.languageCode},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _modelKey, 'value': settings.model},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _reasoningEffortKey, 'value': settings.reasoningEffort},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _maxOutputTokensKey, 'value': settings.maxOutputTokens.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _openAiTimeoutSecondsKey, 'value': settings.openAiTimeoutSeconds.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _dailyGoalKey, 'value': settings.dailyGoal.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _dailyFatGoalKey, 'value': settings.dailyFatGoal.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _dailyProteinGoalKey, 'value': settings.dailyProteinGoal.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      await txn.insert(
+        'settings',
+        {'key': _dailyCarbsGoalKey, 'value': settings.dailyCarbsGoal.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    });
     final goalsChanged = previous.dailyGoal != settings.dailyGoal ||
         previous.dailyFatGoal != settings.dailyFatGoal ||
         previous.dailyProteinGoal != settings.dailyProteinGoal ||
