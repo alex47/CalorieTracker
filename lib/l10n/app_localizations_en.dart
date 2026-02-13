@@ -140,6 +140,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activityLevelLabel => 'Activity level';
 
   @override
+  String get activityBmr => 'BMR (resting)';
+
+  @override
   String get activitySedentary => 'Sedentary';
 
   @override

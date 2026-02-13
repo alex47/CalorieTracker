@@ -4,6 +4,7 @@ class CalorieDeficitService {
   CalorieDeficitService._();
 
   static const Map<String, double> _activityFactors = {
+    'bmr': 1.0,
     'sedentary': 1.2,
     'light': 1.375,
     'moderate': 1.55,

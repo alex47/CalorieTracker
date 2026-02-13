@@ -52,6 +52,7 @@
   "heightCmLabel": "Height (cm)",
   "weightKgLabel": "Weight (kg)",
   "activityLevelLabel": "Activity level",
+  "activityBmr": "BMR (resting)",
   "activitySedentary": "Sedentary",
   "activityLight": "Light",
   "activityModerate": "Moderate",

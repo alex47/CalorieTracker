@@ -141,6 +141,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get activityLevelLabel => 'Aktivitási szint';
 
   @override
+  String get activityBmr => 'BMR (nyugalmi)';
+
+  @override
   String get activitySedentary => 'Ülő';
 
   @override

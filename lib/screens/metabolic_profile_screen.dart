@@ -160,6 +160,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
             value: _selectedActivityLevel,
             contentHeight: UiConstants.settingsFieldHeight,
             items: [
+              DropdownMenuItem(value: 'bmr', child: Text(l10n.activityBmr)),
               DropdownMenuItem(value: 'sedentary', child: Text(l10n.activitySedentary)),
               DropdownMenuItem(value: 'light', child: Text(l10n.activityLight)),
               DropdownMenuItem(value: 'moderate', child: Text(l10n.activityModerate)),

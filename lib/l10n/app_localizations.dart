@@ -350,6 +350,12 @@ abstract class AppLocalizations {
   /// **'Activity level'**
   String get activityLevelLabel;
 
+  /// No description provided for @activityBmr.
+  ///
+  /// In en, this message translates to:
+  /// **'BMR (resting)'**
+  String get activityBmr;
+
   /// No description provided for @activitySedentary.
   ///
   /// In en, this message translates to:

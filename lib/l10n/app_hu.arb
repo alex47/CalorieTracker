@@ -52,6 +52,7 @@
   "heightCmLabel": "Magasság (cm)",
   "weightKgLabel": "Tömeg (kg)",
   "activityLevelLabel": "Aktivitási szint",
+  "activityBmr": "BMR (nyugalmi)",
   "activitySedentary": "Ülő",
   "activityLight": "Könnyű",
   "activityModerate": "Közepes",
