@@ -27,11 +27,11 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with RouteAware {
+class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBindingObserver {
   static const int _initialPage = 10000;
   static const double _progressBarHeight = UiConstants.progressBarHeight;
 
-  late final DateTime _baseDate;
+  late DateTime _baseDate;
   late final PageController _pageController;
   late DateTime _selectedDate;
   final Map<String, Future<List<FoodItem>>> _dayFutures = {};
@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _baseDate = DateTime.now();
     _pageController = PageController(initialPage: _initialPage);
     _selectedDate = _dateForPage(_initialPage);
@@ -61,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     if (_route != null) {
       routeObserver.unsubscribe(this);
       _route = null;
@@ -71,8 +73,16 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   @override
   void didPopNext() {
+    _syncToTodayIfNeeded();
     _goalFutures.clear();
     _reloadDate(_selectedDate);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncToTodayIfNeeded();
+    }
   }
 
   DateTime _dayOnly(DateTime date) {
@@ -86,6 +96,24 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware {
 
   DateTime _dateForPage(int page) {
     return _dayOnly(_baseDate.add(Duration(days: page - _initialPage)));
+  }
+
+  void _syncToTodayIfNeeded() {
+    final today = _dayOnly(DateTime.now());
+    final anchorDay = _dayOnly(_baseDate);
+    if (!today.isAfter(anchorDay)) {
+      return;
+    }
+
+    _dayFutures.clear();
+    _goalFutures.clear();
+    setState(() {
+      _baseDate = today;
+      _selectedDate = today;
+    });
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(_initialPage);
+    }
   }
 
   Future<List<FoodItem>> _itemsForDate(DateTime date) {
