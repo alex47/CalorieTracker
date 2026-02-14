@@ -120,13 +120,14 @@ Rules:
 - Assess overall nutritional completeness broadly; mention only the most relevant factors for this specific day.
 - Do not force specific nutrients or example categories if the provided data does not support them.
 - If likely incompleteness is detected, include at least one related `issues` item and one practical `suggestions` item.
+- When noting likely daily nutrition gaps, include a practical food-based adjustment and briefly state which gap it addresses and why (for example: vitamins, essential fats, fiber, etc.), without restricting the assessment to these examples.
 - If relevant, mention concrete examples briefly, but keep the assessment high-level and practical.
 - Keep output practical and brief.
 - Return strict JSON only.
 - "summary": 1-2 short sentences.
-- "highlights": provide 1-4 short bullets; do not pad to 4.
-- "issues": provide 1-4 short bullets; do not pad to 4.
-- "suggestions": provide 1-4 short action-oriented bullets; do not pad to 4.
+- "highlights": provide 1-5 short bullets.
+- "issues": provide 1-5 short bullets.
+- "suggestions": provide 1-5 short action-oriented bullets.
 - Do not include medical advice or diagnosis.
 ''';
 
