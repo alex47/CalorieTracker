@@ -33,6 +33,7 @@ class DaySummaryScreen extends StatefulWidget {
 class _DaySummaryScreenState extends State<DaySummaryScreen> {
   bool _loading = true;
   bool _summarizing = false;
+  bool _summarizingAgain = false;
   String? _loadError;
   DaySummary? _summary;
   List<FoodItem> _items = const <FoodItem>[];
@@ -123,7 +124,14 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
       }
     }
     final settings = SettingsService.instance.settings;
-    setState(() => _summarizing = true);
+    final hadExistingSummary = _summary != null;
+    setState(() {
+      _summarizing = true;
+      _summarizingAgain = hadExistingSummary;
+      if (hadExistingSummary) {
+        _summary = null;
+      }
+    });
     try {
       final openAi = OpenAIService(
         apiKey,
@@ -160,7 +168,10 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
       }
     } finally {
       if (mounted) {
-        setState(() => _summarizing = false);
+        setState(() {
+          _summarizing = false;
+          _summarizingAgain = false;
+        });
       }
     }
   }
@@ -345,6 +356,7 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final summary = _summary;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -366,33 +378,33 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
                     _loadError!,
                     style: TextStyle(color: Theme.of(context).colorScheme.error),
                   )
-                else if (_summary == null)
-                  Text(l10n.noDailySummaryYet)
-                else ...[
+                else if (summary == null && !(_summarizing && _summarizingAgain))
+                  Text(l10n.noDailySummaryYet),
+                if (_loadError == null && summary != null) ...[
                   _SummaryOverviewCard(
                     title: l10n.dailySummaryOverviewTitle,
-                    text: _summary!.summary,
+                    text: summary.summary,
                   ),
                   const SizedBox(height: UiConstants.mediumSpacing),
                   _SummarySectionCard(
                     title: l10n.dailySummaryHighlightsTitle,
                     icon: Icons.check_circle_outline,
                     accentColor: AppColors.daySummaryHighlights,
-                    items: _summary!.highlights,
+                    items: summary.highlights,
                   ),
                   const SizedBox(height: UiConstants.mediumSpacing),
                   _SummarySectionCard(
                     title: l10n.dailySummaryIssuesTitle,
                     icon: Icons.error_outline,
                     accentColor: AppColors.daySummaryIssues,
-                    items: _summary!.issues,
+                    items: summary.issues,
                   ),
                   const SizedBox(height: UiConstants.mediumSpacing),
                   _SummarySectionCard(
                     title: l10n.dailySummarySuggestionsTitle,
                     icon: Icons.lightbulb_outline,
                     accentColor: AppColors.daySummarySuggestions,
-                    items: _summary!.suggestions,
+                    items: summary.suggestions,
                   ),
                 ],
                 const SizedBox(height: UiConstants.largeSpacing),
@@ -410,7 +422,9 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
                           )
                         : const Icon(Icons.auto_awesome_outlined),
                     label: Text(
-                      _summary == null ? l10n.summarizeDayButton : l10n.summarizeAgainButton,
+                      (summary != null || _summarizingAgain)
+                          ? l10n.summarizeAgainButton
+                          : l10n.summarizeDayButton,
                       textAlign: TextAlign.center,
                     ),
                   ),
