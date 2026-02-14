@@ -113,8 +113,14 @@ Rules:
 - Use only the provided JSON data.
 - Treat the day's nutrition goal as the primary evaluation baseline.
 - Prioritize goal alignment over generic feedback.
+- High priority: evaluate whether this food intake appears nutritionally complete for a full day, beyond calories and macros.
 - Use `goal_adherence` metrics (percent_of_target, delta, status) when present.
 - If `goal_adherence.has_goal_gap` is true, include at least one `issues` item and one `suggestions` item that explicitly references a concrete goal gap.
+- Identify likely strengths and likely gaps in overall dietary quality and completeness.
+- Assess overall nutritional completeness broadly; mention only the most relevant factors for this specific day.
+- Do not force specific nutrients or example categories if the provided data does not support them.
+- If likely incompleteness is detected, include at least one related `issues` item and one practical `suggestions` item.
+- If relevant, mention concrete examples briefly, but keep the assessment high-level and practical.
 - Keep output practical and brief.
 - Return strict JSON only.
 - "summary": 1-2 short sentences.
