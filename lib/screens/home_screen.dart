@@ -205,12 +205,40 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   }
 
   Future<void> _openWeeklySummary() async {
-    await Navigator.push(
+    final selectedDate = await Navigator.push<DateTime>(
       context,
       MaterialPageRoute(
         builder: (_) => WeeklySummaryScreen(anchorDate: _selectedDate),
       ),
     );
+    if (!mounted) {
+      return;
+    }
+    if (selectedDate != null) {
+      await _jumpToDate(selectedDate);
+      return;
+    }
+    await _reloadDate(_selectedDate);
+  }
+
+  Future<void> _jumpToDate(DateTime date) async {
+    final today = _dayOnly(DateTime.now());
+    final target = _dayOnly(date).isAfter(today) ? today : _dayOnly(date);
+    final rawPage = _initialPage + target.difference(_baseDate).inDays;
+    final targetPage = rawPage.clamp(0, _initialPage).toInt();
+    if (_pageController.hasClients) {
+      await _pageController.animateToPage(
+        targetPage,
+        duration: UiConstants.homePageSnapDuration,
+        curve: Curves.easeOutCubic,
+      );
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _selectedDate = _dateForPage(targetPage);
+    });
     await _reloadDate(_selectedDate);
   }
 
