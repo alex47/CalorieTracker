@@ -51,10 +51,15 @@ class FoodBreakdownCard extends StatelessWidget {
     final trimmedNotes = notes.trim();
     final displayName = name.trim().isEmpty ? '-' : name;
     final displayAmount = amount.trim().isEmpty ? '-' : amount;
-    return Card(
-      margin: margin ?? EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+    return Padding(
+      padding: margin ?? EdgeInsets.zero,
+      child: LabeledGroupBox(
+        label: '',
+        value: '',
+        borderColor: AppColors.subtleBorder,
+        textStyle: textTheme.bodyMedium,
+        backgroundColor: AppColors.boxBackground,
+        contentPadding: const EdgeInsets.all(UiConstants.mediumSpacing),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -121,40 +126,66 @@ class FoodBreakdownCard extends StatelessWidget {
               },
             ),
             const SizedBox(height: UiConstants.smallSpacing),
-            MetricGroupBox(
-              label: l10n.caloriesLabel,
-              value: l10n.caloriesKcalValue(calories),
-              color: AppColors.calories,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const gap = UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset;
+                final columnWidth = (constraints.maxWidth - (2 * gap)) / 3;
+                return SizedBox(
+                  width: columnWidth,
+                  child: MetricGroupBox(
+                    label: l10n.caloriesLabel,
+                    value: l10n.caloriesKcalValue(calories),
+                    color: AppColors.calories,
+                    minWidth: 0,
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            Wrap(
-              spacing: UiConstants.smallSpacing,
-              runSpacing: UiConstants.smallSpacing,
+            const SizedBox(height: UiConstants.macroCounterGap),
+            Row(
               children: [
-                MetricGroupBox(
-                  label: l10n.fatLabel,
-                  value: l10n.gramsValue(_formatGrams(fat)),
-                  color: AppColors.fat,
+                Expanded(
+                  child: MetricGroupBox(
+                    label: l10n.fatLabel,
+                    value: l10n.gramsValue(_formatGrams(fat)),
+                    color: AppColors.fat,
+                    minWidth: 0,
+                  ),
                 ),
-                MetricGroupBox(
-                  label: l10n.proteinLabel,
-                  value: l10n.gramsValue(_formatGrams(protein)),
-                  color: AppColors.protein,
+                const SizedBox(
+                  width: UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset,
                 ),
-                MetricGroupBox(
-                  label: l10n.carbsLabel,
-                  value: l10n.gramsValue(_formatGrams(carbs)),
-                  color: AppColors.carbs,
+                Expanded(
+                  child: MetricGroupBox(
+                    label: l10n.proteinLabel,
+                    value: l10n.gramsValue(_formatGrams(protein)),
+                    color: AppColors.protein,
+                    minWidth: 0,
+                  ),
+                ),
+                const SizedBox(
+                  width: UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset,
+                ),
+                Expanded(
+                  child: MetricGroupBox(
+                    label: l10n.carbsLabel,
+                    value: l10n.gramsValue(_formatGrams(carbs)),
+                    color: AppColors.carbs,
+                    minWidth: 0,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            LabeledGroupBox(
-              label: l10n.notesLabel,
-              value: trimmedNotes.isEmpty ? '-' : trimmedNotes,
-              borderColor: AppColors.subtleBorder,
-              textStyle: textTheme.bodyMedium,
-              backgroundColor: Colors.transparent,
+            const SizedBox(height: UiConstants.macroCounterGap),
+            SizedBox(
+              width: double.infinity,
+              child: LabeledGroupBox(
+                label: l10n.notesLabel,
+                value: trimmedNotes.isEmpty ? '-' : trimmedNotes,
+                borderColor: AppColors.subtleBorder,
+                textStyle: textTheme.bodyMedium,
+                backgroundColor: Colors.transparent,
+              ),
             ),
           ],
         ),

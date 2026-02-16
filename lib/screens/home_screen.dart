@@ -36,7 +36,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBindingObserver {
   static const int _initialPage = 10000;
   static const double _progressBarHeight = UiConstants.progressBarHeight;
-  static const double _macroCounterGap = UiConstants.smallSpacing;
+  static const double _macroCounterGap = UiConstants.macroCounterGap;
   static const double _macroCounterHorizontalGap =
       _macroCounterGap + UiConstants.groupBoxHeaderTopInset;
 
