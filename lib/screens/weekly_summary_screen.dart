@@ -12,6 +12,7 @@ import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/labeled_group_box.dart';
 
 class WeeklySummaryScreen extends StatefulWidget {
   const WeeklySummaryScreen({
@@ -310,12 +311,13 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                   return CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: UiConstants.largeSpacing),
+                      ),
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: UiConstants.largeSpacing,
-                            left: UiConstants.pagePadding,
-                            right: UiConstants.pagePadding,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: UiConstants.pagePadding,
                           ),
                           child: Center(
                             child: Padding(
@@ -326,19 +328,38 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                               child: Text(
                                 _formatWeekRange(languageCode, weekStart, weekEnd),
                                 style: Theme.of(context).textTheme.headlineSmall,
-                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
                         ),
                       ),
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: UiConstants.mediumSpacing),
+                      ),
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                          child: Text(
-                            '${l10n.weeklyDeficitTitle}: ${_weeklyDeficitDisplay(dailyTotals, l10n)}',
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.titleMedium,
+                          child: LabeledGroupBox(
+                            label: l10n.weeklyDeficitTitle,
+                            value: '',
+                            borderColor: AppColors.deficit,
+                            textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: AppColors.deficit,
+                                ),
+                            contentHeight: UiConstants.progressBarHeight,
+                            contentPadding: EdgeInsets.zero,
+                            backgroundColor: Colors.transparent,
+                            child: Center(
+                              child: Text(
+                                _weeklyDeficitDisplay(dailyTotals, l10n),
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: AppColors.deficit,
+                                    ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -475,7 +496,7 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       SizedBox(
-                        width: 78,
+                        width: 116,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,17 +506,18 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                             const SizedBox(height: UiConstants.xxSmallSpacing),
-                          Text(
-                            _formatDailyDeficit(i),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  fontStyle: _isEstimatedDailyDeficit(i)
-                                      ? FontStyle.italic
-                                      : FontStyle.normal,
-                                ),
-                          ),
-                        ],
+                            Text(
+                              _formatDailyDeficit(i),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.deficit,
+                                    fontStyle: _isEstimatedDailyDeficit(i)
+                                        ? FontStyle.italic
+                                        : FontStyle.normal,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                       Expanded(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -554,7 +576,15 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                   ),
                 ),
               ),
-              if (i < days.length - 1) const Spacer(flex: 1),
+              if (i < days.length - 1)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                  child: Divider(
+                    color: AppColors.subtleBorder,
+                    thickness: UiConstants.borderWidth,
+                    height: UiConstants.borderWidth,
+                  ),
+                ),
             ],
           ],
         ),
