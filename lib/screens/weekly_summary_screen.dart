@@ -435,8 +435,18 @@ class _CombinedMetricWeekChart extends StatelessWidget {
     if (deficit == null) {
       return '-';
     }
-    final text = '${deficit.value} kcal';
-    return deficit.estimated ? '($text)' : text;
+    return '${deficit.value} kcal';
+  }
+
+  bool _isEstimatedDailyDeficit(int dayIndex) {
+    if (dailyDeficits == null || dayIndex < 0 || dayIndex >= dailyDeficits!.length) {
+      return false;
+    }
+    final deficit = dailyDeficits![dayIndex];
+    if (deficit == null) {
+      return false;
+    }
+    return deficit.estimated;
   }
 
   String _formatDayName(DateTime date) {
@@ -475,13 +485,17 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                             const SizedBox(height: UiConstants.xxSmallSpacing),
-                            Text(
-                              _formatDailyDeficit(i),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
+                          Text(
+                            _formatDailyDeficit(i),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  fontStyle: _isEstimatedDailyDeficit(i)
+                                      ? FontStyle.italic
+                                      : FontStyle.normal,
+                                ),
+                          ),
+                        ],
                       ),
+                    ),
                       Expanded(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
