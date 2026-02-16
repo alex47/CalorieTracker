@@ -480,114 +480,116 @@ class _CombinedMetricWeekChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(UiConstants.mediumSpacing),
-        child: Column(
-          children: [
-            for (int i = 0; i < days.length; i++) ...[
-              Expanded(
-                flex: specs.length,
-                child: InkWell(
-                  onTap: () => onDayTap(days[i].date),
-                  borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 116,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _formatDayName(days[i].date),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            const SizedBox(height: UiConstants.xxSmallSpacing),
-                            Text(
-                              _formatDailyDeficit(i),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.deficit,
-                                    fontStyle: _isEstimatedDailyDeficit(i)
-                                        ? FontStyle.italic
-                                        : FontStyle.normal,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: specs.map((spec) {
-                            final value = spec.valueForDay(days[i]);
-                            final goal = spec.goalForDay(days[i]);
-                            final isOverGoal = goal > 0 && value > goal;
-                            final stripedFillColor =
-                                spec.color.withValues(alpha: AppColors.weeklyChartStripeAlpha);
-                            final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
-                            final max = goal > 0 ? goal : 1.0;
-
-                            return Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: UiConstants.weeklyChartBarVerticalPadding,
+    return LabeledGroupBox(
+      label: '',
+      value: '',
+      borderColor: AppColors.subtleBorder,
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      backgroundColor: Colors.transparent,
+      contentPadding: const EdgeInsets.all(UiConstants.mediumSpacing),
+      child: Column(
+        children: [
+          for (int i = 0; i < days.length; i++) ...[
+            Expanded(
+              flex: specs.length,
+              child: InkWell(
+                onTap: () => onDayTap(days[i].date),
+                borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 116,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _formatDayName(days[i].date),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: UiConstants.xxSmallSpacing),
+                          Text(
+                            _formatDailyDeficit(i),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.deficit,
+                                  fontStyle: _isEstimatedDailyDeficit(i)
+                                      ? FontStyle.italic
+                                      : FontStyle.normal,
                                 ),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: FractionallySizedBox(
-                                    widthFactor: (value / max).clamp(0.0, 1.0),
-                                    heightFactor: 1.0,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                        UiConstants.weeklyChartBarCornerRadius,
-                                      ),
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          DecoratedBox(
-                                            decoration: BoxDecoration(
-                                              color: fillColor,
-                                              border: Border.all(color: spec.color),
-                                              borderRadius: BorderRadius.circular(
-                                                UiConstants.weeklyChartBarCornerRadius,
-                                              ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: specs.map((spec) {
+                          final value = spec.valueForDay(days[i]);
+                          final goal = spec.goalForDay(days[i]);
+                          final isOverGoal = goal > 0 && value > goal;
+                          final stripedFillColor =
+                              spec.color.withValues(alpha: AppColors.weeklyChartStripeAlpha);
+                          final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
+                          final max = goal > 0 ? goal : 1.0;
+
+                          return Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: UiConstants.weeklyChartBarVerticalPadding,
+                              ),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: FractionallySizedBox(
+                                  widthFactor: (value / max).clamp(0.0, 1.0),
+                                  heightFactor: 1.0,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      UiConstants.weeklyChartBarCornerRadius,
+                                    ),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color: fillColor,
+                                            border: Border.all(color: spec.color),
+                                            borderRadius: BorderRadius.circular(
+                                              UiConstants.weeklyChartBarCornerRadius,
                                             ),
                                           ),
-                                          if (isOverGoal)
-                                            CustomPaint(
-                                              painter: _DiagonalStripePainter(
-                                                stripeColor: stripedFillColor,
-                                              ),
+                                        ),
+                                        if (isOverGoal)
+                                          CustomPaint(
+                                            painter: _DiagonalStripePainter(
+                                              stripeColor: stripedFillColor,
                                             ),
-                                        ],
-                                      ),
+                                          ),
+                                      ],
                                     ),
                                   ),
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ),
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              if (i < days.length - 1)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
-                  child: Divider(
-                    color: AppColors.subtleBorder,
-                    thickness: UiConstants.borderWidth,
-                    height: UiConstants.borderWidth,
-                  ),
+            ),
+            if (i < days.length - 1)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                child: Divider(
+                  color: AppColors.subtleBorder,
+                  thickness: UiConstants.borderWidth,
+                  height: UiConstants.borderWidth,
                 ),
-            ],
+              ),
           ],
-        ),
+        ],
       ),
     );
   }

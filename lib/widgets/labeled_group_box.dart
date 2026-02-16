@@ -32,21 +32,24 @@ class LabeledGroupBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final hasLabel = label.trim().isNotEmpty;
     const gapStart = UiConstants.groupBoxHeaderGapStart;
     const gapHorizontalPadding = UiConstants.groupBoxHeaderGapHorizontalPadding;
-    final labelStyle = textTheme.bodySmall?.copyWith(color: borderColor);
+    final effectiveLabelColor = labelColor ?? borderColor;
+    final labelStyle = textTheme.bodySmall?.copyWith(color: effectiveLabelColor);
     final labelPainter = TextPainter(
-      text: TextSpan(text: label, style: labelStyle),
+      text: TextSpan(text: hasLabel ? label : '', style: labelStyle),
       textDirection: Directionality.of(context),
       maxLines: 1,
     )..layout();
-    final labelGapWidth = labelPainter.width + (gapHorizontalPadding * 2);
+    final labelGapWidth = hasLabel ? labelPainter.width + (gapHorizontalPadding * 2) : 0.0;
+    final topInset = hasLabel ? UiConstants.groupBoxHeaderTopInset : 0.0;
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
         Container(
-          margin: const EdgeInsets.only(top: UiConstants.groupBoxHeaderTopInset),
+          margin: EdgeInsets.only(top: topInset),
           constraints: minWidth == null ? null : BoxConstraints(minWidth: minWidth!),
           height: contentHeight,
           padding: contentPadding,
@@ -67,24 +70,25 @@ class LabeledGroupBox extends StatelessWidget {
               painter: NotchedBorderPainter(
                 color: borderColor,
                 radius: UiConstants.cornerRadius,
-                topInset: UiConstants.groupBoxHeaderTopInset,
+                topInset: topInset,
                 gapStart: gapStart,
                 gapWidth: labelGapWidth,
               ),
             ),
           ),
         ),
-        Positioned(
-          left: gapStart,
-          top: 0,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: gapHorizontalPadding),
-            child: Text(
-              label,
-              style: labelStyle,
+        if (hasLabel)
+          Positioned(
+            left: gapStart,
+            top: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: gapHorizontalPadding),
+              child: Text(
+                label,
+                style: labelStyle,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
