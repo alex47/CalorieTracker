@@ -9,7 +9,7 @@ class AppColors {
   static const text = Color(0xFFCBCBCB);
   static const boxBackground = Color(0xFF181818);
   static const border = Color(0x66909090);
-  static const tableBorder = Color(0xFF8A8A8A);
+  static const tableBorder = subtleBorder;
 
   static const calories = Color(0xFF6F9BCF);
   static const fat = Color(0xFFD8B14A);
