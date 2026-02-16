@@ -36,6 +36,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBindingObserver {
   static const int _initialPage = 10000;
   static const double _progressBarHeight = UiConstants.progressBarHeight;
+  static const double _macroCounterGap = UiConstants.smallSpacing;
+  static const double _macroCounterHorizontalGap =
+      _macroCounterGap + UiConstants.groupBoxHeaderTopInset;
 
   late DateTime _baseDate;
   late final PageController _pageController;
@@ -473,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                       MetricType.calories,
                                     ),
                                   ),
-                                  const SizedBox(height: UiConstants.smallSpacing),
+                                  const SizedBox(height: _macroCounterGap),
                                   _DailyMacrosRow(
                                     l10n: l10n,
                                     fat: totalFat,
@@ -483,6 +486,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                     carbs: totalCarbs,
                                     carbsGoal: targets.carbs.toDouble(),
                                     height: _progressBarHeight,
+                                    gap: _macroCounterHorizontalGap,
                                     onFatTap: () => _openMetricDetails(pageDate, MetricType.fat),
                                     onProteinTap: () =>
                                         _openMetricDetails(pageDate, MetricType.protein),
@@ -637,6 +641,7 @@ class _DailyMacrosRow extends StatelessWidget {
     required this.carbs,
     required this.carbsGoal,
     required this.height,
+    required this.gap,
     this.onFatTap,
     this.onProteinTap,
     this.onCarbsTap,
@@ -650,6 +655,7 @@ class _DailyMacrosRow extends StatelessWidget {
   final double carbs;
   final double carbsGoal;
   final double height;
+  final double gap;
   final VoidCallback? onFatTap;
   final VoidCallback? onProteinTap;
   final VoidCallback? onCarbsTap;
@@ -668,7 +674,7 @@ class _DailyMacrosRow extends StatelessWidget {
             onTap: onFatTap,
           ),
         ),
-        const SizedBox(width: UiConstants.smallSpacing),
+        SizedBox(width: gap),
         Expanded(
           child: LabeledProgressBar(
             label: l10n.proteinLabel,
@@ -679,7 +685,7 @@ class _DailyMacrosRow extends StatelessWidget {
             onTap: onProteinTap,
           ),
         ),
-        const SizedBox(width: UiConstants.smallSpacing),
+        SizedBox(width: gap),
         Expanded(
           child: LabeledProgressBar(
             label: l10n.carbsLabel,
