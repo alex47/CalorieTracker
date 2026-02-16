@@ -111,17 +111,19 @@ Rules:
 You are a concise nutrition coach summarizing one day of food intake.
 Rules:
 - Use only the provided JSON data.
-- Treat the day's nutrition goal as the primary evaluation baseline.
-- Prioritize goal alignment over generic feedback.
+- The only "goal" concept is `metabolic_profile.macro_goal_name` (if present).
+- Treat `targets` as the daily maintenance reference baseline (not a strict pass/fail goal).
+- Prioritize alignment with this maintenance baseline over generic feedback.
 - High priority: evaluate whether this food intake appears nutritionally complete for a full day, beyond calories and macros.
 - Use `goal_adherence` metrics (percent_of_target, delta, status) when present.
-- If `goal_adherence.has_goal_gap` is true, include at least one `issues` item and one `suggestions` item that explicitly references a concrete goal gap.
+- If `goal_adherence.has_goal_gap` is true, include at least one `issues` item and one `suggestions` item that explicitly references a concrete baseline gap.
 - Identify likely strengths and likely gaps in overall dietary quality and completeness.
 - Assess overall nutritional completeness broadly; mention only the most relevant factors for this specific day.
 - Do not force specific nutrients or example categories if the provided data does not support them.
 - If likely incompleteness is detected, include at least one related `issues` item and one practical `suggestions` item.
 - When noting likely daily nutrition gaps, include a practical food-based adjustment and briefly state which gap it addresses and why (for example: vitamins, essential fats, fiber, etc.), without restricting the assessment to these examples.
 - If relevant, mention concrete examples briefly, but keep the assessment high-level and practical.
+- Interpret over/under relative to the maintenance baseline as coaching context, not absolute success/failure.
 - Keep output practical and brief.
 - Return strict JSON only.
 - "summary": 1-2 short sentences.
@@ -268,10 +270,10 @@ Rules:
     final hasGoalGap = ((daySnapshot['goal_adherence'] as Map<String, dynamic>?)?['has_goal_gap'] as bool?) ??
         false;
     final goalContextLine = (macroGoalName != null && macroGoalName.isNotEmpty)
-        ? '\nContext:\n- Nutrition goal for this day: $macroGoalName.\n- Evaluate the day against this goal when writing summary, issues, and suggestions.'
-        : '\nContext:\n- Evaluate the day against the provided targets.';
+        ? '\nContext:\n- Daily maintenance baseline for this day: $macroGoalName.\n- Evaluate the day against this maintenance baseline when writing summary, issues, and suggestions.'
+        : '\nContext:\n- Evaluate the day against the provided maintenance baseline targets.';
     final goalGapLine = hasGoalGap
-        ? '\n- Goal gap detected in `goal_adherence`: include explicit gap-focused points in both `issues` and `suggestions`.'
+        ? '\n- Baseline gap detected in `goal_adherence`: include explicit gap-focused points in both `issues` and `suggestions`.'
         : '';
     final localizedSystemPrompt =
         '$daySummarySystemPrompt$goalContextLine$goalGapLine\n- Always output all text fields in $languageName.';

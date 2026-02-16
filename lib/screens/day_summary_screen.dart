@@ -219,6 +219,26 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
             proteinPercent: profile.proteinRatioPercent,
             carbsPercent: profile.carbsRatioPercent,
           );
+    final macroGoalNameEnglish = macroPresetKey == null
+        ? null
+        : MacroRatioPresetCatalog.localizedLabelForLanguageCode(
+            languageCode: 'en',
+            key: macroPresetKey,
+          );
+    final macroGoalNameLocalized = macroPresetKey == null
+        ? null
+        : MacroRatioPresetCatalog.localizedLabelForLanguageCode(
+            languageCode: languageCode,
+            key: macroPresetKey,
+          );
+    final macroGoalName = macroPresetKey == null
+        ? null
+        : (languageCode == 'en' ||
+                macroGoalNameLocalized == null ||
+                macroGoalNameLocalized.isEmpty ||
+                macroGoalNameLocalized == macroGoalNameEnglish)
+            ? macroGoalNameEnglish
+            : '$macroGoalNameLocalized ($macroGoalNameEnglish)';
     String adherenceStatus({
       required num actual,
       required num target,
@@ -333,10 +353,7 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
               'height_cm': profile.heightCm,
               'weight_kg': profile.weightKg,
               'activity_level': profile.activityLevel,
-              'macro_goal_name': MacroRatioPresetCatalog.localizedLabelForLanguageCode(
-                languageCode: 'en',
-                key: macroPresetKey!,
-              ),
+              'macro_goal_name': macroGoalName,
               'fat_ratio_percent': profile.fatRatioPercent,
               'protein_ratio_percent': profile.proteinRatioPercent,
               'carbs_ratio_percent': profile.carbsRatioPercent,
