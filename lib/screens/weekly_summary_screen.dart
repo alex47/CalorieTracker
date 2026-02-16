@@ -312,7 +312,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
                       const SliverToBoxAdapter(
-                        child: SizedBox(height: UiConstants.largeSpacing),
+                        child: SizedBox(height: UiConstants.mediumSpacing),
                       ),
                       SliverToBoxAdapter(
                         child: Padding(
@@ -336,7 +336,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                         ),
                       ),
                       const SliverToBoxAdapter(
-                        child: SizedBox(height: UiConstants.mediumSpacing),
+                        child: SizedBox(height: UiConstants.largeSpacing),
                       ),
                       SliverToBoxAdapter(
                         child: Padding(
@@ -364,7 +364,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
                         ),
                       ),
                       const SliverToBoxAdapter(
-                        child: SizedBox(height: UiConstants.mediumSpacing),
+                        child: SizedBox(height: UiConstants.largeSpacing),
                       ),
                       if (!hasAnyTargets)
                         SliverToBoxAdapter(
