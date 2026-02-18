@@ -16,6 +16,7 @@ class LabeledGroupBox extends StatelessWidget {
     this.minWidth,
     this.backgroundColor,
     this.labelColor,
+    this.clipChild = true,
   });
 
   final String label;
@@ -28,6 +29,7 @@ class LabeledGroupBox extends StatelessWidget {
   final double? minWidth;
   final Color? backgroundColor;
   final Color? labelColor;
+  final bool clipChild;
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +61,12 @@ class LabeledGroupBox extends StatelessWidget {
           ),
           child: child == null
               ? Text(value, style: textStyle)
-              : ClipRRect(
-                  borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-                  child: child,
-                ),
+              : (clipChild
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                      child: child,
+                    )
+                  : child!),
         ),
         Positioned.fill(
           child: IgnorePointer(

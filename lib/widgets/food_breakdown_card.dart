@@ -59,6 +59,7 @@ class FoodBreakdownCard extends StatelessWidget {
         borderColor: AppColors.subtleBorder,
         textStyle: textTheme.bodyMedium,
         backgroundColor: AppColors.boxBackground,
+        clipChild: false,
         contentPadding: const EdgeInsets.all(UiConstants.mediumSpacing),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
