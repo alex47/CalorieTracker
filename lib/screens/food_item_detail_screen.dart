@@ -284,7 +284,6 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               notes: _item.notes,
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
-            if (isBusy) const LinearProgressIndicator(),
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(top: UiConstants.smallSpacing),
@@ -330,7 +329,15 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: isBusy ? null : _reestimateItem,
-                    icon: const Icon(Icons.auto_awesome_outlined),
+                    icon: _loading
+                        ? const SizedBox(
+                            height: UiConstants.loadingIndicatorSize,
+                            width: UiConstants.loadingIndicatorSize,
+                            child: CircularProgressIndicator(
+                              strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                            ),
+                          )
+                        : const Icon(Icons.auto_awesome_outlined),
                     label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
                   ),
                 ),
