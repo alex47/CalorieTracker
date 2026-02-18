@@ -80,7 +80,7 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
         _items = items;
         _snapshot = snapshot;
         _sourceHash = sourceHash;
-        _summary = matchesCurrentState ? stored!.summary : null;
+        _summary = matchesCurrentState ? stored.summary : null;
       });
     } catch (error) {
       if (!mounted) {
