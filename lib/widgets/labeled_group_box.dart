@@ -102,6 +102,8 @@ class MetricGroupBox extends StatelessWidget {
     required this.color,
     this.minWidth = UiConstants.metricGroupMinWidth,
     this.contentHeight = UiConstants.progressBarHeight,
+    this.valueAlignment = Alignment.centerLeft,
+    this.valueTextAlign = TextAlign.start,
   });
 
   final String label;
@@ -109,6 +111,8 @@ class MetricGroupBox extends StatelessWidget {
   final Color color;
   final double minWidth;
   final double contentHeight;
+  final AlignmentGeometry valueAlignment;
+  final TextAlign valueTextAlign;
 
   @override
   Widget build(BuildContext context) {
@@ -123,10 +127,16 @@ class MetricGroupBox extends StatelessWidget {
       minWidth: minWidth,
       backgroundColor: Colors.transparent,
       labelColor: color,
-      child: Align(
-        alignment: Alignment.centerLeft,
-        widthFactor: 1,
-        child: Text(value, style: valueStyle),
+      child: SizedBox(
+        width: double.infinity,
+        child: Align(
+          alignment: valueAlignment,
+          child: Text(
+            value,
+            style: valueStyle,
+            textAlign: valueTextAlign,
+          ),
+        ),
       ),
     );
   }

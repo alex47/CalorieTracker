@@ -137,6 +137,8 @@ class FoodBreakdownCard extends StatelessWidget {
                     value: l10n.caloriesKcalValue(calories),
                     color: AppColors.calories,
                     minWidth: 0,
+                    valueAlignment: Alignment.center,
+                    valueTextAlign: TextAlign.center,
                   ),
                 );
               },
@@ -150,6 +152,8 @@ class FoodBreakdownCard extends StatelessWidget {
                     value: l10n.gramsValue(_formatGrams(fat)),
                     color: AppColors.fat,
                     minWidth: 0,
+                    valueAlignment: Alignment.center,
+                    valueTextAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(
@@ -161,6 +165,8 @@ class FoodBreakdownCard extends StatelessWidget {
                     value: l10n.gramsValue(_formatGrams(protein)),
                     color: AppColors.protein,
                     minWidth: 0,
+                    valueAlignment: Alignment.center,
+                    valueTextAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(
@@ -172,6 +178,8 @@ class FoodBreakdownCard extends StatelessWidget {
                     value: l10n.gramsValue(_formatGrams(carbs)),
                     color: AppColors.carbs,
                     minWidth: 0,
+                    valueAlignment: Alignment.center,
+                    valueTextAlign: TextAlign.center,
                   ),
                 ),
               ],
