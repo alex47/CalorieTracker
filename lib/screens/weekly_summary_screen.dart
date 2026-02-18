@@ -118,7 +118,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     return DateTime(now.year, now.month, now.day);
   }
 
-  bool _isFutureDay(DateTime day) => day.isAfter(_todayDayOnly());
+  bool _isFutureDay(DateTime day) => !day.isBefore(_todayDayOnly());
 
   void _openDay(DateTime date) {
     if (_isFutureDay(date)) {
