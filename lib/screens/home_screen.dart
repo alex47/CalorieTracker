@@ -350,25 +350,24 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
         floatingActionButton: Padding(
           padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              FutureBuilder<List<FoodItem>>(
-                future: _itemsForDate(_selectedDate),
-                builder: (context, snapshot) {
-                  final hasItems = (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
-                  final canSummarize = snapshot.connectionState != ConnectionState.waiting && hasItems;
-                  return SizedBox(
-                    width: UiConstants.addButtonWidth,
-                    child: FilledButton.icon(
+              Expanded(
+                child: FutureBuilder<List<FoodItem>>(
+                  future: _itemsForDate(_selectedDate),
+                  builder: (context, snapshot) {
+                    final hasItems = (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
+                    final canSummarize =
+                        snapshot.connectionState != ConnectionState.waiting && hasItems;
+                    return FilledButton.icon(
                       onPressed: canSummarize ? () => _openDaySummaryScreen(_selectedDate) : null,
                       icon: const Icon(Icons.auto_awesome_outlined),
                       label: Text(l10n.summarizeDayButton, textAlign: TextAlign.center),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-              SizedBox(
-                width: UiConstants.addButtonWidth,
+              const SizedBox(width: UiConstants.buttonSpacing),
+              Expanded(
                 child: FilledButton.icon(
                   onPressed: _navigateToAdd,
                   icon: const Icon(Icons.add_outlined),
