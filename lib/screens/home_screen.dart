@@ -259,6 +259,11 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     return _selectedDate == today;
   }
 
+  double _bottomActionReserveHeight(BuildContext context) {
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+    return kMinInteractiveDimension + UiConstants.largeSpacing + safeBottom;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -603,6 +608,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                         return content;
                       },
                     ),
+                    SizedBox(height: _bottomActionReserveHeight(context)),
                   ],
                 ),
               );
