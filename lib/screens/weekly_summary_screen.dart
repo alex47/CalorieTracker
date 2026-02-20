@@ -118,7 +118,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     return DateTime(now.year, now.month, now.day);
   }
 
-  bool _isFutureDay(DateTime day) => !day.isBefore(_todayDayOnly());
+  bool _isFutureDay(DateTime day) => day.isAfter(_todayDayOnly());
+  bool _isToday(DateTime day) => day.isAtSameMomentAs(_todayDayOnly());
 
   void _openDay(DateTime date) {
     if (_isFutureDay(date)) {
@@ -129,7 +130,12 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
   List<int?>? _resolvedDailyDeficits(List<_DayMetricTotals> dailyTotals) {
     final deficitValues = dailyTotals
-        .where((day) => !_isFutureDay(day.date) && day.itemCount > 0 && day.targets != null)
+        .where((day) {
+          if (_isFutureDay(day.date) || _isToday(day.date)) {
+            return false;
+          }
+          return day.itemCount > 0 && day.targets != null;
+        })
         .map((day) => day.targets!.calories - day.calories)
         .toList(growable: false);
     if (deficitValues.isEmpty) {
@@ -139,6 +145,12 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     final average = deficitValues.reduce((a, b) => a + b) / deficitValues.length;
     return dailyTotals.map((day) {
       if (_isFutureDay(day.date)) {
+        return null;
+      }
+      if (_isToday(day.date)) {
+        if (day.itemCount > 0 && day.targets != null) {
+          return day.targets!.calories - day.calories;
+        }
         return null;
       }
       if (day.itemCount > 0 && day.targets != null) {
@@ -177,6 +189,19 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
       final day = dailyTotals[i];
       if (_isFutureDay(day.date)) {
         result.add(null);
+        continue;
+      }
+      if (_isToday(day.date)) {
+        if (day.itemCount > 0 && day.targets != null) {
+          result.add(
+            _DisplayedDailyDeficit(
+              value: day.targets!.calories - day.calories,
+              estimated: false,
+            ),
+          );
+        } else {
+          result.add(null);
+        }
         continue;
       }
       if (day.itemCount > 0 && day.targets != null) {
