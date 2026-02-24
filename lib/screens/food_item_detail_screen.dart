@@ -10,6 +10,7 @@ import '../utils/error_localizer.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
+import '../widgets/labeled_input_box.dart';
 import '../widgets/raw_ai_response_section.dart';
 import '../widgets/reestimate_dialog.dart';
 
@@ -29,6 +30,7 @@ class FoodItemDetailScreen extends StatefulWidget {
 
 class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   late FoodItem _item;
+  late final TextEditingController _multiplierController;
   bool _loading = false;
   bool _saving = false;
   bool _dirty = false;
@@ -51,6 +53,29 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   void initState() {
     super.initState();
     _item = widget.item;
+    _multiplierController = TextEditingController(
+      text: _item.multiplier.toStringAsFixed(
+        _item.multiplier % 1 == 0 ? 0 : 2,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _multiplierController.dispose();
+    super.dispose();
+  }
+
+  double? _parseMultiplier() {
+    final text = _multiplierController.text.trim().replaceAll(',', '.');
+    if (text.isEmpty) {
+      return null;
+    }
+    final value = double.tryParse(text);
+    if (value == null || value <= 0) {
+      return null;
+    }
+    return value;
   }
 
   Future<void> _reestimateItem() async {
@@ -124,6 +149,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       }
 
       setState(() {
+        final nextMultiplier = (updated['multiplier'] as num?)?.toDouble() ?? 1.0;
         _item = FoodItem(
           id: _item.id,
           entryId: _item.entryId,
@@ -133,7 +159,22 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           fat: fat,
           protein: protein,
           carbs: carbs,
+          standardAmount: (updated['standard_amount'] as String?)?.trim().isNotEmpty == true
+              ? (updated['standard_amount'] as String).trim()
+              : amount,
+          multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
+          standardCalories: (updated['standard_calories'] as num?)?.toDouble() ??
+              (calories / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+          standardFat:
+              (updated['standard_fat'] as num?)?.toDouble() ?? (fat / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+          standardProtein: (updated['standard_protein'] as num?)?.toDouble() ??
+              (protein / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+          standardCarbs: (updated['standard_carbs'] as num?)?.toDouble() ??
+              (carbs / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
           notes: notes,
+        );
+        _multiplierController.text = _item.multiplier.toStringAsFixed(
+          _item.multiplier % 1 == 0 ? 0 : 2,
         );
         _dirty = true;
         _rawAiResponseText = null;
@@ -151,20 +192,49 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
   Future<void> _saveChanges() async {
     final l10n = AppLocalizations.of(context)!;
+    final multiplier = _parseMultiplier();
+    if (multiplier == null) {
+      setState(() {
+        _errorMessage = l10n.invalidMultiplierValue;
+      });
+      return;
+    }
+    final updatedItem = _item.copyWith(
+      multiplier: multiplier,
+      calories: FoodItem.computeCalories(
+        standardCalories: _item.standardCalories,
+        multiplier: multiplier,
+      ),
+      fat: FoodItem.computeMacro(
+        standardMacro: _item.standardFat,
+        multiplier: multiplier,
+      ),
+      protein: FoodItem.computeMacro(
+        standardMacro: _item.standardProtein,
+        multiplier: multiplier,
+      ),
+      carbs: FoodItem.computeMacro(
+        standardMacro: _item.standardCarbs,
+        multiplier: multiplier,
+      ),
+    );
     setState(() {
       _saving = true;
       _errorMessage = null;
+      _item = updatedItem;
     });
     try {
       await EntriesRepository.instance.updateEntryItem(
-        itemId: _item.id,
-        name: _item.name,
-        amount: _item.amount,
-        calories: _item.calories,
-        fat: _item.fat,
-        protein: _item.protein,
-        carbs: _item.carbs,
-        notes: _item.notes,
+        itemId: updatedItem.id,
+        name: updatedItem.name,
+        amount: updatedItem.amount,
+        standardAmount: updatedItem.standardAmount,
+        multiplier: updatedItem.multiplier,
+        standardCalories: updatedItem.standardCalories,
+        standardFat: updatedItem.standardFat,
+        standardProtein: updatedItem.standardProtein,
+        standardCarbs: updatedItem.standardCarbs,
+        notes: updatedItem.notes,
       );
       if (mounted) {
         Navigator.pop(context, true);
@@ -282,6 +352,18 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               protein: _item.protein,
               carbs: _item.carbs,
               notes: _item.notes,
+            ),
+            const SizedBox(height: UiConstants.smallSpacing),
+            LabeledInputBox(
+              label: l10n.multiplierLabel,
+              controller: _multiplierController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              enabled: !isBusy,
+              onChanged: (_) {
+                setState(() {
+                  _dirty = true;
+                });
+              },
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
             if (_errorMessage != null)

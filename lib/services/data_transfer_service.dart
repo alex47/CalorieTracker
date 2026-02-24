@@ -167,17 +167,40 @@ class DataTransferService {
       }
 
       for (final item in payload.entryItems) {
+        final amount = item['amount'] as String;
+        final multiplierRaw = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
+        final multiplier = multiplierRaw > 0 ? multiplierRaw : 1.0;
+        final standardCalories =
+            (item['standard_calories'] as num?)?.toDouble() ?? ((item['calories'] as num).toDouble() / multiplier);
+        final standardFat =
+            (item['standard_fat'] as num?)?.toDouble() ?? (((item['fat'] as num?)?.toDouble() ?? 0) / multiplier);
+        final standardProtein = (item['standard_protein'] as num?)?.toDouble() ??
+            (((item['protein'] as num?)?.toDouble() ?? 0) / multiplier);
+        final standardCarbs =
+            (item['standard_carbs'] as num?)?.toDouble() ?? (((item['carbs'] as num?)?.toDouble() ?? 0) / multiplier);
+        final calories = (standardCalories * multiplier).round();
+        final fat = standardFat * multiplier;
+        final protein = standardProtein * multiplier;
+        final carbs = standardCarbs * multiplier;
         await txn.insert(
           'entry_items',
           {
             'id': item['id'] as int,
             'entry_id': item['entry_id'] as int,
             'name': item['name'] as String,
-            'amount': item['amount'] as String,
-            'calories': (item['calories'] as num).round(),
-            'fat': (item['fat'] as num?)?.toDouble() ?? 0,
-            'protein': (item['protein'] as num?)?.toDouble() ?? 0,
-            'carbs': (item['carbs'] as num?)?.toDouble() ?? 0,
+            'amount': amount,
+            'calories': calories,
+            'fat': fat,
+            'protein': protein,
+            'carbs': carbs,
+            'standard_amount': (item['standard_amount'] as String?)?.trim().isNotEmpty == true
+                ? (item['standard_amount'] as String).trim()
+                : amount,
+            'multiplier': multiplier,
+            'standard_calories': standardCalories,
+            'standard_fat': standardFat,
+            'standard_protein': standardProtein,
+            'standard_carbs': standardCarbs,
             'notes': item['notes'] as String? ?? '',
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
@@ -268,7 +291,17 @@ class DataTransferService {
       _requireOptionalNum(item, 'fat', table: 'entry_items');
       _requireOptionalNum(item, 'protein', table: 'entry_items');
       _requireOptionalNum(item, 'carbs', table: 'entry_items');
+      _requireOptionalString(item, 'standard_amount', table: 'entry_items');
+      _requireOptionalNum(item, 'multiplier', table: 'entry_items');
+      _requireOptionalNum(item, 'standard_calories', table: 'entry_items');
+      _requireOptionalNum(item, 'standard_fat', table: 'entry_items');
+      _requireOptionalNum(item, 'standard_protein', table: 'entry_items');
+      _requireOptionalNum(item, 'standard_carbs', table: 'entry_items');
       _requireOptionalString(item, 'notes', table: 'entry_items');
+      final multiplier = (item['multiplier'] as num?)?.toDouble();
+      if (multiplier != null && multiplier <= 0) {
+        throw const FormatException('Invalid "entry_items.multiplier" in backup payload.');
+      }
     }
 
     for (final profile in payload.metabolicProfileHistory) {

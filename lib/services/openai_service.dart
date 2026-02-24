@@ -47,13 +47,25 @@ class OpenAIService {
           'properties': {
             'name': {'type': 'string'},
             'amount': {'type': 'string'},
-            'calories': {'type': 'number'},
-            'fat': {'type': 'number'},
-            'protein': {'type': 'number'},
-            'carbs': {'type': 'number'},
+            'standard_amount': {'type': 'string'},
+            'multiplier': {'type': 'number'},
+            'standard_calories': {'type': 'number'},
+            'standard_fat': {'type': 'number'},
+            'standard_protein': {'type': 'number'},
+            'standard_carbs': {'type': 'number'},
             'notes': {'type': 'string'},
           },
-          'required': ['name', 'amount', 'calories', 'fat', 'protein', 'carbs', 'notes'],
+          'required': [
+            'name',
+            'amount',
+            'standard_amount',
+            'multiplier',
+            'standard_calories',
+            'standard_fat',
+            'standard_protein',
+            'standard_carbs',
+            'notes',
+          ],
         },
       },
       'error': {'type': 'string'},
@@ -87,9 +99,10 @@ You are a nutrition estimation assistant.
 Rules:
 - Parse each food and its amount from the user text.
 - If units are unclear, make a reasonable assumption and note it in "notes".
-- Calories must be per item.
-- Express calories in kilocalories (kcal).
-- Include fat, protein, and carbs (grams) per item.
+- For each item, return nutrition for a standard reference amount only (e.g., 100 g, 100 ml, 1 piece, 1 slice, 1 tbsp, 1 cup), not for the full entered amount.
+- Use the field "standard_amount" for that reference amount.
+- Use "multiplier" so that: entered amount = standard amount * multiplier.
+- Express calories in kilocalories (kcal) and macros in grams for the standard amount.
 - Correct obvious typos in food names and amounts.
 - Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
 - Normalize amount text to clean, readable formatting.
@@ -102,6 +115,7 @@ Rules:
   - Prefer one short sentence when possible.
   - Include only key assumptions or clarifications.
   - Do not ask follow-up questions or request user actions.
+- "multiplier" must be a positive number.
 - If you cannot extract at least one valid food name + amount pair, return:
   { "items": [], "error": "<a short natural-language explanation of what is missing and what the user should clarify>" }
 - The "error" text must sound natural and helpful, not templated.
@@ -384,7 +398,7 @@ Rules:
         : maxOutputTokens;
     final languageName = _languageNameEnglish(languageCode);
     final localizedSystemPrompt =
-        '$systemPrompt\n- Always output "name", "amount", "notes", and "error" in $languageName. Do not use any other language in these fields, even if the user input or previous messages use another language.';
+        '$systemPrompt\n- Always output "name", "amount", "standard_amount", "notes", and "error" in $languageName. Do not use any other language in these fields, even if the user input or previous messages use another language.';
 
     final messages = <Map<String, String>>[
       {'role': 'system', 'content': localizedSystemPrompt},
@@ -392,7 +406,7 @@ Rules:
       {
         'role': 'user',
         'content': includeReminder
-            ? '$userInput\n\nReminder: include calories/fat/protein/carbs and use metric units for amounts.'
+            ? '$userInput\n\nReminder: return standard_amount + multiplier and standard_calories/standard_fat/standard_protein/standard_carbs. Use metric units where applicable.'
             : userInput,
       },
     ];
@@ -487,40 +501,69 @@ Rules:
       final map = item as Map<String, dynamic>;
       final name = map['name'] as String? ?? '';
       final amount = map['amount'] as String? ?? '';
-      final calories = map['calories'];
-      final fat = map['fat'];
-      final protein = map['protein'];
-      final carbs = map['carbs'];
+      final standardAmount = map['standard_amount'] as String? ?? '';
+      final multiplier = map['multiplier'];
+      final standardCalories = map['standard_calories'];
+      final standardFat = map['standard_fat'];
+      final standardProtein = map['standard_protein'];
+      final standardCarbs = map['standard_carbs'];
       if (name.trim().isEmpty || amount.trim().isEmpty) {
         throw AiParseException(
           'Missing name or amount.',
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
-      if (calories is! num || calories <= 0) {
+      if (standardAmount.trim().isEmpty) {
         throw AiParseException(
-          'Missing or invalid calories.',
+          'Missing or invalid standard amount.',
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
-      if (fat is! num || fat < 0) {
+      if (multiplier is! num || multiplier <= 0) {
         throw AiParseException(
-          'Missing or invalid fat.',
+          'Missing or invalid multiplier.',
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
-      if (protein is! num || protein < 0) {
+      if (standardCalories is! num || standardCalories <= 0) {
         throw AiParseException(
-          'Missing or invalid protein.',
+          'Missing or invalid standard calories.',
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
-      if (carbs is! num || carbs < 0) {
+      if (standardFat is! num || standardFat < 0) {
         throw AiParseException(
-          'Missing or invalid carbs.',
+          'Missing or invalid standard fat.',
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
+      if (standardProtein is! num || standardProtein < 0) {
+        throw AiParseException(
+          'Missing or invalid standard protein.',
+          rawResponseText: content.isNotEmpty ? content : rawBody,
+        );
+      }
+      if (standardCarbs is! num || standardCarbs < 0) {
+        throw AiParseException(
+          'Missing or invalid standard carbs.',
+          rawResponseText: content.isNotEmpty ? content : rawBody,
+        );
+      }
+
+      final parsedMultiplier = multiplier.toDouble();
+      final parsedStandardCalories = standardCalories.toDouble();
+      final parsedStandardFat = standardFat.toDouble();
+      final parsedStandardProtein = standardProtein.toDouble();
+      final parsedStandardCarbs = standardCarbs.toDouble();
+      map['multiplier'] = parsedMultiplier;
+      map['standard_calories'] = parsedStandardCalories;
+      map['standard_fat'] = parsedStandardFat;
+      map['standard_protein'] = parsedStandardProtein;
+      map['standard_carbs'] = parsedStandardCarbs;
+      map['calories'] = (parsedStandardCalories * parsedMultiplier).round();
+      map['fat'] = parsedStandardFat * parsedMultiplier;
+      map['protein'] = parsedStandardProtein * parsedMultiplier;
+      map['carbs'] = parsedStandardCarbs * parsedMultiplier;
     }
 
     return parsed;

@@ -410,6 +410,13 @@ class AppLocalizationsHu extends AppLocalizations {
   String get foodDetailsTitle => 'Étel részletei';
 
   @override
+  String get multiplierLabel => 'Szorzó';
+
+  @override
+  String get invalidMultiplierValue =>
+      'Adj meg egy érvényes, 0-nál nagyobb szorzót.';
+
+  @override
   String get copyToTodayButton => 'Másolás mára';
 
   @override

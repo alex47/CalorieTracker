@@ -404,6 +404,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodDetailsTitle => 'Food details';
 
   @override
+  String get multiplierLabel => 'Multiplier';
+
+  @override
+  String get invalidMultiplierValue =>
+      'Please enter a valid multiplier greater than 0.';
+
+  @override
   String get copyToTodayButton => 'Copy to today';
 
   @override

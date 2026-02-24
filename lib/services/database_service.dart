@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 8,
+      version: 9,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -42,6 +42,12 @@ class DatabaseService {
             fat REAL NOT NULL DEFAULT 0,
             protein REAL NOT NULL DEFAULT 0,
             carbs REAL NOT NULL DEFAULT 0,
+            standard_amount TEXT NOT NULL,
+            multiplier REAL NOT NULL DEFAULT 1.0,
+            standard_calories REAL NOT NULL DEFAULT 0,
+            standard_fat REAL NOT NULL DEFAULT 0,
+            standard_protein REAL NOT NULL DEFAULT 0,
+            standard_carbs REAL NOT NULL DEFAULT 0,
             notes TEXT,
             FOREIGN KEY(entry_id) REFERENCES entries(id)
           )
@@ -160,6 +166,56 @@ class DatabaseService {
               WHEN fat_ratio_percent = 20 AND protein_ratio_percent = 20 AND carbs_ratio_percent = 60 THEN 'high_carb_performance'
               ELSE 'balanced_default'
             END
+            ''',
+          );
+        }
+        if (oldVersion < 9) {
+          await db.execute(
+            "ALTER TABLE entry_items ADD COLUMN standard_amount TEXT NOT NULL DEFAULT ''",
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN multiplier REAL NOT NULL DEFAULT 1.0',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN standard_calories REAL NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN standard_fat REAL NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN standard_protein REAL NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN standard_carbs REAL NOT NULL DEFAULT 0',
+          );
+          await db.execute(
+            '''
+            UPDATE entry_items
+            SET
+              standard_amount = CASE
+                WHEN standard_amount IS NULL OR trim(standard_amount) = '' THEN amount
+                ELSE standard_amount
+              END,
+              multiplier = CASE
+                WHEN multiplier <= 0 THEN 1.0
+                ELSE multiplier
+              END,
+              standard_calories = CASE
+                WHEN standard_calories <= 0 THEN calories
+                ELSE standard_calories
+              END,
+              standard_fat = CASE
+                WHEN standard_fat < 0 THEN fat
+                ELSE standard_fat
+              END,
+              standard_protein = CASE
+                WHEN standard_protein < 0 THEN protein
+                ELSE standard_protein
+              END,
+              standard_carbs = CASE
+                WHEN standard_carbs < 0 THEN carbs
+                ELSE standard_carbs
+              END
             ''',
           );
         }

@@ -198,6 +198,8 @@
     }
   },
   "foodDetailsTitle": "Étel részletei",
+  "multiplierLabel": "Szorzó",
+  "invalidMultiplierValue": "Adj meg egy érvényes, 0-nál nagyobb szorzót.",
   "copyToTodayButton": "Másolás mára",
   "showAiResponseButton": "AI válasz megjelenítése",
   "aiResponseDialogTitle": "AI válasz",

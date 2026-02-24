@@ -198,6 +198,8 @@
     }
   },
   "foodDetailsTitle": "Food details",
+  "multiplierLabel": "Multiplier",
+  "invalidMultiplierValue": "Please enter a valid multiplier greater than 0.",
   "copyToTodayButton": "Copy to today",
   "showAiResponseButton": "Show AI response",
   "aiResponseDialogTitle": "AI response",

@@ -800,6 +800,18 @@ abstract class AppLocalizations {
   /// **'Food details'**
   String get foodDetailsTitle;
 
+  /// No description provided for @multiplierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Multiplier'**
+  String get multiplierLabel;
+
+  /// No description provided for @invalidMultiplierValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid multiplier greater than 0.'**
+  String get invalidMultiplierValue;
+
   /// No description provided for @copyToTodayButton.
   ///
   /// In en, this message translates to:

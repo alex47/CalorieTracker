@@ -7,6 +7,84 @@ class EntriesRepository {
 
   static final EntriesRepository instance = EntriesRepository._();
 
+  static double _asDouble(dynamic value, {double fallback = 0}) {
+    if (value is num) {
+      return value.toDouble();
+    }
+    return fallback;
+  }
+
+  static String _asString(dynamic value, {String fallback = ''}) {
+    if (value is String) {
+      return value;
+    }
+    return fallback;
+  }
+
+  Map<String, Object?> _entryItemValues({
+    required int entryId,
+    required Map<String, dynamic> item,
+  }) {
+    final amount = _asString(item['amount']).trim();
+    final standardAmount = _asString(
+      item['standard_amount'],
+      fallback: amount,
+    ).trim();
+    final rawMultiplier = _asDouble(item['multiplier'], fallback: 1.0);
+    final multiplier = rawMultiplier > 0 ? rawMultiplier : 1.0;
+
+    final baseCalories = _asDouble(
+      item['standard_calories'],
+      fallback: _asDouble(item['calories']),
+    );
+    final baseFat = _asDouble(
+      item['standard_fat'],
+      fallback: _asDouble(item['fat']),
+    );
+    final baseProtein = _asDouble(
+      item['standard_protein'],
+      fallback: _asDouble(item['protein']),
+    );
+    final baseCarbs = _asDouble(
+      item['standard_carbs'],
+      fallback: _asDouble(item['carbs']),
+    );
+
+    final calories = FoodItem.computeCalories(
+      standardCalories: baseCalories,
+      multiplier: multiplier,
+    );
+    final fat = FoodItem.computeMacro(
+      standardMacro: baseFat,
+      multiplier: multiplier,
+    );
+    final protein = FoodItem.computeMacro(
+      standardMacro: baseProtein,
+      multiplier: multiplier,
+    );
+    final carbs = FoodItem.computeMacro(
+      standardMacro: baseCarbs,
+      multiplier: multiplier,
+    );
+
+    return {
+      'entry_id': entryId,
+      'name': _asString(item['name']),
+      'amount': amount,
+      'calories': calories,
+      'fat': fat,
+      'protein': protein,
+      'carbs': carbs,
+      'standard_amount': standardAmount.isEmpty ? amount : standardAmount,
+      'multiplier': multiplier,
+      'standard_calories': baseCalories,
+      'standard_fat': baseFat,
+      'standard_protein': baseProtein,
+      'standard_carbs': baseCarbs,
+      'notes': _asString(item['notes']),
+    };
+  }
+
   Future<int> createEntryGroup({
     required DateTime date,
     required String prompt,
@@ -23,16 +101,10 @@ class EntriesRepository {
       });
 
       for (final item in items) {
-        await txn.insert('entry_items', {
-          'entry_id': entryId,
-          'name': item['name'] as String,
-          'amount': item['amount'] as String,
-          'calories': (item['calories'] as num).round(),
-          'fat': (item['fat'] as num?)?.toDouble() ?? 0,
-          'protein': (item['protein'] as num?)?.toDouble() ?? 0,
-          'carbs': (item['carbs'] as num?)?.toDouble() ?? 0,
-          'notes': item['notes'] as String? ?? '',
-        });
+        await txn.insert(
+          'entry_items',
+          _entryItemValues(entryId: entryId, item: item),
+        );
       }
 
       return entryId;
@@ -60,12 +132,31 @@ class EntriesRepository {
     required int itemId,
     required String name,
     required String amount,
-    required int calories,
-    required double fat,
-    required double protein,
-    required double carbs,
+    required String standardAmount,
+    required double multiplier,
+    required double standardCalories,
+    required double standardFat,
+    required double standardProtein,
+    required double standardCarbs,
     required String notes,
   }) async {
+    final safeMultiplier = multiplier > 0 ? multiplier : 1.0;
+    final calories = FoodItem.computeCalories(
+      standardCalories: standardCalories,
+      multiplier: safeMultiplier,
+    );
+    final fat = FoodItem.computeMacro(
+      standardMacro: standardFat,
+      multiplier: safeMultiplier,
+    );
+    final protein = FoodItem.computeMacro(
+      standardMacro: standardProtein,
+      multiplier: safeMultiplier,
+    );
+    final carbs = FoodItem.computeMacro(
+      standardMacro: standardCarbs,
+      multiplier: safeMultiplier,
+    );
     final db = await DatabaseService.instance.database;
     await db.update(
       'entry_items',
@@ -76,6 +167,12 @@ class EntriesRepository {
         'fat': fat,
         'protein': protein,
         'carbs': carbs,
+        'standard_amount': standardAmount,
+        'multiplier': safeMultiplier,
+        'standard_calories': standardCalories,
+        'standard_fat': standardFat,
+        'standard_protein': standardProtein,
+        'standard_carbs': standardCarbs,
         'notes': notes,
       },
       where: 'id = ?',
@@ -113,6 +210,12 @@ class EntriesRepository {
         'fat': item.fat,
         'protein': item.protein,
         'carbs': item.carbs,
+        'standard_amount': item.standardAmount,
+        'multiplier': item.multiplier,
+        'standard_calories': item.standardCalories,
+        'standard_fat': item.standardFat,
+        'standard_protein': item.standardProtein,
+        'standard_carbs': item.standardCarbs,
         'notes': item.notes,
       });
     });
