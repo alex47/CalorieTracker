@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
+import '../models/food_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
@@ -10,7 +11,6 @@ class FoodBreakdownCard extends StatelessWidget {
   const FoodBreakdownCard({
     super.key,
     required this.name,
-    required this.amount,
     required this.calories,
     required this.fat,
     required this.protein,
@@ -31,7 +31,6 @@ class FoodBreakdownCard extends StatelessWidget {
   });
 
   final String name;
-  final String amount;
   final int calories;
   final double fat;
   final double protein;
@@ -81,13 +80,27 @@ class FoodBreakdownCard extends StatelessWidget {
     if (multiplier == null) {
       return;
     }
-    final safeUnitAmount = standardUnitAmount! > 0 ? standardUnitAmount! : 1.0;
-    final ratio = multiplier / safeUnitAmount;
     onComputedValuesChanged!(
-      calories: (standardCalories! * ratio).round(),
-      fat: standardFat! * ratio,
-      protein: standardProtein! * ratio,
-      carbs: standardCarbs! * ratio,
+      calories: FoodItem.computeCalories(
+        standardCalories: standardCalories!,
+        multiplier: multiplier,
+        standardUnitAmount: standardUnitAmount!,
+      ),
+      fat: FoodItem.computeMacro(
+        standardMacro: standardFat!,
+        multiplier: multiplier,
+        standardUnitAmount: standardUnitAmount!,
+      ),
+      protein: FoodItem.computeMacro(
+        standardMacro: standardProtein!,
+        multiplier: multiplier,
+        standardUnitAmount: standardUnitAmount!,
+      ),
+      carbs: FoodItem.computeMacro(
+        standardMacro: standardCarbs!,
+        multiplier: multiplier,
+        standardUnitAmount: standardUnitAmount!,
+      ),
       multiplier: multiplier,
     );
   }

@@ -376,7 +376,6 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             children: [
             FoodBreakdownCard(
               name: _item.name,
-              amount: _item.amount,
               calories: _item.calories,
               fat: _item.fat,
               protein: _item.protein,

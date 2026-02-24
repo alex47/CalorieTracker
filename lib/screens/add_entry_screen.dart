@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
+import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
@@ -111,6 +112,33 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       if (parsed == null) {
         return false;
       }
+      final item = _items[i];
+      final standardUnitAmount = ((item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0);
+      final standardCalories = ((item['standard_calories'] as num?)?.toDouble() ?? 0);
+      final standardFat = ((item['standard_fat'] as num?)?.toDouble() ?? 0);
+      final standardProtein = ((item['standard_protein'] as num?)?.toDouble() ?? 0);
+      final standardCarbs = ((item['standard_carbs'] as num?)?.toDouble() ?? 0);
+      item['multiplier'] = parsed;
+      item['calories'] = FoodItem.computeCalories(
+        standardCalories: standardCalories,
+        multiplier: parsed,
+        standardUnitAmount: standardUnitAmount,
+      );
+      item['fat'] = FoodItem.computeMacro(
+        standardMacro: standardFat,
+        multiplier: parsed,
+        standardUnitAmount: standardUnitAmount,
+      );
+      item['protein'] = FoodItem.computeMacro(
+        standardMacro: standardProtein,
+        multiplier: parsed,
+        standardUnitAmount: standardUnitAmount,
+      );
+      item['carbs'] = FoodItem.computeMacro(
+        standardMacro: standardCarbs,
+        multiplier: parsed,
+        standardUnitAmount: standardUnitAmount,
+      );
     }
     return true;
   }
@@ -361,7 +389,6 @@ class _ResultsCard extends StatelessWidget {
           return FoodBreakdownCard(
             margin: const EdgeInsets.only(bottom: UiConstants.tableRowVerticalPadding),
             name: (item['name'] as String?) ?? '',
-            amount: (item['amount'] as String?) ?? '',
             calories: (item['calories'] as num?)?.round() ?? 0,
             fat: (item['fat'] as num?)?.toDouble() ?? 0,
             protein: (item['protein'] as num?)?.toDouble() ?? 0,
