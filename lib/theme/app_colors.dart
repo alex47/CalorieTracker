@@ -29,4 +29,5 @@ class AppColors {
   static const daySummaryIssues = Color(0xFFD08A5B);
   static const daySummarySuggestions = Color(0xFF6AA9D8);
   static const deficit = Color(0xFFD676B2);
+  static const amountField = Color(0xFF6FA8A8);
 }

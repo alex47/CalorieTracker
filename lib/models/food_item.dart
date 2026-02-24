@@ -8,7 +8,8 @@ class FoodItem {
     required this.fat,
     required this.protein,
     required this.carbs,
-    required this.standardAmount,
+    required this.standardUnit,
+    required this.standardUnitAmount,
     required this.multiplier,
     required this.standardCalories,
     required this.standardFat,
@@ -25,7 +26,8 @@ class FoodItem {
   final double fat;
   final double protein;
   final double carbs;
-  final String standardAmount;
+  final String standardUnit;
+  final double standardUnitAmount;
   final double multiplier;
   final double standardCalories;
   final double standardFat;
@@ -38,6 +40,33 @@ class FoodItem {
       return value.toDouble();
     }
     return 0;
+  }
+
+  static ({double amount, String unit}) _parseLegacyStandardAmount(
+    String standardAmount,
+    String fallbackAmountText,
+  ) {
+    final trimmed = standardAmount.trim();
+    if (trimmed.isEmpty) {
+      return (amount: 1.0, unit: fallbackAmountText);
+    }
+    final match = RegExp(r'^\s*([0-9]+(?:[.,][0-9]+)?)\s*(.+?)\s*$').firstMatch(trimmed);
+    if (match == null) {
+      return (amount: 1.0, unit: trimmed);
+    }
+    final parsedAmount = double.tryParse(match.group(1)!.replaceAll(',', '.'));
+    final unit = match.group(2)!.trim();
+    if (parsedAmount == null || parsedAmount <= 0 || unit.isEmpty) {
+      return (amount: 1.0, unit: trimmed);
+    }
+    return (amount: parsedAmount, unit: unit);
+  }
+
+  String get standardAmountText {
+    final amountText = standardUnitAmount % 1 == 0
+        ? standardUnitAmount.toInt().toString()
+        : standardUnitAmount.toString();
+    return '$amountText $standardUnit';
   }
 
   static int computeCalories({
@@ -63,7 +92,8 @@ class FoodItem {
     double? fat,
     double? protein,
     double? carbs,
-    String? standardAmount,
+    String? standardUnit,
+    double? standardUnitAmount,
     double? multiplier,
     double? standardCalories,
     double? standardFat,
@@ -80,7 +110,8 @@ class FoodItem {
       fat: fat ?? this.fat,
       protein: protein ?? this.protein,
       carbs: carbs ?? this.carbs,
-      standardAmount: standardAmount ?? this.standardAmount,
+      standardUnit: standardUnit ?? this.standardUnit,
+      standardUnitAmount: standardUnitAmount ?? this.standardUnitAmount,
       multiplier: multiplier ?? this.multiplier,
       standardCalories: standardCalories ?? this.standardCalories,
       standardFat: standardFat ?? this.standardFat,
@@ -99,7 +130,15 @@ class FoodItem {
     final carbs = _toDouble(map['carbs']);
     final multiplierRaw = _toDouble(map['multiplier']);
     final multiplier = multiplierRaw > 0 ? multiplierRaw : 1.0;
-    final standardAmount = (map['standard_amount'] as String?)?.trim();
+    final standardAmount = (map['standard_amount'] as String?)?.trim() ?? '';
+    final standardUnitRaw = (map['standard_unit'] as String?)?.trim();
+    final standardUnitAmountRaw = map['standard_unit_amount'] is num
+        ? (map['standard_unit_amount'] as num).toDouble()
+        : null;
+    final fallbackParsed = _parseLegacyStandardAmount(
+      standardAmount,
+      map['amount'] as String,
+    );
     final standardCalories = map['standard_calories'] is num
         ? (map['standard_calories'] as num).toDouble()
         : calories.toDouble();
@@ -121,9 +160,12 @@ class FoodItem {
       fat: fat,
       protein: protein,
       carbs: carbs,
-      standardAmount: standardAmount == null || standardAmount.isEmpty
-          ? (map['amount'] as String)
-          : standardAmount,
+      standardUnit: (standardUnitRaw == null || standardUnitRaw.isEmpty)
+          ? fallbackParsed.unit
+          : standardUnitRaw,
+      standardUnitAmount: standardUnitAmountRaw == null || standardUnitAmountRaw <= 0
+          ? fallbackParsed.amount
+          : standardUnitAmountRaw,
       multiplier: multiplier,
       standardCalories: standardCalories,
       standardFat: standardFat,

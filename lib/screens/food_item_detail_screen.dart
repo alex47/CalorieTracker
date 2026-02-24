@@ -10,7 +10,6 @@ import '../utils/error_localizer.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
-import '../widgets/labeled_input_box.dart';
 import '../widgets/raw_ai_response_section.dart';
 import '../widgets/reestimate_dialog.dart';
 
@@ -150,6 +149,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
 
       setState(() {
         final nextMultiplier = (updated['multiplier'] as num?)?.toDouble() ?? 1.0;
+        final nextStandardUnitAmount = ((updated['standard_unit_amount'] as num?)?.toDouble() ?? 1.0);
+        final safeStandardUnitAmount = nextStandardUnitAmount > 0 ? nextStandardUnitAmount : 1.0;
         _item = FoodItem(
           id: _item.id,
           entryId: _item.entryId,
@@ -159,9 +160,12 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           fat: fat,
           protein: protein,
           carbs: carbs,
-          standardAmount: (updated['standard_amount'] as String?)?.trim().isNotEmpty == true
-              ? (updated['standard_amount'] as String).trim()
-              : amount,
+          standardUnit: (updated['standard_unit'] as String?)?.trim().isNotEmpty == true
+              ? (updated['standard_unit'] as String).trim()
+              : ((updated['standard_amount'] as String?)?.trim().isNotEmpty == true
+                  ? (updated['standard_amount'] as String).trim()
+                  : amount),
+          standardUnitAmount: safeStandardUnitAmount,
           multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
           standardCalories: (updated['standard_calories'] as num?)?.toDouble() ??
               (calories / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
@@ -228,7 +232,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
         itemId: updatedItem.id,
         name: updatedItem.name,
         amount: updatedItem.amount,
-        standardAmount: updatedItem.standardAmount,
+        standardUnit: updatedItem.standardUnit,
+        standardUnitAmount: updatedItem.standardUnitAmount,
         multiplier: updatedItem.multiplier,
         standardCalories: updatedItem.standardCalories,
         standardFat: updatedItem.standardFat,
@@ -352,14 +357,10 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               protein: _item.protein,
               carbs: _item.carbs,
               notes: _item.notes,
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledInputBox(
-              label: l10n.multiplierLabel,
-              controller: _multiplierController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              enabled: !isBusy,
-              onChanged: (_) {
+              multiplierController: _multiplierController,
+              multiplierLabel: '${l10n.amountLabel} (${_item.standardUnit})',
+              multiplierEnabled: !isBusy,
+              onMultiplierChanged: (_) {
                 setState(() {
                   _dirty = true;
                 });

@@ -18,7 +18,7 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 9,
+      version: 10,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -43,6 +43,8 @@ class DatabaseService {
             protein REAL NOT NULL DEFAULT 0,
             carbs REAL NOT NULL DEFAULT 0,
             standard_amount TEXT NOT NULL,
+            standard_unit TEXT NOT NULL DEFAULT '',
+            standard_unit_amount REAL NOT NULL DEFAULT 1.0,
             multiplier REAL NOT NULL DEFAULT 1.0,
             standard_calories REAL NOT NULL DEFAULT 0,
             standard_fat REAL NOT NULL DEFAULT 0,
@@ -216,6 +218,25 @@ class DatabaseService {
                 WHEN standard_carbs < 0 THEN carbs
                 ELSE standard_carbs
               END
+            ''',
+          );
+        }
+        if (oldVersion < 10) {
+          await db.execute(
+            "ALTER TABLE entry_items ADD COLUMN standard_unit TEXT NOT NULL DEFAULT ''",
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN standard_unit_amount REAL NOT NULL DEFAULT 1.0',
+          );
+          await db.execute(
+            '''
+            UPDATE entry_items
+            SET
+              standard_unit = CASE
+                WHEN trim(standard_amount) = '' THEN amount
+                ELSE standard_amount
+              END,
+              standard_unit_amount = 1.0
             ''',
           );
         }

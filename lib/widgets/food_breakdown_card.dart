@@ -4,6 +4,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'labeled_group_box.dart';
+import 'labeled_input_box.dart';
 
 class FoodBreakdownCard extends StatelessWidget {
   const FoodBreakdownCard({
@@ -15,6 +16,10 @@ class FoodBreakdownCard extends StatelessWidget {
     required this.protein,
     required this.carbs,
     required this.notes,
+    this.multiplierController,
+    this.multiplierLabel,
+    this.multiplierEnabled = true,
+    this.onMultiplierChanged,
     this.margin,
   });
 
@@ -25,23 +30,14 @@ class FoodBreakdownCard extends StatelessWidget {
   final double protein;
   final double carbs;
   final String notes;
+  final TextEditingController? multiplierController;
+  final String? multiplierLabel;
+  final bool multiplierEnabled;
+  final ValueChanged<String>? onMultiplierChanged;
   final EdgeInsetsGeometry? margin;
 
   String _formatGrams(double value) {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
-  }
-
-  double _measureTextWidth(
-    BuildContext context, {
-    required String text,
-    required TextStyle? style,
-  }) {
-    final painter = TextPainter(
-      text: TextSpan(text: text, style: style),
-      textDirection: Directionality.of(context),
-      maxLines: 1,
-    )..layout();
-    return painter.width;
   }
 
   @override
@@ -50,7 +46,6 @@ class FoodBreakdownCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final trimmedNotes = notes.trim();
     final displayName = name.trim().isEmpty ? '-' : name;
-    final displayAmount = amount.trim().isEmpty ? '-' : amount;
     return Padding(
       padding: margin ?? EdgeInsets.zero,
       child: LabeledGroupBox(
@@ -64,83 +59,43 @@ class FoodBreakdownCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final nameStyle = textTheme.titleMedium;
-                final amountStyle = textTheme.bodyMedium;
-                final maxWidth = constraints.maxWidth;
-                const spacing = UiConstants.smallSpacing;
-                final nameWidth = _measureTextWidth(
-                  context,
-                  text: displayName,
-                  style: nameStyle,
-                );
-                final amountWidth = _measureTextWidth(
-                  context,
-                  text: displayAmount,
-                  style: amountStyle,
-                );
-                final combinedWidth = nameWidth + spacing + amountWidth;
-                final shouldStack = combinedWidth > (maxWidth - 1);
-
-                if (shouldStack) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        displayName,
-                        style: nameStyle,
-                      ),
-                      const SizedBox(height: UiConstants.xSmallSpacing),
-                      Text(
-                        displayAmount,
-                        style: amountStyle,
-                      ),
-                    ],
-                  );
-                }
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        displayName,
-                        style: nameStyle,
-                        softWrap: false,
-                      ),
-                    ),
-                    const SizedBox(width: UiConstants.smallSpacing),
-                    SizedBox(
-                      width: amountWidth,
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          displayAmount,
-                          style: amountStyle,
-                          textAlign: TextAlign.end,
-                          softWrap: false,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+            Text(
+              displayName,
+              style: textTheme.titleMedium,
             ),
             const SizedBox(height: UiConstants.smallSpacing),
             LayoutBuilder(
               builder: (context, constraints) {
                 const gap = UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset;
                 final columnWidth = (constraints.maxWidth - (2 * gap)) / 3;
-                return SizedBox(
-                  width: columnWidth,
-                  child: MetricGroupBox(
-                    label: l10n.caloriesLabel,
-                    value: l10n.caloriesKcalValue(calories),
-                    color: AppColors.calories,
-                    minWidth: 0,
-                    valueAlignment: Alignment.center,
-                    valueTextAlign: TextAlign.center,
-                  ),
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: columnWidth,
+                      child: MetricGroupBox(
+                        label: l10n.caloriesLabel,
+                        value: l10n.caloriesKcalValue(calories),
+                        color: AppColors.calories,
+                        minWidth: 0,
+                        valueAlignment: Alignment.center,
+                        valueTextAlign: TextAlign.center,
+                      ),
+                    ),
+                    if (multiplierController != null && multiplierLabel != null) ...[
+                      const SizedBox(width: gap),
+                      Expanded(
+                        child: LabeledInputBox(
+                          label: multiplierLabel!,
+                          controller: multiplierController!,
+                          enabled: multiplierEnabled,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          onChanged: onMultiplierChanged,
+                          borderColor: AppColors.amountField,
+                          textColor: AppColors.text,
+                        ),
+                      ),
+                    ],
+                  ],
                 );
               },
             ),

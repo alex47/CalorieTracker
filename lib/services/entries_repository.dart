@@ -26,10 +26,12 @@ class EntriesRepository {
     required Map<String, dynamic> item,
   }) {
     final amount = _asString(item['amount']).trim();
-    final standardAmount = _asString(
-      item['standard_amount'],
-      fallback: amount,
+    final standardUnit = _asString(
+      item['standard_unit'],
+      fallback: _asString(item['standard_amount'], fallback: amount),
     ).trim();
+    final rawUnitAmount = _asDouble(item['standard_unit_amount'], fallback: 1.0);
+    final standardUnitAmount = rawUnitAmount > 0 ? rawUnitAmount : 1.0;
     final rawMultiplier = _asDouble(item['multiplier'], fallback: 1.0);
     final multiplier = rawMultiplier > 0 ? rawMultiplier : 1.0;
 
@@ -75,7 +77,9 @@ class EntriesRepository {
       'fat': fat,
       'protein': protein,
       'carbs': carbs,
-      'standard_amount': standardAmount.isEmpty ? amount : standardAmount,
+      'standard_amount': standardUnit.isEmpty ? amount : '$standardUnitAmount $standardUnit',
+      'standard_unit': standardUnit.isEmpty ? amount : standardUnit,
+      'standard_unit_amount': standardUnitAmount,
       'multiplier': multiplier,
       'standard_calories': baseCalories,
       'standard_fat': baseFat,
@@ -132,7 +136,8 @@ class EntriesRepository {
     required int itemId,
     required String name,
     required String amount,
-    required String standardAmount,
+    required String standardUnit,
+    required double standardUnitAmount,
     required double multiplier,
     required double standardCalories,
     required double standardFat,
@@ -167,7 +172,9 @@ class EntriesRepository {
         'fat': fat,
         'protein': protein,
         'carbs': carbs,
-        'standard_amount': standardAmount,
+        'standard_amount': '$standardUnitAmount $standardUnit',
+        'standard_unit': standardUnit,
+        'standard_unit_amount': standardUnitAmount,
         'multiplier': safeMultiplier,
         'standard_calories': standardCalories,
         'standard_fat': standardFat,
@@ -210,7 +217,9 @@ class EntriesRepository {
         'fat': item.fat,
         'protein': item.protein,
         'carbs': item.carbs,
-        'standard_amount': item.standardAmount,
+        'standard_amount': item.standardAmountText,
+        'standard_unit': item.standardUnit,
+        'standard_unit_amount': item.standardUnitAmount,
         'multiplier': item.multiplier,
         'standard_calories': item.standardCalories,
         'standard_fat': item.standardFat,

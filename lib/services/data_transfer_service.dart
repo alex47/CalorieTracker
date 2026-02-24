@@ -170,6 +170,10 @@ class DataTransferService {
         final amount = item['amount'] as String;
         final multiplierRaw = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
         final multiplier = multiplierRaw > 0 ? multiplierRaw : 1.0;
+        final standardUnit = (item['standard_unit'] as String?)?.trim();
+        final standardUnitAmountRaw = (item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0;
+        final standardUnitAmount = standardUnitAmountRaw > 0 ? standardUnitAmountRaw : 1.0;
+        final legacyStandardAmount = (item['standard_amount'] as String?)?.trim();
         final standardCalories =
             (item['standard_calories'] as num?)?.toDouble() ?? ((item['calories'] as num).toDouble() / multiplier);
         final standardFat =
@@ -193,9 +197,15 @@ class DataTransferService {
             'fat': fat,
             'protein': protein,
             'carbs': carbs,
-            'standard_amount': (item['standard_amount'] as String?)?.trim().isNotEmpty == true
-                ? (item['standard_amount'] as String).trim()
-                : amount,
+            'standard_amount': (legacyStandardAmount != null && legacyStandardAmount.isNotEmpty)
+                ? legacyStandardAmount
+                : '$standardUnitAmount ${standardUnit ?? amount}',
+            'standard_unit': (standardUnit != null && standardUnit.isNotEmpty)
+                ? standardUnit
+                : (legacyStandardAmount != null && legacyStandardAmount.isNotEmpty)
+                    ? legacyStandardAmount
+                    : amount,
+            'standard_unit_amount': standardUnitAmount,
             'multiplier': multiplier,
             'standard_calories': standardCalories,
             'standard_fat': standardFat,
@@ -292,6 +302,8 @@ class DataTransferService {
       _requireOptionalNum(item, 'protein', table: 'entry_items');
       _requireOptionalNum(item, 'carbs', table: 'entry_items');
       _requireOptionalString(item, 'standard_amount', table: 'entry_items');
+      _requireOptionalString(item, 'standard_unit', table: 'entry_items');
+      _requireOptionalNum(item, 'standard_unit_amount', table: 'entry_items');
       _requireOptionalNum(item, 'multiplier', table: 'entry_items');
       _requireOptionalNum(item, 'standard_calories', table: 'entry_items');
       _requireOptionalNum(item, 'standard_fat', table: 'entry_items');

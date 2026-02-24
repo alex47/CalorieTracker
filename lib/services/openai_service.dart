@@ -47,7 +47,8 @@ class OpenAIService {
           'properties': {
             'name': {'type': 'string'},
             'amount': {'type': 'string'},
-            'standard_amount': {'type': 'string'},
+            'standard_unit': {'type': 'string'},
+            'standard_unit_amount': {'type': 'number'},
             'multiplier': {'type': 'number'},
             'standard_calories': {'type': 'number'},
             'standard_fat': {'type': 'number'},
@@ -58,7 +59,8 @@ class OpenAIService {
           'required': [
             'name',
             'amount',
-            'standard_amount',
+            'standard_unit',
+            'standard_unit_amount',
             'multiplier',
             'standard_calories',
             'standard_fat',
@@ -100,7 +102,9 @@ Rules:
 - Parse each food and its amount from the user text.
 - If units are unclear, make a reasonable assumption and note it in "notes".
 - For each item, return nutrition for a standard reference amount only (e.g., 100 g, 100 ml, 1 piece, 1 slice, 1 tbsp, 1 cup), not for the full entered amount.
-- Use the field "standard_amount" for that reference amount.
+- Return the reference as two fields:
+  - "standard_unit_amount" (number, e.g. 100 or 1)
+  - "standard_unit" (string, e.g. "g", "ml", "piece", "slice", "tbsp", "cup")
 - Use "multiplier" so that: entered amount = standard amount * multiplier.
 - Express calories in kilocalories (kcal) and macros in grams for the standard amount.
 - Correct obvious typos in food names and amounts.
@@ -398,7 +402,7 @@ Rules:
         : maxOutputTokens;
     final languageName = _languageNameEnglish(languageCode);
     final localizedSystemPrompt =
-        '$systemPrompt\n- Always output "name", "amount", "standard_amount", "notes", and "error" in $languageName. Do not use any other language in these fields, even if the user input or previous messages use another language.';
+        '$systemPrompt\n- Always output "name", "amount", "standard_unit", "notes", and "error" in $languageName. Do not use any other language in these fields, even if the user input or previous messages use another language.';
 
     final messages = <Map<String, String>>[
       {'role': 'system', 'content': localizedSystemPrompt},
@@ -406,7 +410,7 @@ Rules:
       {
         'role': 'user',
         'content': includeReminder
-            ? '$userInput\n\nReminder: return standard_amount + multiplier and standard_calories/standard_fat/standard_protein/standard_carbs. Use metric units where applicable.'
+            ? '$userInput\n\nReminder: return standard_unit_amount + standard_unit + multiplier and standard_calories/standard_fat/standard_protein/standard_carbs. Use metric units where applicable.'
             : userInput,
       },
     ];
@@ -501,7 +505,8 @@ Rules:
       final map = item as Map<String, dynamic>;
       final name = map['name'] as String? ?? '';
       final amount = map['amount'] as String? ?? '';
-      final standardAmount = map['standard_amount'] as String? ?? '';
+      final standardUnit = map['standard_unit'] as String? ?? '';
+      final standardUnitAmount = map['standard_unit_amount'];
       final multiplier = map['multiplier'];
       final standardCalories = map['standard_calories'];
       final standardFat = map['standard_fat'];
@@ -513,9 +518,15 @@ Rules:
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
-      if (standardAmount.trim().isEmpty) {
+      if (standardUnit.trim().isEmpty) {
         throw AiParseException(
-          'Missing or invalid standard amount.',
+          'Missing or invalid standard unit.',
+          rawResponseText: content.isNotEmpty ? content : rawBody,
+        );
+      }
+      if (standardUnitAmount is! num || standardUnitAmount <= 0) {
+        throw AiParseException(
+          'Missing or invalid standard unit amount.',
           rawResponseText: content.isNotEmpty ? content : rawBody,
         );
       }
@@ -551,10 +562,12 @@ Rules:
       }
 
       final parsedMultiplier = multiplier.toDouble();
+      final parsedStandardUnitAmount = standardUnitAmount.toDouble();
       final parsedStandardCalories = standardCalories.toDouble();
       final parsedStandardFat = standardFat.toDouble();
       final parsedStandardProtein = standardProtein.toDouble();
       final parsedStandardCarbs = standardCarbs.toDouble();
+      map['standard_unit_amount'] = parsedStandardUnitAmount;
       map['multiplier'] = parsedMultiplier;
       map['standard_calories'] = parsedStandardCalories;
       map['standard_fat'] = parsedStandardFat;
