@@ -6,6 +6,7 @@ import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+import '../models/food_item.dart';
 import 'database_service.dart';
 import 'macro_ratio_preset_catalog.dart';
 
@@ -174,18 +175,22 @@ class DataTransferService {
         final standardUnitAmountRaw = (item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0;
         final standardUnitAmount = standardUnitAmountRaw > 0 ? standardUnitAmountRaw : 1.0;
         final legacyStandardAmount = (item['standard_amount'] as String?)?.trim();
+        final ratio = FoodItem.multiplierRatio(
+          multiplier: multiplier,
+          standardUnitAmount: standardUnitAmount,
+        );
         final standardCalories =
-            (item['standard_calories'] as num?)?.toDouble() ?? ((item['calories'] as num).toDouble() / multiplier);
+            (item['standard_calories'] as num?)?.toDouble() ?? ((item['calories'] as num).toDouble() / ratio);
         final standardFat =
-            (item['standard_fat'] as num?)?.toDouble() ?? (((item['fat'] as num?)?.toDouble() ?? 0) / multiplier);
+            (item['standard_fat'] as num?)?.toDouble() ?? (((item['fat'] as num?)?.toDouble() ?? 0) / ratio);
         final standardProtein = (item['standard_protein'] as num?)?.toDouble() ??
-            (((item['protein'] as num?)?.toDouble() ?? 0) / multiplier);
+            (((item['protein'] as num?)?.toDouble() ?? 0) / ratio);
         final standardCarbs =
-            (item['standard_carbs'] as num?)?.toDouble() ?? (((item['carbs'] as num?)?.toDouble() ?? 0) / multiplier);
-        final calories = (standardCalories * multiplier).round();
-        final fat = standardFat * multiplier;
-        final protein = standardProtein * multiplier;
-        final carbs = standardCarbs * multiplier;
+            (item['standard_carbs'] as num?)?.toDouble() ?? (((item['carbs'] as num?)?.toDouble() ?? 0) / ratio);
+        final calories = (standardCalories * ratio).round();
+        final fat = standardFat * ratio;
+        final protein = standardProtein * ratio;
+        final carbs = standardCarbs * ratio;
         await txn.insert(
           'entry_items',
           {

@@ -90,23 +90,40 @@ class FoodItem {
       return amount;
     }
     final resolvedMultiplier = multiplier > 0 ? multiplier : 1.0;
-    final resolvedUnitAmount = standardUnitAmount > 0 ? standardUnitAmount : 1.0;
-    final total = resolvedUnitAmount * resolvedMultiplier;
-    return '${_formatAmountValue(total)} $unit';
+    return '${_formatAmountValue(resolvedMultiplier)} $unit';
+  }
+
+  static double multiplierRatio({
+    required double multiplier,
+    required double standardUnitAmount,
+  }) {
+    final resolvedMultiplier = multiplier > 0 ? multiplier : 1.0;
+    final resolvedStandardUnitAmount = standardUnitAmount > 0 ? standardUnitAmount : 1.0;
+    return resolvedMultiplier / resolvedStandardUnitAmount;
   }
 
   static int computeCalories({
     required double standardCalories,
     required double multiplier,
+    required double standardUnitAmount,
   }) {
-    return (standardCalories * multiplier).round();
+    final ratio = multiplierRatio(
+      multiplier: multiplier,
+      standardUnitAmount: standardUnitAmount,
+    );
+    return (standardCalories * ratio).round();
   }
 
   static double computeMacro({
     required double standardMacro,
     required double multiplier,
+    required double standardUnitAmount,
   }) {
-    return standardMacro * multiplier;
+    final ratio = multiplierRatio(
+      multiplier: multiplier,
+      standardUnitAmount: standardUnitAmount,
+    );
+    return standardMacro * ratio;
   }
 
   FoodItem copyWith({

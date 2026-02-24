@@ -7,6 +7,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/app_defaults.dart';
 import '../models/day_summary.dart';
+import '../models/food_item.dart';
 
 class AiParseException implements Exception {
   const AiParseException(
@@ -105,7 +106,7 @@ Rules:
 - Return the reference as two fields:
   - "standard_unit_amount" (number, e.g. 100 or 1)
   - "standard_unit" (string, e.g. "g", "ml", "piece", "slice", "tbsp", "cup")
-- Use "multiplier" so that: entered amount = standard amount * multiplier.
+- Use "multiplier" as the entered quantity in `standard_unit` (example: 230 g => standard_unit="g", standard_unit_amount=100, multiplier=230).
 - Express calories in kilocalories (kcal) and macros in grams for the standard amount.
 - Correct obvious typos in food names and amounts.
 - Normalize food names to proper capitalization (e.g. "yogurt" -> "Yogurt").
@@ -410,7 +411,7 @@ Rules:
       {
         'role': 'user',
         'content': includeReminder
-            ? '$userInput\n\nReminder: return standard_unit_amount + standard_unit + multiplier and standard_calories/standard_fat/standard_protein/standard_carbs. Use metric units where applicable.'
+            ? '$userInput\n\nReminder: return standard_unit_amount + standard_unit + multiplier (as entered quantity in that unit), plus standard_calories/standard_fat/standard_protein/standard_carbs for the standard amount. Use metric units where applicable.'
             : userInput,
       },
     ];
@@ -567,16 +568,20 @@ Rules:
       final parsedStandardFat = standardFat.toDouble();
       final parsedStandardProtein = standardProtein.toDouble();
       final parsedStandardCarbs = standardCarbs.toDouble();
+      final ratio = FoodItem.multiplierRatio(
+        multiplier: parsedMultiplier,
+        standardUnitAmount: parsedStandardUnitAmount,
+      );
       map['standard_unit_amount'] = parsedStandardUnitAmount;
       map['multiplier'] = parsedMultiplier;
       map['standard_calories'] = parsedStandardCalories;
       map['standard_fat'] = parsedStandardFat;
       map['standard_protein'] = parsedStandardProtein;
       map['standard_carbs'] = parsedStandardCarbs;
-      map['calories'] = (parsedStandardCalories * parsedMultiplier).round();
-      map['fat'] = parsedStandardFat * parsedMultiplier;
-      map['protein'] = parsedStandardProtein * parsedMultiplier;
-      map['carbs'] = parsedStandardCarbs * parsedMultiplier;
+      map['calories'] = (parsedStandardCalories * ratio).round();
+      map['fat'] = parsedStandardFat * ratio;
+      map['protein'] = parsedStandardProtein * ratio;
+      map['carbs'] = parsedStandardCarbs * ratio;
     }
 
     return parsed;

@@ -55,18 +55,22 @@ class EntriesRepository {
     final calories = FoodItem.computeCalories(
       standardCalories: baseCalories,
       multiplier: multiplier,
+      standardUnitAmount: standardUnitAmount,
     );
     final fat = FoodItem.computeMacro(
       standardMacro: baseFat,
       multiplier: multiplier,
+      standardUnitAmount: standardUnitAmount,
     );
     final protein = FoodItem.computeMacro(
       standardMacro: baseProtein,
       multiplier: multiplier,
+      standardUnitAmount: standardUnitAmount,
     );
     final carbs = FoodItem.computeMacro(
       standardMacro: baseCarbs,
       multiplier: multiplier,
+      standardUnitAmount: standardUnitAmount,
     );
 
     return {
@@ -146,21 +150,26 @@ class EntriesRepository {
     required String notes,
   }) async {
     final safeMultiplier = multiplier > 0 ? multiplier : 1.0;
+    final safeStandardUnitAmount = standardUnitAmount > 0 ? standardUnitAmount : 1.0;
     final calories = FoodItem.computeCalories(
       standardCalories: standardCalories,
       multiplier: safeMultiplier,
+      standardUnitAmount: safeStandardUnitAmount,
     );
     final fat = FoodItem.computeMacro(
       standardMacro: standardFat,
       multiplier: safeMultiplier,
+      standardUnitAmount: safeStandardUnitAmount,
     );
     final protein = FoodItem.computeMacro(
       standardMacro: standardProtein,
       multiplier: safeMultiplier,
+      standardUnitAmount: safeStandardUnitAmount,
     );
     final carbs = FoodItem.computeMacro(
       standardMacro: standardCarbs,
       multiplier: safeMultiplier,
+      standardUnitAmount: safeStandardUnitAmount,
     );
     final db = await DatabaseService.instance.database;
     await db.update(
@@ -172,9 +181,9 @@ class EntriesRepository {
         'fat': fat,
         'protein': protein,
         'carbs': carbs,
-        'standard_amount': '$standardUnitAmount $standardUnit',
+        'standard_amount': '$safeStandardUnitAmount $standardUnit',
         'standard_unit': standardUnit,
-        'standard_unit_amount': standardUnitAmount,
+        'standard_unit_amount': safeStandardUnitAmount,
         'multiplier': safeMultiplier,
         'standard_calories': standardCalories,
         'standard_fat': standardFat,

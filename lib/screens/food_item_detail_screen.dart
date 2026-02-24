@@ -40,6 +40,14 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
   }
 
+  String _formatNumberNoForcedRounding(double value) {
+    final text = value.toString();
+    if (text.endsWith('.0')) {
+      return text.substring(0, text.length - 2);
+    }
+    return text;
+  }
+
   DateTime _dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
   bool get _canCopyToToday {
@@ -53,9 +61,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     super.initState();
     _item = widget.item;
     _multiplierController = TextEditingController(
-      text: _item.multiplier.toStringAsFixed(
-        _item.multiplier % 1 == 0 ? 0 : 2,
-      ),
+      text: _formatNumberNoForcedRounding(_item.multiplier),
     );
   }
 
@@ -168,18 +174,33 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           standardUnitAmount: safeStandardUnitAmount,
           multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
           standardCalories: (updated['standard_calories'] as num?)?.toDouble() ??
-              (calories / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+              (calories /
+                  FoodItem.multiplierRatio(
+                    multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
+                    standardUnitAmount: safeStandardUnitAmount,
+                  )),
           standardFat:
-              (updated['standard_fat'] as num?)?.toDouble() ?? (fat / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+              (updated['standard_fat'] as num?)?.toDouble() ??
+                  (fat /
+                      FoodItem.multiplierRatio(
+                        multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
+                        standardUnitAmount: safeStandardUnitAmount,
+                      )),
           standardProtein: (updated['standard_protein'] as num?)?.toDouble() ??
-              (protein / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+              (protein /
+                  FoodItem.multiplierRatio(
+                    multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
+                    standardUnitAmount: safeStandardUnitAmount,
+                  )),
           standardCarbs: (updated['standard_carbs'] as num?)?.toDouble() ??
-              (carbs / (nextMultiplier > 0 ? nextMultiplier : 1.0)),
+              (carbs /
+                  FoodItem.multiplierRatio(
+                    multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
+                    standardUnitAmount: safeStandardUnitAmount,
+                  )),
           notes: notes,
         );
-        _multiplierController.text = _item.multiplier.toStringAsFixed(
-          _item.multiplier % 1 == 0 ? 0 : 2,
-        );
+        _multiplierController.text = _formatNumberNoForcedRounding(_item.multiplier);
         _dirty = true;
         _rawAiResponseText = null;
       });
@@ -208,18 +229,22 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       calories: FoodItem.computeCalories(
         standardCalories: _item.standardCalories,
         multiplier: multiplier,
+        standardUnitAmount: _item.standardUnitAmount,
       ),
       fat: FoodItem.computeMacro(
         standardMacro: _item.standardFat,
         multiplier: multiplier,
+        standardUnitAmount: _item.standardUnitAmount,
       ),
       protein: FoodItem.computeMacro(
         standardMacro: _item.standardProtein,
         multiplier: multiplier,
+        standardUnitAmount: _item.standardUnitAmount,
       ),
       carbs: FoodItem.computeMacro(
         standardMacro: _item.standardCarbs,
         multiplier: multiplier,
+        standardUnitAmount: _item.standardUnitAmount,
       ),
     );
     setState(() {
@@ -358,7 +383,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               carbs: _item.carbs,
               notes: _item.notes,
               multiplierController: _multiplierController,
-              multiplierLabel: '${l10n.amountLabel} (${_item.standardUnit})',
+              multiplierLabel: '${l10n.amountLabel} (${_item.standardUnit.trim().isEmpty ? '-' : _item.standardUnit})',
               multiplierEnabled: !isBusy,
               onMultiplierChanged: (_) {
                 setState(() {

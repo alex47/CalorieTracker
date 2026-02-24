@@ -8,8 +8,10 @@ class LabeledInputBox extends StatelessWidget {
   const LabeledInputBox({
     super.key,
     required this.label,
-    required this.controller,
+    this.controller,
+    this.initialValue,
     this.enabled = true,
+    this.readOnly = false,
     this.obscureText = false,
     this.keyboardType,
     this.onChanged,
@@ -20,8 +22,10 @@ class LabeledInputBox extends StatelessWidget {
   });
 
   final String label;
-  final TextEditingController controller;
+  final TextEditingController? controller;
+  final String? initialValue;
   final bool enabled;
+  final bool readOnly;
   final bool obscureText;
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
@@ -32,6 +36,10 @@ class LabeledInputBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      controller != null || initialValue != null,
+      'Either controller or initialValue must be provided.',
+    );
     final resolvedTextColor = textColor;
     final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: resolvedTextColor);
     final resolvedBorderColor = borderColor ?? AppColors.subtleBorder;
@@ -47,28 +55,51 @@ class LabeledInputBox extends StatelessWidget {
       ),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: TextField(
-          controller: controller,
-          enabled: enabled,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          onChanged: onChanged,
-          minLines: 1,
-          maxLines: 1,
-          textAlignVertical: TextAlignVertical.center,
-          style: textStyle,
-          decoration: InputDecoration(
-            isDense: true,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            disabledBorder: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(
-              vertical: UiConstants.xSmallSpacing,
-            ),
-            suffixIcon: suffixIcon,
-          ),
-        ),
+        child: controller != null
+            ? TextField(
+                controller: controller,
+                enabled: enabled,
+                readOnly: readOnly,
+                obscureText: obscureText,
+                keyboardType: keyboardType,
+                onChanged: onChanged,
+                minLines: 1,
+                maxLines: 1,
+                textAlignVertical: TextAlignVertical.center,
+                style: textStyle,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: UiConstants.xSmallSpacing,
+                  ),
+                  suffixIcon: suffixIcon,
+                ),
+              )
+            : TextFormField(
+                initialValue: initialValue,
+                enabled: enabled,
+                readOnly: true,
+                keyboardType: keyboardType,
+                onChanged: onChanged,
+                minLines: 1,
+                maxLines: 1,
+                style: textStyle,
+                decoration: InputDecoration(
+                  isDense: true,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: UiConstants.xSmallSpacing,
+                  ),
+                  suffixIcon: suffixIcon,
+                ),
+              ),
       ),
     );
   }

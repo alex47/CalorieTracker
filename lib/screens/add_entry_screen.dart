@@ -244,12 +244,26 @@ class _ResultsCard extends StatelessWidget {
 
   final List<Map<String, dynamic>> items;
 
+  String _formatNumberNoForcedRounding(double value) {
+    final text = value.toString();
+    if (text.endsWith('.0')) {
+      return text.substring(0, text.length - 2);
+    }
+    return text;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...items.map((item) {
+          final standardUnit = ((item['standard_unit'] as String?) ??
+                  (item['standard_amount'] as String?) ??
+                  '')
+              .trim();
+          final multiplier = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
           return FoodBreakdownCard(
             margin: const EdgeInsets.only(bottom: UiConstants.tableRowVerticalPadding),
             name: (item['name'] as String?) ?? '',
@@ -259,6 +273,9 @@ class _ResultsCard extends StatelessWidget {
             protein: (item['protein'] as num?)?.toDouble() ?? 0,
             carbs: (item['carbs'] as num?)?.toDouble() ?? 0,
             notes: (item['notes'] as String?) ?? '',
+            multiplierLabel: '${l10n.amountLabel} (${standardUnit.isEmpty ? '-' : standardUnit})',
+            multiplierValue: _formatNumberNoForcedRounding(multiplier > 0 ? multiplier : 1.0),
+            multiplierEnabled: false,
           );
         }),
       ],

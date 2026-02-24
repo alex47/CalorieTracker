@@ -17,6 +17,7 @@ class FoodBreakdownCard extends StatelessWidget {
     required this.carbs,
     required this.notes,
     this.multiplierController,
+    this.multiplierValue,
     this.multiplierLabel,
     this.multiplierEnabled = true,
     this.onMultiplierChanged,
@@ -31,6 +32,7 @@ class FoodBreakdownCard extends StatelessWidget {
   final double carbs;
   final String notes;
   final TextEditingController? multiplierController;
+  final String? multiplierValue;
   final String? multiplierLabel;
   final bool multiplierEnabled;
   final ValueChanged<String>? onMultiplierChanged;
@@ -81,13 +83,16 @@ class FoodBreakdownCard extends StatelessWidget {
                         valueTextAlign: TextAlign.center,
                       ),
                     ),
-                    if (multiplierController != null && multiplierLabel != null) ...[
+                    if ((multiplierController != null || multiplierValue != null) &&
+                        multiplierLabel != null) ...[
                       const SizedBox(width: gap),
                       Expanded(
                         child: LabeledInputBox(
                           label: multiplierLabel!,
-                          controller: multiplierController!,
+                          controller: multiplierController,
+                          initialValue: multiplierValue,
                           enabled: multiplierEnabled,
+                          readOnly: multiplierController == null,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           onChanged: onMultiplierChanged,
                           borderColor: AppColors.amountField,
