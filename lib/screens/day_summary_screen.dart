@@ -329,7 +329,7 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
             (item) => {
               'id': item.id,
               'name': item.name,
-              'amount': item.amount,
+              'amount': item.calculatedAmountText,
               'calories': item.calories,
               'fat': item.fat,
               'protein': item.protein,
