@@ -25,6 +25,7 @@ class AddEntryScreen extends StatefulWidget {
 class _AddEntryScreenState extends State<AddEntryScreen> {
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _inputFocusNode = FocusNode();
+  final List<TextEditingController> _multiplierControllers = [];
   final List<Map<String, String>> _history = [];
   List<Map<String, dynamic>> _items = [];
   late DateTime _entryDate;
@@ -60,9 +61,58 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   @override
   void dispose() {
+    for (final controller in _multiplierControllers) {
+      controller.dispose();
+    }
     _inputController.dispose();
     _inputFocusNode.dispose();
     super.dispose();
+  }
+
+  String _formatNumberNoForcedRounding(double value) {
+    final text = value.toString();
+    if (text.endsWith('.0')) {
+      return text.substring(0, text.length - 2);
+    }
+    return text;
+  }
+
+  void _rebuildMultiplierControllers(List<Map<String, dynamic>> items) {
+    for (final controller in _multiplierControllers) {
+      controller.dispose();
+    }
+    _multiplierControllers
+      ..clear()
+      ..addAll(
+        items.map((item) {
+          final multiplier = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
+          final safeMultiplier = multiplier > 0 ? multiplier : 1.0;
+          return TextEditingController(
+            text: _formatNumberNoForcedRounding(safeMultiplier),
+          );
+        }),
+      );
+  }
+
+  double? _parsePositiveDouble(String value) {
+    final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
+    if (parsed == null || parsed <= 0) {
+      return null;
+    }
+    return parsed;
+  }
+
+  bool _syncItemsFromMultiplierControllers() {
+    if (_multiplierControllers.length != _items.length) {
+      return false;
+    }
+    for (var i = 0; i < _multiplierControllers.length; i++) {
+      final parsed = _parsePositiveDouble(_multiplierControllers[i].text);
+      if (parsed == null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _submit({required String prompt}) async {
@@ -97,6 +147,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           .map((item) => Map<String, dynamic>.from(item as Map))
           .toList();
       _history.add({'role': 'assistant', 'content': jsonEncode(response)});
+      _rebuildMultiplierControllers(parsedItems);
       setState(() {
         _items = parsedItems;
         _rawAiResponseText = null;
@@ -116,6 +167,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (_items.isEmpty) {
       setState(() => _errorMessage = l10n.requestCaloriesBeforeSaving);
+      return;
+    }
+    if (!_syncItemsFromMultiplierControllers()) {
+      setState(() => _errorMessage = l10n.invalidMultiplierValue);
       return;
     }
     final latestUserPrompt = _history.lastWhere(
@@ -171,6 +226,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       setState(() {
                         _items = [];
                         _errorMessage = null;
+                        for (final controller in _multiplierControllers) {
+                          controller.dispose();
+                        }
+                        _multiplierControllers.clear();
                         _history.clear();
                         _history.add({'role': 'user', 'content': text});
                       });
@@ -209,7 +268,34 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 ),
               ),
             const SizedBox(height: UiConstants.largeSpacing),
-            if (_items.isNotEmpty) _ResultsCard(items: _items),
+            if (_items.isNotEmpty)
+              _ResultsCard(
+                items: _items,
+                multiplierControllers: _multiplierControllers,
+                onMultiplierChanged: (index, value) {
+                  setState(() {
+                    if (_parsePositiveDouble(value) != null) {
+                      _errorMessage = null;
+                    }
+                  });
+                },
+                onComputedValuesChanged: (
+                  index, {
+                  required calories,
+                  required fat,
+                  required protein,
+                  required carbs,
+                  required multiplier,
+                }) {
+                  setState(() {
+                    _items[index]['multiplier'] = multiplier;
+                    _items[index]['calories'] = calories;
+                    _items[index]['fat'] = fat;
+                    _items[index]['protein'] = protein;
+                    _items[index]['carbs'] = carbs;
+                  });
+                },
+              ),
             const SizedBox(height: UiConstants.mediumSpacing),
             if (_items.isNotEmpty)
               Row(
@@ -240,17 +326,24 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 }
 
 class _ResultsCard extends StatelessWidget {
-  const _ResultsCard({required this.items});
+  const _ResultsCard({
+    required this.items,
+    required this.multiplierControllers,
+    required this.onMultiplierChanged,
+    required this.onComputedValuesChanged,
+  });
 
   final List<Map<String, dynamic>> items;
-
-  String _formatNumberNoForcedRounding(double value) {
-    final text = value.toString();
-    if (text.endsWith('.0')) {
-      return text.substring(0, text.length - 2);
-    }
-    return text;
-  }
+  final List<TextEditingController> multiplierControllers;
+  final void Function(int index, String value) onMultiplierChanged;
+  final void Function(
+    int index, {
+    required int calories,
+    required double fat,
+    required double protein,
+    required double carbs,
+    required double multiplier,
+  }) onComputedValuesChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -258,12 +351,13 @@ class _ResultsCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...items.map((item) {
+        ...items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
           final standardUnit = ((item['standard_unit'] as String?) ??
                   (item['standard_amount'] as String?) ??
                   '')
               .trim();
-          final multiplier = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
           return FoodBreakdownCard(
             margin: const EdgeInsets.only(bottom: UiConstants.tableRowVerticalPadding),
             name: (item['name'] as String?) ?? '',
@@ -274,8 +368,29 @@ class _ResultsCard extends StatelessWidget {
             carbs: (item['carbs'] as num?)?.toDouble() ?? 0,
             notes: (item['notes'] as String?) ?? '',
             multiplierLabel: '${l10n.amountLabel} (${standardUnit.isEmpty ? '-' : standardUnit})',
-            multiplierValue: _formatNumberNoForcedRounding(multiplier > 0 ? multiplier : 1.0),
-            multiplierEnabled: false,
+            multiplierController: multiplierControllers[index],
+            multiplierEnabled: true,
+            onMultiplierChanged: (value) => onMultiplierChanged(index, value),
+            standardUnitAmount: (item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0,
+            standardCalories: (item['standard_calories'] as num?)?.toDouble() ?? 0,
+            standardFat: (item['standard_fat'] as num?)?.toDouble() ?? 0,
+            standardProtein: (item['standard_protein'] as num?)?.toDouble() ?? 0,
+            standardCarbs: (item['standard_carbs'] as num?)?.toDouble() ?? 0,
+            onComputedValuesChanged: ({
+              required calories,
+              required fat,
+              required protein,
+              required carbs,
+              required multiplier,
+            }) =>
+                onComputedValuesChanged(
+              index,
+              calories: calories,
+              fat: fat,
+              protein: protein,
+              carbs: carbs,
+              multiplier: multiplier,
+            ),
           );
         }),
       ],

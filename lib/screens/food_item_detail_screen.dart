@@ -385,6 +385,29 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               multiplierController: _multiplierController,
               multiplierLabel: '${l10n.amountLabel} (${_item.standardUnit.trim().isEmpty ? '-' : _item.standardUnit})',
               multiplierEnabled: !isBusy,
+              standardUnitAmount: _item.standardUnitAmount,
+              standardCalories: _item.standardCalories,
+              standardFat: _item.standardFat,
+              standardProtein: _item.standardProtein,
+              standardCarbs: _item.standardCarbs,
+              onComputedValuesChanged: ({
+                required calories,
+                required fat,
+                required protein,
+                required carbs,
+                required multiplier,
+              }) {
+                setState(() {
+                  _item = _item.copyWith(
+                    calories: calories,
+                    fat: fat,
+                    protein: protein,
+                    carbs: carbs,
+                    multiplier: multiplier,
+                  );
+                  _dirty = true;
+                });
+              },
               onMultiplierChanged: (_) {
                 setState(() {
                   _dirty = true;

@@ -21,6 +21,12 @@ class FoodBreakdownCard extends StatelessWidget {
     this.multiplierLabel,
     this.multiplierEnabled = true,
     this.onMultiplierChanged,
+    this.onComputedValuesChanged,
+    this.standardUnitAmount,
+    this.standardCalories,
+    this.standardFat,
+    this.standardProtein,
+    this.standardCarbs,
     this.margin,
   });
 
@@ -36,10 +42,54 @@ class FoodBreakdownCard extends StatelessWidget {
   final String? multiplierLabel;
   final bool multiplierEnabled;
   final ValueChanged<String>? onMultiplierChanged;
+  final void Function({
+    required int calories,
+    required double fat,
+    required double protein,
+    required double carbs,
+    required double multiplier,
+  })? onComputedValuesChanged;
+  final double? standardUnitAmount;
+  final double? standardCalories;
+  final double? standardFat;
+  final double? standardProtein;
+  final double? standardCarbs;
   final EdgeInsetsGeometry? margin;
 
   String _formatGrams(double value) {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
+  }
+
+  double? _parsePositiveNumber(String value) {
+    final parsed = double.tryParse(value.trim().replaceAll(',', '.'));
+    if (parsed == null || parsed <= 0) {
+      return null;
+    }
+    return parsed;
+  }
+
+  void _emitComputedValues(String value) {
+    if (onComputedValuesChanged == null ||
+        standardUnitAmount == null ||
+        standardCalories == null ||
+        standardFat == null ||
+        standardProtein == null ||
+        standardCarbs == null) {
+      return;
+    }
+    final multiplier = _parsePositiveNumber(value);
+    if (multiplier == null) {
+      return;
+    }
+    final safeUnitAmount = standardUnitAmount! > 0 ? standardUnitAmount! : 1.0;
+    final ratio = multiplier / safeUnitAmount;
+    onComputedValuesChanged!(
+      calories: (standardCalories! * ratio).round(),
+      fat: standardFat! * ratio,
+      protein: standardProtein! * ratio,
+      carbs: standardCarbs! * ratio,
+      multiplier: multiplier,
+    );
   }
 
   @override
@@ -94,7 +144,10 @@ class FoodBreakdownCard extends StatelessWidget {
                           enabled: multiplierEnabled,
                           readOnly: multiplierController == null,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          onChanged: onMultiplierChanged,
+                          onChanged: (value) {
+                            onMultiplierChanged?.call(value);
+                            _emitComputedValues(value);
+                          },
                           borderColor: AppColors.amountField,
                           textColor: AppColors.text,
                         ),
