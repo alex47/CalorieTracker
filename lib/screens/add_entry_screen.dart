@@ -339,8 +339,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   Expanded(
                     child: FilledButton.icon(
                       onPressed: isBusy ? null : _saveEntry,
-                      icon: const Icon(Icons.check),
-                      label: Text(l10n.acceptButton, textAlign: TextAlign.center),
+                      icon: const Icon(Icons.save_outlined),
+                      label: Text(l10n.saveButton, textAlign: TextAlign.center),
                     ),
                   ),
                 ],
