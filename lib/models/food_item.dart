@@ -62,11 +62,37 @@ class FoodItem {
     return (amount: parsedAmount, unit: unit);
   }
 
+  static String _formatAmountValue(double value) {
+    if (value % 1 == 0) {
+      return value.toInt().toString();
+    }
+    final oneDecimal = value.toStringAsFixed(1);
+    if (oneDecimal.endsWith('.0')) {
+      return oneDecimal.substring(0, oneDecimal.length - 2);
+    }
+    return oneDecimal;
+  }
+
   String get standardAmountText {
     final amountText = standardUnitAmount % 1 == 0
         ? standardUnitAmount.toInt().toString()
         : standardUnitAmount.toString();
     return '$amountText $standardUnit';
+  }
+
+  String get calculatedAmountText {
+    final unit = standardUnit.trim();
+    if (unit.isEmpty) {
+      return amount;
+    }
+    // Legacy rows may still carry a combined value like "100 g" in standardUnit.
+    if (RegExp(r'\d').hasMatch(unit)) {
+      return amount;
+    }
+    final resolvedMultiplier = multiplier > 0 ? multiplier : 1.0;
+    final resolvedUnitAmount = standardUnitAmount > 0 ? standardUnitAmount : 1.0;
+    final total = resolvedUnitAmount * resolvedMultiplier;
+    return '${_formatAmountValue(total)} $unit';
   }
 
   static int computeCalories({

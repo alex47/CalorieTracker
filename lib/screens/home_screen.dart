@@ -589,7 +589,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                         FoodTableCell(
-                                          text: item.amount,
+                                          text: item.calculatedAmountText,
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
