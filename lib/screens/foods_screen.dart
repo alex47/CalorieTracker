@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_definition.dart';
-import '../services/food_library_service.dart';
 import '../theme/ui_constants.dart';
-import '../widgets/food_table_card.dart';
+import '../widgets/food_library_browser.dart';
 import 'food_definition_screen.dart';
 import 'merge_foods_screen.dart';
 
@@ -18,36 +17,10 @@ class FoodsScreen extends StatefulWidget {
 }
 
 class _FoodsScreenState extends State<FoodsScreen> {
-  final TextEditingController _searchController = TextEditingController();
   final Set<int> _selectedIds = <int>{};
-  late Future<List<FoodDefinition>> _foodsFuture;
+  List<FoodDefinition> _visibleFoods = const <FoodDefinition>[];
 
   bool get _selectionMode => _selectedIds.isNotEmpty;
-
-  @override
-  void initState() {
-    super.initState();
-    _foodsFuture = _loadFoods();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  Future<List<FoodDefinition>> _loadFoods() {
-    return FoodLibraryService.instance.fetchFoods(
-      searchQuery: _searchController.text,
-      visibleOnly: true,
-    );
-  }
-
-  void _reload() {
-    setState(() {
-      _foodsFuture = _loadFoods();
-    });
-  }
 
   void _toggleSelection(int foodId) {
     setState(() {
@@ -67,12 +40,12 @@ class _FoodsScreenState extends State<FoodsScreen> {
       ),
     );
     if (changed == true) {
-      _reload();
+      setState(() {});
     }
   }
 
-  Future<void> _mergeSelected(List<FoodDefinition> foods) async {
-    final selectedFoods = foods.where((food) => _selectedIds.contains(food.id)).toList();
+  Future<void> _mergeSelected() async {
+    final selectedFoods = _visibleFoods.where((food) => _selectedIds.contains(food.id)).toList();
     if (selectedFoods.length < 2) {
       return;
     }
@@ -88,7 +61,6 @@ class _FoodsScreenState extends State<FoodsScreen> {
     }
     setState(() {
       _selectedIds.clear();
-      _foodsFuture = _loadFoods();
     });
   }
 
@@ -123,13 +95,7 @@ class _FoodsScreenState extends State<FoodsScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     FilledButton.icon(
-                      onPressed: () async {
-                        final foods = await _loadFoods();
-                        if (!mounted) {
-                          return;
-                        }
-                        await _mergeSelected(foods);
-                      },
+                      onPressed: _mergeSelected,
                       icon: const Icon(Icons.merge_outlined),
                       label: Text(l10n.mergeFoodsButton, textAlign: TextAlign.center),
                     ),
@@ -147,70 +113,19 @@ class _FoodsScreenState extends State<FoodsScreen> {
                 : UiConstants.pagePadding,
           ),
           children: [
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: l10n.searchFoodsLabel,
-                suffixIcon: IconButton(
-                  onPressed: _reload,
-                  icon: const Icon(Icons.search_outlined),
-                ),
-              ),
-              onChanged: (_) => _reload(),
-            ),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            FutureBuilder<List<FoodDefinition>>(
-              future: _foodsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final foods = snapshot.data ?? const <FoodDefinition>[];
-                if (foods.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
-                    child: Text(l10n.noFoodsFound),
-                  );
-                }
-                return Column(
-                  children: [
-                    FoodTableCard(
-                      columns: buildStandardFoodTableColumns(
-                        firstLabel: l10n.foodLabel,
-                        secondLabel: l10n.standardUnitLabel,
-                        thirdLabel: l10n.foodUsesLabel,
-                      ),
-                      rows: foods.map((food) {
-                        final isSelected = _selectedIds.contains(food.id);
-                        return FoodTableRowData(
-                          backgroundColor: isSelected
-                              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                              : null,
-                          cells: [
-                            FoodTableCell(text: food.name),
-                            FoodTableCell(
-                              text:
-                                  '${food.standardUnitAmount % 1 == 0 ? food.standardUnitAmount.toInt() : food.standardUnitAmount} ${food.standardUnit}',
-                            ),
-                            FoodTableCell(
-                              text: food.usageCount.toString(),
-                              textAlign: TextAlign.end,
-                            ),
-                          ],
-                          onTap: () async {
-                            if (_selectionMode) {
-                              _toggleSelection(food.id);
-                              return;
-                            }
-                            await _openFoodEditor(food: food);
-                          },
-                          onLongPress: () => _toggleSelection(food.id),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                );
+            FoodLibraryBrowser(
+              selectedIds: _selectedIds,
+              onFoodsChanged: (foods) {
+                _visibleFoods = foods;
               },
+              onFoodTap: (food) async {
+                if (_selectionMode) {
+                  _toggleSelection(food.id);
+                  return;
+                }
+                await _openFoodEditor(food: food);
+              },
+              onFoodLongPress: (food) => _toggleSelection(food.id),
             ),
           ],
         ),
