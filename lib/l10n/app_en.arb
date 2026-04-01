@@ -2,6 +2,7 @@
   "@@locale": "en",
   "appTitle": "Calorie Tracker",
   "settingsTitle": "Settings",
+  "foodsTitle": "Foods",
   "aboutTitle": "About",
   "weeklySummaryTitle": "Weekly summary",
   "weeklyDeficitTitle": "Weekly deficit",
@@ -16,8 +17,41 @@
   "proteinLabel": "Protein",
   "carbsLabel": "Carbs",
   "foodLabel": "Food",
+  "foodUsesLabel": "Uses",
   "amountLabel": "Amount",
   "notesLabel": "Notes",
+  "searchFoodsLabel": "Search foods",
+  "noFoodsFound": "No foods found.",
+  "standardUnitLabel": "Unit",
+  "standardUnitAmountLabel": "Standard amount",
+  "standardCaloriesLabel": "Standard calories",
+  "invalidFoodDefinitionInput": "Please enter valid food values.",
+  "editFoodButton": "Edit food",
+  "addFoodDefinitionTitle": "Add food definition",
+  "selectFoodsButton": "Select foods",
+  "mergeFoodsButton": "Merge foods",
+  "chooseMergeTargetTitle": "Choose food to keep",
+  "mergeFoodsConfirmMessage": "Merge {count} foods into the selected food?",
+  "@mergeFoodsConfirmMessage": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "foodUsageCount": "{count} uses",
+  "@foodUsageCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "saveToLibraryDialogTitle": "Save to food library?",
+  "saveToLibraryDialogBody": "Do you want to save {foodName} to the food library?",
+  "@saveToLibraryDialogBody": {
+    "placeholders": {
+      "foodName": {}
+    }
+  },
+  "saveToLibraryButton": "Save to library",
+  "keepPrivateButton": "Keep private",
   "caloriesKcalValue": "{calories} kcal",
   "@caloriesKcalValue": {
     "placeholders": {

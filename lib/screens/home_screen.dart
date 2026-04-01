@@ -21,6 +21,7 @@ import 'add_entry_screen.dart';
 import 'daily_metric_detail_screen.dart';
 import 'day_summary_screen.dart';
 import 'food_item_detail_screen.dart';
+import 'foods_screen.dart';
 import 'metabolic_profile_screen.dart';
 import 'settings_screen.dart';
 import 'weekly_summary_screen.dart';
@@ -298,6 +299,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     _targetFutures.clear();
                     setState(() {});
                   }
+                } else if (value == FoodsScreen.routeName) {
+                  await Navigator.pushNamed(context, FoodsScreen.routeName);
+                  if (mounted) {
+                    _dayFutures.clear();
+                    setState(() {});
+                  }
                 } else if (value == MetabolicProfileScreen.routeName) {
                   await Navigator.pushNamed(context, MetabolicProfileScreen.routeName);
                   if (mounted) {
@@ -322,6 +329,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.settings),
                       title: Text(l10n.settingsTitle, style: menuTextStyle),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: FoodsScreen.routeName,
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.restaurant_outlined),
+                      title: Text(l10n.foodsTitle, style: menuTextStyle),
                     ),
                   ),
                   PopupMenuItem(

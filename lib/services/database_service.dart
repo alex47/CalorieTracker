@@ -18,8 +18,26 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 10,
+      version: 11,
       onCreate: (db, version) async {
+        await db.execute(
+          '''
+          CREATE TABLE foods (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            standard_unit TEXT NOT NULL,
+            standard_unit_amount REAL NOT NULL DEFAULT 1.0,
+            standard_calories REAL NOT NULL DEFAULT 0,
+            standard_fat REAL NOT NULL DEFAULT 0,
+            standard_protein REAL NOT NULL DEFAULT 0,
+            standard_carbs REAL NOT NULL DEFAULT 0,
+            notes TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            is_visible_in_library INTEGER NOT NULL DEFAULT 1
+          )
+          ''',
+        );
         await db.execute(
           '''
           CREATE TABLE entries (
@@ -36,6 +54,7 @@ class DatabaseService {
           CREATE TABLE entry_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             entry_id INTEGER NOT NULL,
+            food_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             amount TEXT NOT NULL,
             calories INTEGER NOT NULL,
@@ -51,9 +70,13 @@ class DatabaseService {
             standard_protein REAL NOT NULL DEFAULT 0,
             standard_carbs REAL NOT NULL DEFAULT 0,
             notes TEXT,
-            FOREIGN KEY(entry_id) REFERENCES entries(id)
+            FOREIGN KEY(entry_id) REFERENCES entries(id),
+            FOREIGN KEY(food_id) REFERENCES foods(id)
           )
           ''',
+        );
+        await db.execute(
+          'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
         );
         await db.execute(
           '''
@@ -240,8 +263,98 @@ class DatabaseService {
             ''',
           );
         }
+        if (oldVersion < 11) {
+          await db.execute(
+            '''
+            CREATE TABLE foods (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              standard_unit TEXT NOT NULL,
+              standard_unit_amount REAL NOT NULL DEFAULT 1.0,
+              standard_calories REAL NOT NULL DEFAULT 0,
+              standard_fat REAL NOT NULL DEFAULT 0,
+              standard_protein REAL NOT NULL DEFAULT 0,
+              standard_carbs REAL NOT NULL DEFAULT 0,
+              notes TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL,
+              is_visible_in_library INTEGER NOT NULL DEFAULT 1
+            )
+            ''',
+          );
+          await db.execute(
+            'ALTER TABLE entry_items ADD COLUMN food_id INTEGER',
+          );
+          await db.execute(
+            'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
+          );
+          await _migrateEntryItemsToFoods(db);
+        }
       },
     );
+  }
+
+  Future<void> _migrateEntryItemsToFoods(Database db) async {
+    final nowIso = DateTime.now().toIso8601String();
+    final rows = await db.query(
+      'entry_items',
+      orderBy: 'id ASC',
+    );
+    final signatureToFoodId = <String, int>{};
+
+    for (final row in rows) {
+      final name = (row['name'] as String?) ?? '';
+      final standardUnit = ((row['standard_unit'] as String?) ?? '').trim();
+      final standardUnitAmount = (row['standard_unit_amount'] as num?)?.toDouble() ?? 1.0;
+      final standardCalories = (row['standard_calories'] as num?)?.toDouble() ??
+          ((row['calories'] as num?)?.toDouble() ?? 0);
+      final standardFat = (row['standard_fat'] as num?)?.toDouble() ??
+          ((row['fat'] as num?)?.toDouble() ?? 0);
+      final standardProtein = (row['standard_protein'] as num?)?.toDouble() ??
+          ((row['protein'] as num?)?.toDouble() ?? 0);
+      final standardCarbs = (row['standard_carbs'] as num?)?.toDouble() ??
+          ((row['carbs'] as num?)?.toDouble() ?? 0);
+      final notes = (row['notes'] as String?) ?? '';
+
+      final signature = [
+        name.trim().toLowerCase(),
+        standardUnit.toLowerCase(),
+        standardUnitAmount.toStringAsFixed(6),
+        standardCalories.toStringAsFixed(6),
+        standardFat.toStringAsFixed(6),
+        standardProtein.toStringAsFixed(6),
+        standardCarbs.toStringAsFixed(6),
+        notes.trim(),
+      ].join('|');
+
+      var foodId = signatureToFoodId[signature];
+      if (foodId == null) {
+        foodId = await db.insert(
+          'foods',
+          {
+            'name': name,
+            'standard_unit': standardUnit,
+            'standard_unit_amount': standardUnitAmount > 0 ? standardUnitAmount : 1.0,
+            'standard_calories': standardCalories,
+            'standard_fat': standardFat,
+            'standard_protein': standardProtein,
+            'standard_carbs': standardCarbs,
+            'notes': notes,
+            'created_at': nowIso,
+            'updated_at': nowIso,
+            'is_visible_in_library': 1,
+          },
+        );
+        signatureToFoodId[signature] = foodId;
+      }
+
+      await db.update(
+        'entry_items',
+        {'food_id': foodId},
+        where: 'id = ?',
+        whereArgs: [row['id']],
+      );
+    }
   }
 
   Future<Database> get database async {

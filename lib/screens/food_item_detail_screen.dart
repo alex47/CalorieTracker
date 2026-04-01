@@ -3,25 +3,24 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
-import '../services/openai_service.dart';
-import '../services/settings_service.dart';
+import '../services/food_library_service.dart';
 import '../theme/ui_constants.dart';
-import '../utils/error_localizer.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
-import '../widgets/raw_ai_response_section.dart';
-import '../widgets/reestimate_dialog.dart';
+import 'food_definition_screen.dart';
 
 class FoodItemDetailScreen extends StatefulWidget {
   const FoodItemDetailScreen({
     super.key,
     required this.item,
     required this.itemDate,
+    this.isNew = false,
   });
 
   final FoodItem item;
   final DateTime itemDate;
+  final bool isNew;
 
   @override
   State<FoodItemDetailScreen> createState() => _FoodItemDetailScreenState();
@@ -30,39 +29,20 @@ class FoodItemDetailScreen extends StatefulWidget {
 class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   late FoodItem _item;
   late final TextEditingController _multiplierController;
-  bool _loading = false;
   bool _saving = false;
-  bool _dirty = false;
   String? _errorMessage;
-  String? _rawAiResponseText;
-
-  String _formatGrams(double value) {
-    return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
-  }
-
-  String _formatNumberNoForcedRounding(double value) {
-    final text = value.toString();
-    if (text.endsWith('.0')) {
-      return text.substring(0, text.length - 2);
-    }
-    return text;
-  }
-
-  DateTime _dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
   bool get _canCopyToToday {
-    final today = _dayOnly(DateTime.now());
-    final itemDay = _dayOnly(widget.itemDate);
-    return itemDay.isBefore(today);
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final itemDay = DateTime(widget.itemDate.year, widget.itemDate.month, widget.itemDate.day);
+    return !widget.isNew && itemDay.isBefore(today);
   }
 
   @override
   void initState() {
     super.initState();
     _item = widget.item;
-    _multiplierController = TextEditingController(
-      text: _formatNumberNoForcedRounding(_item.multiplier),
-    );
+    _multiplierController = TextEditingController(text: _formatNumber(_item.multiplier));
   }
 
   @override
@@ -71,210 +51,110 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
     super.dispose();
   }
 
-  double? _parseMultiplier() {
-    final text = _multiplierController.text.trim().replaceAll(',', '.');
-    if (text.isEmpty) {
-      return null;
+  String _formatNumber(double value) {
+    final text = value.toString();
+    if (text.endsWith('.0')) {
+      return text.substring(0, text.length - 2);
     }
-    final value = double.tryParse(text);
+    return text;
+  }
+
+  double? _parseMultiplier() {
+    final value = double.tryParse(_multiplierController.text.trim().replaceAll(',', '.'));
     if (value == null || value <= 0) {
       return null;
     }
     return value;
   }
 
-  Future<void> _reestimateItem() async {
-    final l10n = AppLocalizations.of(context)!;
-    final reestimateInput = await showReestimateDialog(context);
-
-    if (reestimateInput == null || reestimateInput.isEmpty) {
+  Future<void> _openFoodEditor() async {
+    final food = await FoodLibraryService.instance.fetchFoodById(_item.foodId);
+    if (!mounted || food == null) {
       return;
     }
-
-    final apiKey = await SettingsService.instance.getApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      setState(() => _errorMessage = l10n.setApiKeyInSettings);
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FoodDefinitionScreen(food: food),
+      ),
+    );
+    if (changed != true || !mounted) {
       return;
     }
-
+    final updatedFood = await FoodLibraryService.instance.fetchFoodById(_item.foodId);
+    if (!mounted || updatedFood == null) {
+      return;
+    }
     setState(() {
-      _loading = true;
-      _errorMessage = null;
-      _rawAiResponseText = null;
+      _item = _item.copyWith(
+        name: updatedFood.name,
+        standardUnit: updatedFood.standardUnit,
+        standardUnitAmount: updatedFood.standardUnitAmount,
+        standardCalories: updatedFood.standardCalories,
+        standardFat: updatedFood.standardFat,
+        standardProtein: updatedFood.standardProtein,
+        standardCarbs: updatedFood.standardCarbs,
+        notes: updatedFood.notes,
+        calories: FoodItem.computeCalories(
+          standardCalories: updatedFood.standardCalories,
+          multiplier: _item.multiplier,
+          standardUnitAmount: updatedFood.standardUnitAmount,
+        ),
+        fat: FoodItem.computeMacro(
+          standardMacro: updatedFood.standardFat,
+          multiplier: _item.multiplier,
+          standardUnitAmount: updatedFood.standardUnitAmount,
+        ),
+        protein: FoodItem.computeMacro(
+          standardMacro: updatedFood.standardProtein,
+          multiplier: _item.multiplier,
+          standardUnitAmount: updatedFood.standardUnitAmount,
+        ),
+        carbs: FoodItem.computeMacro(
+          standardMacro: updatedFood.standardCarbs,
+          multiplier: _item.multiplier,
+          standardUnitAmount: updatedFood.standardUnitAmount,
+        ),
+      );
     });
-
-    try {
-      final settings = SettingsService.instance.settings;
-      final service = OpenAIService(
-        apiKey,
-        requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
-      );
-
-      final history = <Map<String, String>>[
-        {
-          'role': 'user',
-          'content':
-              'Current item:\n${_item.name}, ${_item.amount}, ${_item.calories} kcal, fat ${_formatGrams(_item.fat)}g, protein ${_formatGrams(_item.protein)}g, carbs ${_formatGrams(_item.carbs)}g, notes: ${_item.notes.isEmpty ? '-' : _item.notes}\n\nUpdate this item based on my correction. Return JSON with exactly one item in "items".',
-        },
-      ];
-
-      final response = await service.estimateCalories(
-        model: settings.model,
-        languageCode: settings.languageCode,
-        reasoningEffort: settings.reasoningEffort,
-        maxOutputTokens: settings.maxOutputTokens,
-        userInput: reestimateInput,
-        history: history,
-      );
-
-      final items = response['items'] as List<dynamic>? ?? [];
-      if (items.isEmpty) {
-        throw FormatException(l10n.missingItemInAiResponse);
-      }
-
-      final updated = Map<String, dynamic>.from(items.first as Map);
-      final name = (updated['name'] as String? ?? '').trim();
-      final amount = (updated['amount'] as String? ?? '').trim();
-      final calories = (updated['calories'] as num?)?.round();
-      final fat = (updated['fat'] as num?)?.toDouble();
-      final protein = (updated['protein'] as num?)?.toDouble();
-      final carbs = (updated['carbs'] as num?)?.toDouble();
-      final notes = (updated['notes'] as String? ?? '').trim();
-      if (name.isEmpty ||
-          amount.isEmpty ||
-          calories == null ||
-          calories <= 0 ||
-          fat == null ||
-          fat < 0 ||
-          protein == null ||
-          protein < 0 ||
-          carbs == null ||
-          carbs < 0) {
-        throw FormatException(l10n.invalidReestimatedItemInAiResponse);
-      }
-
-      setState(() {
-        final nextMultiplier = (updated['multiplier'] as num?)?.toDouble() ?? 1.0;
-        final nextStandardUnitAmount = ((updated['standard_unit_amount'] as num?)?.toDouble() ?? 1.0);
-        final safeStandardUnitAmount = nextStandardUnitAmount > 0 ? nextStandardUnitAmount : 1.0;
-        _item = FoodItem(
-          id: _item.id,
-          entryId: _item.entryId,
-          name: name,
-          amount: amount,
-          calories: calories,
-          fat: fat,
-          protein: protein,
-          carbs: carbs,
-          standardUnit: (updated['standard_unit'] as String?)?.trim().isNotEmpty == true
-              ? (updated['standard_unit'] as String).trim()
-              : ((updated['standard_amount'] as String?)?.trim().isNotEmpty == true
-                  ? (updated['standard_amount'] as String).trim()
-                  : amount),
-          standardUnitAmount: safeStandardUnitAmount,
-          multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
-          standardCalories: (updated['standard_calories'] as num?)?.toDouble() ??
-              (calories /
-                  FoodItem.multiplierRatio(
-                    multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
-                    standardUnitAmount: safeStandardUnitAmount,
-                  )),
-          standardFat:
-              (updated['standard_fat'] as num?)?.toDouble() ??
-                  (fat /
-                      FoodItem.multiplierRatio(
-                        multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
-                        standardUnitAmount: safeStandardUnitAmount,
-                      )),
-          standardProtein: (updated['standard_protein'] as num?)?.toDouble() ??
-              (protein /
-                  FoodItem.multiplierRatio(
-                    multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
-                    standardUnitAmount: safeStandardUnitAmount,
-                  )),
-          standardCarbs: (updated['standard_carbs'] as num?)?.toDouble() ??
-              (carbs /
-                  FoodItem.multiplierRatio(
-                    multiplier: nextMultiplier > 0 ? nextMultiplier : 1.0,
-                    standardUnitAmount: safeStandardUnitAmount,
-                  )),
-          notes: notes,
-        );
-        _multiplierController.text = _formatNumberNoForcedRounding(_item.multiplier);
-        _dirty = true;
-        _rawAiResponseText = null;
-      });
-    } catch (error) {
-      final rawResponse = error is AiParseException ? error.rawResponseText : null;
-      setState(() {
-        _errorMessage = l10n.failedToReestimateItem(localizeError(error, l10n));
-        _rawAiResponseText = rawResponse;
-      });
-    } finally {
-      setState(() => _loading = false);
-    }
   }
 
   Future<void> _saveChanges() async {
     final l10n = AppLocalizations.of(context)!;
     final multiplier = _parseMultiplier();
     if (multiplier == null) {
-      setState(() {
-        _errorMessage = l10n.invalidMultiplierValue;
-      });
+      setState(() => _errorMessage = l10n.invalidMultiplierValue);
       return;
     }
-    final updatedItem = _item.copyWith(
-      multiplier: multiplier,
-      calories: FoodItem.computeCalories(
-        standardCalories: _item.standardCalories,
-        multiplier: multiplier,
-        standardUnitAmount: _item.standardUnitAmount,
-      ),
-      fat: FoodItem.computeMacro(
-        standardMacro: _item.standardFat,
-        multiplier: multiplier,
-        standardUnitAmount: _item.standardUnitAmount,
-      ),
-      protein: FoodItem.computeMacro(
-        standardMacro: _item.standardProtein,
-        multiplier: multiplier,
-        standardUnitAmount: _item.standardUnitAmount,
-      ),
-      carbs: FoodItem.computeMacro(
-        standardMacro: _item.standardCarbs,
-        multiplier: multiplier,
-        standardUnitAmount: _item.standardUnitAmount,
-      ),
-    );
     setState(() {
       _saving = true;
       _errorMessage = null;
-      _item = updatedItem;
     });
     try {
-      await EntriesRepository.instance.updateEntryItem(
-        itemId: updatedItem.id,
-        name: updatedItem.name,
-        amount: updatedItem.amount,
-        standardUnit: updatedItem.standardUnit,
-        standardUnitAmount: updatedItem.standardUnitAmount,
-        multiplier: updatedItem.multiplier,
-        standardCalories: updatedItem.standardCalories,
-        standardFat: updatedItem.standardFat,
-        standardProtein: updatedItem.standardProtein,
-        standardCarbs: updatedItem.standardCarbs,
-        notes: updatedItem.notes,
-      );
-      if (mounted) {
-        Navigator.pop(context, true);
+      if (widget.isNew) {
+        await EntriesRepository.instance.addFoodToDate(
+          date: widget.itemDate,
+          foodId: _item.foodId,
+          multiplier: multiplier,
+        );
+      } else {
+        await EntriesRepository.instance.updateEntryItemMultiplier(
+          itemId: _item.id,
+          multiplier: multiplier,
+        );
       }
+      if (!mounted) {
+        return;
+      }
+      Navigator.pop(context, true);
     } catch (error) {
       setState(() {
         _errorMessage = l10n.failedToSaveItem(error.toString());
       });
     } finally {
-      setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
@@ -306,26 +186,20 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
           ),
         ) ??
         false;
-
     if (!confirmed) {
       return;
     }
-
-    setState(() {
-      _saving = true;
-      _errorMessage = null;
-    });
+    setState(() => _saving = true);
     try {
       await EntriesRepository.instance.deleteEntryItem(_item.id);
-      if (mounted) {
-        Navigator.pop(context, true);
+      if (!mounted) {
+        return;
       }
-    } catch (error) {
-      setState(() {
-        _errorMessage = l10n.failedToDeleteItem(error.toString());
-      });
+      Navigator.pop(context, true);
     } finally {
-      setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
@@ -340,40 +214,34 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
         item: _item,
         date: DateTime.now(),
       );
-      if (mounted) {
-        Navigator.pop(context, {'reloadToday': true});
+      if (!mounted) {
+        return;
       }
+      Navigator.pop(context, {'reloadToday': true});
     } catch (error) {
       setState(() {
         _errorMessage = l10n.failedToCopyItem(error.toString());
       });
     } finally {
-      setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isBusy = _loading || _saving;
-    return PopScope(
-      canPop: !isBusy,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.restaurant_menu),
-              const SizedBox(width: UiConstants.smallSpacing),
-              Text(l10n.foodDetailsTitle),
-            ],
-          ),
-        ),
-        body: AbsorbPointer(
-          absorbing: isBusy,
-          child: ListView(
-            padding: const EdgeInsets.all(UiConstants.pagePadding),
-            children: [
+    final isBusy = _saving;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.isNew ? l10n.addFoodTitle : l10n.foodDetailsTitle),
+      ),
+      body: AbsorbPointer(
+        absorbing: isBusy,
+        child: ListView(
+          padding: const EdgeInsets.all(UiConstants.pagePadding),
+          children: [
             FoodBreakdownCard(
               name: _item.name,
               calories: _item.calories,
@@ -382,7 +250,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               carbs: _item.carbs,
               notes: _item.notes,
               multiplierController: _multiplierController,
-              multiplierLabel: '${l10n.amountLabel} (${_item.standardUnit.trim().isEmpty ? '-' : _item.standardUnit})',
+              multiplierLabel:
+                  '${l10n.amountLabel} (${_item.standardUnit.trim().isEmpty ? '-' : _item.standardUnit})',
               multiplierEnabled: !isBusy,
               standardUnitAmount: _item.standardUnitAmount,
               standardCalories: _item.standardCalories,
@@ -404,88 +273,45 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
                     carbs: carbs,
                     multiplier: multiplier,
                   );
-                  _dirty = true;
-                });
-              },
-              onMultiplierChanged: (_) {
-                setState(() {
-                  _dirty = true;
                 });
               },
             ),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: UiConstants.smallSpacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                    if (_rawAiResponseText != null && _rawAiResponseText!.trim().isNotEmpty) ...[
-                      const SizedBox(height: UiConstants.smallSpacing),
-                      RawAiResponseSection(
-                        title: l10n.showAiResponseButton,
-                        responseText: _rawAiResponseText!,
-                      ),
-                    ],
-                  ],
-                ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: UiConstants.smallSpacing),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
+            ],
             const SizedBox(height: UiConstants.mediumSpacing),
+            FilledButton.icon(
+              onPressed: isBusy ? null : _openFoodEditor,
+              icon: const Icon(Icons.edit_outlined),
+              label: Text(l10n.editFoodButton, textAlign: TextAlign.center),
+            ),
+            if (!widget.isNew) ...[
+              const SizedBox(height: UiConstants.buttonSpacing),
+              FilledButton.icon(
+                onPressed: isBusy ? null : _deleteItem,
+                icon: const Icon(Icons.delete_outline),
+                label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+              ),
+            ],
             if (_canCopyToToday) ...[
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: isBusy ? null : _copyToToday,
-                  icon: const Icon(Icons.content_copy_outlined),
-                  label: Text(l10n.copyToTodayButton, textAlign: TextAlign.center),
-                ),
-              ),
               const SizedBox(height: UiConstants.buttonSpacing),
+              FilledButton.icon(
+                onPressed: isBusy ? null : _copyToToday,
+                icon: const Icon(Icons.content_copy_outlined),
+                label: Text(l10n.copyToTodayButton, textAlign: TextAlign.center),
+              ),
             ],
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: isBusy ? null : _deleteItem,
-                    icon: const Icon(Icons.delete_outline),
-                    label: Text(l10n.deleteButton, textAlign: TextAlign.center),
-                  ),
-                ),
-                const SizedBox(width: UiConstants.buttonSpacing),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: isBusy ? null : _reestimateItem,
-                    icon: _loading
-                        ? const SizedBox(
-                            height: UiConstants.loadingIndicatorSize,
-                            width: UiConstants.loadingIndicatorSize,
-                            child: CircularProgressIndicator(
-                              strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
-                            ),
-                          )
-                        : const Icon(Icons.auto_awesome_outlined),
-                    label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
-                  ),
-                ),
-              ],
+            const SizedBox(height: UiConstants.buttonSpacing),
+            FilledButton.icon(
+              onPressed: isBusy ? null : _saveChanges,
+              icon: const Icon(Icons.save_outlined),
+              label: Text(l10n.saveButton, textAlign: TextAlign.center),
             ),
-            if (_dirty) ...[
-              const SizedBox(height: UiConstants.buttonSpacing),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: isBusy ? null : _saveChanges,
-                  icon: const Icon(Icons.save_outlined),
-                  label: Text(l10n.saveButton, textAlign: TextAlign.center),
-                ),
-              ),
-            ],
-            ],
-          ),
+          ],
         ),
       ),
     );

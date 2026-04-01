@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
+  /// No description provided for @foodsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Foods'**
+  String get foodsTitle;
+
   /// No description provided for @aboutTitle.
   ///
   /// In en, this message translates to:
@@ -194,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Food'**
   String get foodLabel;
 
+  /// No description provided for @foodUsesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses'**
+  String get foodUsesLabel;
+
   /// No description provided for @amountLabel.
   ///
   /// In en, this message translates to:
@@ -205,6 +217,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes'**
   String get notesLabel;
+
+  /// No description provided for @searchFoodsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search foods'**
+  String get searchFoodsLabel;
+
+  /// No description provided for @noFoodsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No foods found.'**
+  String get noFoodsFound;
+
+  /// No description provided for @standardUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get standardUnitLabel;
+
+  /// No description provided for @standardUnitAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard amount'**
+  String get standardUnitAmountLabel;
+
+  /// No description provided for @standardCaloriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard calories'**
+  String get standardCaloriesLabel;
+
+  /// No description provided for @invalidFoodDefinitionInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid food values.'**
+  String get invalidFoodDefinitionInput;
+
+  /// No description provided for @editFoodButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit food'**
+  String get editFoodButton;
+
+  /// No description provided for @addFoodDefinitionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add food definition'**
+  String get addFoodDefinitionTitle;
+
+  /// No description provided for @selectFoodsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Select foods'**
+  String get selectFoodsButton;
+
+  /// No description provided for @mergeFoodsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge foods'**
+  String get mergeFoodsButton;
+
+  /// No description provided for @chooseMergeTargetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose food to keep'**
+  String get chooseMergeTargetTitle;
+
+  /// No description provided for @mergeFoodsConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge {count} foods into the selected food?'**
+  String mergeFoodsConfirmMessage(Object count);
+
+  /// No description provided for @foodUsageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} uses'**
+  String foodUsageCount(Object count);
+
+  /// No description provided for @saveToLibraryDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to food library?'**
+  String get saveToLibraryDialogTitle;
+
+  /// No description provided for @saveToLibraryDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to save {foodName} to the food library?'**
+  String saveToLibraryDialogBody(Object foodName);
+
+  /// No description provided for @saveToLibraryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to library'**
+  String get saveToLibraryButton;
+
+  /// No description provided for @keepPrivateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep private'**
+  String get keepPrivateButton;
 
   /// No description provided for @caloriesKcalValue.
   ///

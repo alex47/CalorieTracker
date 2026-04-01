@@ -2,6 +2,7 @@
   "@@locale": "hu",
   "appTitle": "Kalória Követő",
   "settingsTitle": "Beállítások",
+  "foodsTitle": "Ételek",
   "aboutTitle": "Névjegy",
   "weeklySummaryTitle": "Heti összesítés",
   "weeklyDeficitTitle": "Heti deficit",
@@ -16,8 +17,41 @@
   "proteinLabel": "Fehérje",
   "carbsLabel": "Szénhidrát",
   "foodLabel": "Étel",
+  "foodUsesLabel": "Használat",
   "amountLabel": "Mennyiség",
   "notesLabel": "Megjegyzések",
+  "searchFoodsLabel": "Ételek keresése",
+  "noFoodsFound": "Nem találhatók ételek.",
+  "standardUnitLabel": "Egység",
+  "standardUnitAmountLabel": "Alap mennyiség",
+  "standardCaloriesLabel": "Alap kalória",
+  "invalidFoodDefinitionInput": "Adj meg érvényes étel adatokat.",
+  "editFoodButton": "Étel szerkesztése",
+  "addFoodDefinitionTitle": "Étel hozzáadása",
+  "selectFoodsButton": "Ételek kijelölése",
+  "mergeFoodsButton": "Ételek egyesítése",
+  "chooseMergeTargetTitle": "Válaszd ki a megtartandó ételt",
+  "mergeFoodsConfirmMessage": "{count} étel egyesítése a kiválasztott ételbe?",
+  "@mergeFoodsConfirmMessage": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "foodUsageCount": "{count} használat",
+  "@foodUsageCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "saveToLibraryDialogTitle": "Mentés az étel könyvtárba?",
+  "saveToLibraryDialogBody": "Szeretnéd elmenteni ezt az ételt az étel könyvtárba? {foodName}",
+  "@saveToLibraryDialogBody": {
+    "placeholders": {
+      "foodName": {}
+    }
+  },
+  "saveToLibraryButton": "Mentés a könyvtárba",
+  "keepPrivateButton": "Privát marad",
   "caloriesKcalValue": "{calories} kcal",
   "@caloriesKcalValue": {
     "placeholders": {

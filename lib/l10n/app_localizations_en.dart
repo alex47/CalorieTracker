@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
+  String get foodsTitle => 'Foods';
+
+  @override
   String get aboutTitle => 'About';
 
   @override
@@ -57,10 +60,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodLabel => 'Food';
 
   @override
+  String get foodUsesLabel => 'Uses';
+
+  @override
   String get amountLabel => 'Amount';
 
   @override
   String get notesLabel => 'Notes';
+
+  @override
+  String get searchFoodsLabel => 'Search foods';
+
+  @override
+  String get noFoodsFound => 'No foods found.';
+
+  @override
+  String get standardUnitLabel => 'Unit';
+
+  @override
+  String get standardUnitAmountLabel => 'Standard amount';
+
+  @override
+  String get standardCaloriesLabel => 'Standard calories';
+
+  @override
+  String get invalidFoodDefinitionInput => 'Please enter valid food values.';
+
+  @override
+  String get editFoodButton => 'Edit food';
+
+  @override
+  String get addFoodDefinitionTitle => 'Add food definition';
+
+  @override
+  String get selectFoodsButton => 'Select foods';
+
+  @override
+  String get mergeFoodsButton => 'Merge foods';
+
+  @override
+  String get chooseMergeTargetTitle => 'Choose food to keep';
+
+  @override
+  String mergeFoodsConfirmMessage(Object count) {
+    return 'Merge $count foods into the selected food?';
+  }
+
+  @override
+  String foodUsageCount(Object count) {
+    return '$count uses';
+  }
+
+  @override
+  String get saveToLibraryDialogTitle => 'Save to food library?';
+
+  @override
+  String saveToLibraryDialogBody(Object foodName) {
+    return 'Do you want to save $foodName to the food library?';
+  }
+
+  @override
+  String get saveToLibraryButton => 'Save to library';
+
+  @override
+  String get keepPrivateButton => 'Keep private';
 
   @override
   String caloriesKcalValue(Object calories) {

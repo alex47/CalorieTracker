@@ -2,6 +2,7 @@ class FoodItem {
   FoodItem({
     required this.id,
     required this.entryId,
+    required this.foodId,
     required this.name,
     required this.amount,
     required this.calories,
@@ -20,6 +21,7 @@ class FoodItem {
 
   final int id;
   final int entryId;
+  final int foodId;
   final String name;
   final String amount;
   final int calories;
@@ -129,6 +131,7 @@ class FoodItem {
   FoodItem copyWith({
     int? id,
     int? entryId,
+    int? foodId,
     String? name,
     String? amount,
     int? calories,
@@ -147,6 +150,7 @@ class FoodItem {
     return FoodItem(
       id: id ?? this.id,
       entryId: entryId ?? this.entryId,
+      foodId: foodId ?? this.foodId,
       name: name ?? this.name,
       amount: amount ?? this.amount,
       calories: calories ?? this.calories,
@@ -197,6 +201,7 @@ class FoodItem {
     return FoodItem(
       id: map['id'] as int,
       entryId: map['entry_id'] as int,
+      foodId: (map['food_id'] as int?) ?? 0,
       name: map['name'] as String,
       amount: map['amount'] as String,
       calories: calories,

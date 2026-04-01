@@ -3,14 +3,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
+import '../models/food_definition.dart';
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
+import '../services/food_library_service.dart';
 import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_dialog.dart';
+import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
+import '../widgets/food_table_card.dart';
 import '../widgets/raw_ai_response_section.dart';
+import 'food_item_detail_screen.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key, this.date});
@@ -24,12 +30,14 @@ class AddEntryScreen extends StatefulWidget {
 }
 
 class _AddEntryScreenState extends State<AddEntryScreen> {
+  final TextEditingController _searchController = TextEditingController();
   final TextEditingController _inputController = TextEditingController();
   final FocusNode _inputFocusNode = FocusNode();
   final List<TextEditingController> _multiplierControllers = [];
   final List<Map<String, String>> _history = [];
   List<Map<String, dynamic>> _items = [];
   late DateTime _entryDate;
+  late Future<List<FoodDefinition>> _foodsFuture;
   bool _didResolveRouteArgs = false;
   bool _loading = false;
   String? _errorMessage;
@@ -39,11 +47,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   void initState() {
     super.initState();
     _entryDate = widget.date ?? DateTime.now();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _inputFocusNode.requestFocus();
-      }
-    });
+    _foodsFuture = _loadFoods();
   }
 
   @override
@@ -62,12 +66,26 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _inputController.dispose();
+    _inputFocusNode.dispose();
     for (final controller in _multiplierControllers) {
       controller.dispose();
     }
-    _inputController.dispose();
-    _inputFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<List<FoodDefinition>> _loadFoods() {
+    return FoodLibraryService.instance.fetchFoods(
+      searchQuery: _searchController.text,
+      visibleOnly: true,
+    );
+  }
+
+  void _reloadFoods() {
+    setState(() {
+      _foodsFuture = _loadFoods();
+    });
   }
 
   String _formatNumberNoForcedRounding(double value) {
@@ -76,6 +94,41 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       return text.substring(0, text.length - 2);
     }
     return text;
+  }
+
+  Future<void> _openExistingFood(FoodDefinition food) async {
+    final item = FoodItem(
+      id: 0,
+      entryId: 0,
+      foodId: food.id,
+      name: food.name,
+      amount: '',
+      calories: food.standardCalories.round(),
+      fat: food.standardFat,
+      protein: food.standardProtein,
+      carbs: food.standardCarbs,
+      standardUnit: food.standardUnit,
+      standardUnitAmount: food.standardUnitAmount,
+      multiplier: food.standardUnitAmount,
+      standardCalories: food.standardCalories,
+      standardFat: food.standardFat,
+      standardProtein: food.standardProtein,
+      standardCarbs: food.standardCarbs,
+      notes: food.notes,
+    );
+    final changed = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FoodItemDetailScreen(
+          item: item,
+          itemDate: _entryDate,
+          isNew: true,
+        ),
+      ),
+    );
+    if (changed == true && mounted) {
+      Navigator.pop(context, true);
+    }
   }
 
   void _rebuildMultiplierControllers(List<Map<String, dynamic>> items) {
@@ -88,9 +141,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         items.map((item) {
           final multiplier = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
           final safeMultiplier = multiplier > 0 ? multiplier : 1.0;
-          return TextEditingController(
-            text: _formatNumberNoForcedRounding(safeMultiplier),
-          );
+          return TextEditingController(text: _formatNumberNoForcedRounding(safeMultiplier));
         }),
       );
   }
@@ -143,7 +194,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     return true;
   }
 
-  Future<void> _submit({required String prompt}) async {
+  Future<void> _submitAi({required String prompt}) async {
     final l10n = AppLocalizations.of(context)!;
     final apiKey = await SettingsService.instance.getApiKey();
     if (apiKey == null || apiKey.isEmpty) {
@@ -191,7 +242,44 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
-  Future<void> _saveEntry() async {
+  Future<bool?> _askSaveToLibrary(String foodName) {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AppDialog(
+        title: Text(l10n.saveToLibraryDialogTitle),
+        content: Text(l10n.saveToLibraryDialogBody(foodName)),
+        actionItems: [
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              icon: const Icon(Icons.bookmark_add_outlined),
+              label: Text(l10n.saveToLibraryButton, textAlign: TextAlign.center),
+            ),
+          ),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              icon: const Icon(Icons.visibility_off_outlined),
+              label: Text(l10n.keepPrivateButton, textAlign: TextAlign.center),
+            ),
+          ),
+          DialogActionItem(
+            width: UiConstants.buttonMinWidth,
+            child: FilledButton.icon(
+              onPressed: () => Navigator.pop(dialogContext),
+              icon: const Icon(Icons.close),
+              label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveAiItems() async {
     final l10n = AppLocalizations.of(context)!;
     if (_items.isEmpty) {
       setState(() => _errorMessage = l10n.requestCaloriesBeforeSaving);
@@ -201,6 +289,16 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       setState(() => _errorMessage = l10n.invalidMultiplierValue);
       return;
     }
+
+    final visibleFlags = <bool>[];
+    for (final item in _items) {
+      final decision = await _askSaveToLibrary((item['name'] as String?) ?? '');
+      if (decision == null) {
+        return;
+      }
+      visibleFlags.add(decision);
+    }
+
     final latestUserPrompt = _history.lastWhere(
       (item) => item['role'] == 'user',
       orElse: () => {'content': _inputController.text},
@@ -210,9 +308,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       prompt: (latestUserPrompt ?? _inputController.text).trim(),
       response: jsonEncode({'items': _items}),
       items: _items,
+      visibleInLibraryFlags: visibleFlags,
     );
     if (mounted) {
-      Navigator.pop(context);
+      Navigator.pop(context, true);
     }
   }
 
@@ -220,15 +319,61 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isBusy = _loading;
-    return PopScope(
-      canPop: !isBusy,
-      child: Scaffold(
-        appBar: AppBar(title: Text(l10n.addFoodTitle)),
-        body: AbsorbPointer(
-          absorbing: isBusy,
-          child: ListView(
-            padding: const EdgeInsets.all(UiConstants.pagePadding),
-            children: [
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.addFoodTitle)),
+      body: AbsorbPointer(
+        absorbing: isBusy,
+        child: ListView(
+          padding: const EdgeInsets.all(UiConstants.pagePadding),
+          children: [
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: l10n.searchFoodsLabel,
+                suffixIcon: IconButton(
+                  onPressed: _reloadFoods,
+                  icon: const Icon(Icons.search_outlined),
+                ),
+              ),
+              onChanged: (_) => _reloadFoods(),
+            ),
+            const SizedBox(height: UiConstants.mediumSpacing),
+            FutureBuilder<List<FoodDefinition>>(
+              future: _foodsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final foods = snapshot.data ?? const <FoodDefinition>[];
+                if (foods.isEmpty) {
+                  return Text(l10n.noFoodsFound);
+                }
+                return FoodTableCard(
+                  columns: buildStandardFoodTableColumns(
+                    firstLabel: l10n.foodLabel,
+                    secondLabel: l10n.standardUnitLabel,
+                    thirdLabel: l10n.foodUsesLabel,
+                  ),
+                  rows: foods.map((food) {
+                    return FoodTableRowData(
+                      cells: [
+                        FoodTableCell(text: food.name),
+                        FoodTableCell(
+                          text:
+                              '${food.standardUnitAmount % 1 == 0 ? food.standardUnitAmount.toInt() : food.standardUnitAmount} ${food.standardUnit}',
+                        ),
+                        FoodTableCell(
+                          text: food.usageCount.toString(),
+                          textAlign: TextAlign.end,
+                        ),
+                      ],
+                      onTap: () => _openExistingFood(food),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+            const SizedBox(height: UiConstants.largeSpacing),
             TextField(
               controller: _inputController,
               enabled: !isBusy,
@@ -238,8 +383,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 border: const OutlineInputBorder(),
               ),
-              minLines: 5,
-              maxLines: 10,
+              minLines: 3,
+              maxLines: 6,
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
             FilledButton.icon(
@@ -254,14 +399,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       setState(() {
                         _items = [];
                         _errorMessage = null;
-                        for (final controller in _multiplierControllers) {
-                          controller.dispose();
-                        }
-                        _multiplierControllers.clear();
                         _history.clear();
                         _history.add({'role': 'user', 'content': text});
                       });
-                      _submit(prompt: text);
+                      _submitAi(prompt: text);
                     },
               icon: isBusy
                   ? const SizedBox(
@@ -274,30 +415,23 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   : const Icon(Icons.auto_awesome_outlined),
               label: Text(l10n.estimateCaloriesButton, textAlign: TextAlign.center),
             ),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: UiConstants.mediumSpacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                    if (_rawAiResponseText != null && _rawAiResponseText!.trim().isNotEmpty) ...[
-                      const SizedBox(height: UiConstants.smallSpacing),
-                      RawAiResponseSection(
-                        title: l10n.showAiResponseButton,
-                        responseText: _rawAiResponseText!,
-                      ),
-                    ],
-                  ],
-                ),
+            if (_errorMessage != null) ...[
+              const SizedBox(height: UiConstants.mediumSpacing),
+              Text(
+                _errorMessage!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
-            const SizedBox(height: UiConstants.largeSpacing),
-            if (_items.isNotEmpty)
-              _ResultsCard(
+            ],
+            if (_rawAiResponseText != null && _rawAiResponseText!.trim().isNotEmpty) ...[
+              const SizedBox(height: UiConstants.smallSpacing),
+              RawAiResponseSection(
+                title: l10n.showAiResponseButton,
+                responseText: _rawAiResponseText!,
+              ),
+            ],
+            if (_items.isNotEmpty) ...[
+              const SizedBox(height: UiConstants.largeSpacing),
+              _AiResultsCard(
                 items: _items,
                 multiplierControllers: _multiplierControllers,
                 onMultiplierChanged: (index, value) {
@@ -324,8 +458,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   });
                 },
               ),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            if (_items.isNotEmpty)
+              const SizedBox(height: UiConstants.mediumSpacing),
               Row(
                 children: [
                   Expanded(
@@ -338,7 +471,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   const SizedBox(width: UiConstants.buttonSpacing),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: isBusy ? null : _saveEntry,
+                      onPressed: isBusy ? null : _saveAiItems,
                       icon: const Icon(Icons.save_outlined),
                       label: Text(l10n.saveButton, textAlign: TextAlign.center),
                     ),
@@ -346,15 +479,15 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 ],
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ResultsCard extends StatelessWidget {
-  const _ResultsCard({
+class _AiResultsCard extends StatelessWidget {
+  const _AiResultsCard({
     required this.items,
     required this.multiplierControllers,
     required this.onMultiplierChanged,

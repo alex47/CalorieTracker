@@ -15,6 +15,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get settingsTitle => 'Beállítások';
 
   @override
+  String get foodsTitle => 'Ételek';
+
+  @override
   String get aboutTitle => 'Névjegy';
 
   @override
@@ -57,10 +60,70 @@ class AppLocalizationsHu extends AppLocalizations {
   String get foodLabel => 'Étel';
 
   @override
+  String get foodUsesLabel => 'Használat';
+
+  @override
   String get amountLabel => 'Mennyiség';
 
   @override
   String get notesLabel => 'Megjegyzések';
+
+  @override
+  String get searchFoodsLabel => 'Ételek keresése';
+
+  @override
+  String get noFoodsFound => 'Nem találhatók ételek.';
+
+  @override
+  String get standardUnitLabel => 'Egység';
+
+  @override
+  String get standardUnitAmountLabel => 'Alap mennyiség';
+
+  @override
+  String get standardCaloriesLabel => 'Alap kalória';
+
+  @override
+  String get invalidFoodDefinitionInput => 'Adj meg érvényes étel adatokat.';
+
+  @override
+  String get editFoodButton => 'Étel szerkesztése';
+
+  @override
+  String get addFoodDefinitionTitle => 'Étel hozzáadása';
+
+  @override
+  String get selectFoodsButton => 'Ételek kijelölése';
+
+  @override
+  String get mergeFoodsButton => 'Ételek egyesítése';
+
+  @override
+  String get chooseMergeTargetTitle => 'Válaszd ki a megtartandó ételt';
+
+  @override
+  String mergeFoodsConfirmMessage(Object count) {
+    return '$count étel egyesítése a kiválasztott ételbe?';
+  }
+
+  @override
+  String foodUsageCount(Object count) {
+    return '$count használat';
+  }
+
+  @override
+  String get saveToLibraryDialogTitle => 'Mentés az étel könyvtárba?';
+
+  @override
+  String saveToLibraryDialogBody(Object foodName) {
+    return 'Szeretnéd elmenteni ezt az ételt az étel könyvtárba? $foodName';
+  }
+
+  @override
+  String get saveToLibraryButton => 'Mentés a könyvtárba';
+
+  @override
+  String get keepPrivateButton => 'Privát marad';
 
   @override
   String caloriesKcalValue(Object calories) {

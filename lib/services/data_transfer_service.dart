@@ -8,6 +8,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../models/food_item.dart';
 import 'database_service.dart';
+import 'food_library_service.dart';
 import 'macro_ratio_preset_catalog.dart';
 
 class ImportSummary {
@@ -25,6 +26,7 @@ class ImportSummary {
 class ImportPayload {
   const ImportPayload({
     required this.settings,
+    required this.foods,
     required this.metabolicProfileHistory,
     required this.daySummaries,
     required this.entries,
@@ -33,6 +35,7 @@ class ImportPayload {
   });
 
   final Map<String, String> settings;
+  final List<Map<String, dynamic>> foods;
   final List<Map<String, dynamic>> metabolicProfileHistory;
   final List<Map<String, dynamic>> daySummaries;
   final List<Map<String, dynamic>> entries;
@@ -48,13 +51,14 @@ class DataTransferService {
 
   static final DataTransferService instance = DataTransferService._();
 
-  static const int _formatVersion = 1;
+  static const int _formatVersion = 2;
 
   Future<String?> exportData({
     required bool includeApiKey,
     String? apiKey,
   }) async {
     final db = await DatabaseService.instance.database;
+    final foods = await db.query('foods');
     final entries = await db.query('entries');
     final entryItems = await db.query('entry_items');
     final settingsRows = await db.query('settings');
@@ -68,6 +72,7 @@ class DataTransferService {
       'format_version': _formatVersion,
       'exported_at': DateTime.now().toIso8601String(),
       'settings': settings,
+      'foods': foods,
       'metabolic_profile_history': metabolicProfileHistory,
       'day_summary': daySummaries,
       'entries': entries,
@@ -122,11 +127,13 @@ class DataTransferService {
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Invalid backup format.');
     }
-    if (decoded['format_version'] is! int || decoded['format_version'] != _formatVersion) {
+    final formatVersion = decoded['format_version'];
+    if (formatVersion is! int || (formatVersion != 1 && formatVersion != _formatVersion)) {
       throw const FormatException('Unsupported backup format version.');
     }
 
     final settings = _readSettings(decoded['settings']);
+    final foods = formatVersion >= 2 ? _readRows(decoded['foods'] ?? const []) : const <Map<String, dynamic>>[];
     final metabolicProfileHistory = _readRows(decoded['metabolic_profile_history'] ?? const []);
     final daySummaries = _readRows(decoded['day_summary'] ?? const []);
     final entries = _readRows(decoded['entries']);
@@ -135,6 +142,7 @@ class DataTransferService {
 
     return ImportPayload(
       settings: settings,
+      foods: foods,
       metabolicProfileHistory: metabolicProfileHistory,
       daySummaries: daySummaries,
       entries: entries,
@@ -148,10 +156,32 @@ class DataTransferService {
     final db = await DatabaseService.instance.database;
     await db.transaction((txn) async {
       await txn.delete('entry_items');
+      await txn.delete('foods');
       await txn.delete('entries');
       await txn.delete('settings');
       await txn.delete('metabolic_profile_history');
       await txn.delete('day_summary');
+
+      for (final food in payload.foods) {
+        await txn.insert(
+          'foods',
+          {
+            'id': food['id'] as int?,
+            'name': food['name'] as String,
+            'standard_unit': food['standard_unit'] as String,
+            'standard_unit_amount': (food['standard_unit_amount'] as num).toDouble(),
+            'standard_calories': (food['standard_calories'] as num).toDouble(),
+            'standard_fat': (food['standard_fat'] as num).toDouble(),
+            'standard_protein': (food['standard_protein'] as num).toDouble(),
+            'standard_carbs': (food['standard_carbs'] as num).toDouble(),
+            'notes': food['notes'] as String? ?? '',
+            'created_at': food['created_at'] as String,
+            'updated_at': food['updated_at'] as String,
+            'is_visible_in_library': ((food['is_visible_in_library'] as num?)?.toInt() ?? 1),
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
 
       for (final entry in payload.entries) {
         await txn.insert(
@@ -168,6 +198,7 @@ class DataTransferService {
       }
 
       for (final item in payload.entryItems) {
+        final foodId = (item['food_id'] as num?)?.toInt();
         final amount = item['amount'] as String;
         final multiplierRaw = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
         final multiplier = multiplierRaw > 0 ? multiplierRaw : 1.0;
@@ -191,11 +222,29 @@ class DataTransferService {
         final fat = standardFat * ratio;
         final protein = standardProtein * ratio;
         final carbs = standardCarbs * ratio;
+        var resolvedFoodId = foodId;
+        if (resolvedFoodId == null || resolvedFoodId <= 0) {
+          resolvedFoodId = await FoodLibraryService.instance.ensureFoodInDatabase(
+            txn,
+            name: item['name'] as String,
+            standardUnit: (standardUnit != null && standardUnit.isNotEmpty)
+                ? standardUnit
+                : amount,
+            standardUnitAmount: standardUnitAmount,
+            standardCalories: standardCalories,
+            standardFat: standardFat,
+            standardProtein: standardProtein,
+            standardCarbs: standardCarbs,
+            notes: item['notes'] as String? ?? '',
+            isVisibleInLibrary: true,
+          );
+        }
         await txn.insert(
           'entry_items',
           {
             'id': item['id'] as int,
             'entry_id': item['entry_id'] as int,
+            'food_id': resolvedFoodId,
             'name': item['name'] as String,
             'amount': amount,
             'calories': calories,
@@ -297,9 +346,25 @@ class DataTransferService {
       _requireString(entry, 'response', table: 'entries');
     }
 
+    for (final food in payload.foods) {
+      _requireOptionalInt(food, 'id', table: 'foods');
+      _requireString(food, 'name', table: 'foods');
+      _requireString(food, 'standard_unit', table: 'foods');
+      _requireNum(food, 'standard_unit_amount', table: 'foods');
+      _requireNum(food, 'standard_calories', table: 'foods');
+      _requireNum(food, 'standard_fat', table: 'foods');
+      _requireNum(food, 'standard_protein', table: 'foods');
+      _requireNum(food, 'standard_carbs', table: 'foods');
+      _requireOptionalString(food, 'notes', table: 'foods');
+      _requireString(food, 'created_at', table: 'foods');
+      _requireString(food, 'updated_at', table: 'foods');
+      _requireOptionalNum(food, 'is_visible_in_library', table: 'foods');
+    }
+
     for (final item in payload.entryItems) {
       _requireInt(item, 'id', table: 'entry_items');
       _requireInt(item, 'entry_id', table: 'entry_items');
+      _requireOptionalInt(item, 'food_id', table: 'entry_items');
       _requireString(item, 'name', table: 'entry_items');
       _requireString(item, 'amount', table: 'entry_items');
       _requireNum(item, 'calories', table: 'entry_items');

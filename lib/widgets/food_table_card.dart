@@ -7,24 +7,28 @@ import 'painters/notched_border_painter.dart';
 class FoodTableColumn {
   const FoodTableColumn({
     required this.label,
-    required this.flex,
+    this.flex = 1,
+    this.width,
     this.textAlign = TextAlign.start,
   });
 
   final String label;
   final int flex;
+  final double? width;
   final TextAlign textAlign;
 }
 
 class FoodTableCell {
   const FoodTableCell({
     required this.text,
+    this.child,
     this.textAlign = TextAlign.start,
     this.maxLines,
     this.overflow,
   });
 
   final String text;
+  final Widget? child;
   final TextAlign textAlign;
   final int? maxLines;
   final TextOverflow? overflow;
@@ -35,6 +39,8 @@ class FoodTableRowData {
     required this.cells,
     this.textStyle,
     this.onTap,
+    this.onLongPress,
+    this.backgroundColor,
     this.fat,
     this.protein,
     this.carbs,
@@ -43,6 +49,8 @@ class FoodTableRowData {
   final List<FoodTableCell> cells;
   final TextStyle? textStyle;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final Color? backgroundColor;
   final double? fat;
   final double? protein;
   final double? carbs;
@@ -82,6 +90,16 @@ class FoodTableCard extends StatelessWidget {
     return AppColors.fat;
   }
 
+  Widget _buildColumnChild({
+    required FoodTableColumn column,
+    required Widget child,
+  }) {
+    if (column.width != null) {
+      return SizedBox(width: column.width, child: child);
+    }
+    return Expanded(flex: column.flex, child: child);
+  }
+
   @override
   Widget build(BuildContext context) {
     assert(
@@ -106,18 +124,16 @@ class FoodTableCard extends StatelessWidget {
                   vertical: UiConstants.tableRowVerticalPadding,
                 ),
                 child: Row(
-                  children: columns
-                      .map(
-                        (column) => Expanded(
-                          flex: column.flex,
-                          child: Text(
-                            column.label,
-                            style: textTheme.labelLarge,
-                            textAlign: column.textAlign,
-                          ),
-                        ),
-                      )
-                      .toList(),
+                  children: columns.map((column) {
+                    return _buildColumnChild(
+                      column: column,
+                      child: Text(
+                        column.label,
+                        style: textTheme.labelLarge,
+                        textAlign: column.textAlign,
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
               SizedBox(
@@ -147,26 +163,33 @@ class FoodTableCard extends StatelessWidget {
                       final cell = index < row.cells.length
                           ? row.cells[index]
                           : const FoodTableCell(text: '');
-                      return Expanded(
-                        flex: column.flex,
-                        child: Text(
-                          cell.text,
-                          textAlign: cell.textAlign,
-                          maxLines: cell.maxLines,
-                          overflow: cell.overflow,
-                          style: effectiveTextStyle,
-                        ),
+                      return _buildColumnChild(
+                        column: column,
+                        child: cell.child ??
+                            Text(
+                              cell.text,
+                              textAlign: cell.textAlign,
+                              maxLines: cell.maxLines,
+                              overflow: cell.overflow,
+                              style: effectiveTextStyle,
+                            ),
                       );
                     }),
                   ),
                 );
 
-                if (row.onTap == null) {
-                  return content;
+                final decoratedContent = Container(
+                  color: row.backgroundColor,
+                  child: content,
+                );
+
+                if (row.onTap == null && row.onLongPress == null) {
+                  return decoratedContent;
                 }
                 return InkWell(
                   onTap: row.onTap,
-                  child: content,
+                  onLongPress: row.onLongPress,
+                  child: decoratedContent,
                 );
               }),
             ],
