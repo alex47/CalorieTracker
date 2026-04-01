@@ -36,6 +36,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelButton => 'Cancel';
 
   @override
+  String get backButton => 'Back';
+
+  @override
   String get acceptButton => 'Accept';
 
   @override
@@ -108,6 +111,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String mergeFoodsConfirmMessage(Object count) {
     return 'Merge $count foods into the selected food?';
   }
+
+  @override
+  String mergeFoodsIntro(Object count) {
+    return 'Choose the food to keep. The other $count selected foods will be removed, and past logged amounts will be converted using the factors below.';
+  }
+
+  @override
+  String mergeStepIndicator(Object current, Object total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get mergeChooseTargetIntro => 'Choose the food definition to keep.';
+
+  @override
+  String get nextButton => 'Next';
+
+  @override
+  String get mergeReviewIntro =>
+      'Review and adjust how past logged amounts should be converted to the kept food.';
+
+  @override
+  String get mergeConfirmTitle => 'Confirm merge';
+
+  @override
+  String get mergeConfirmIntro =>
+      'Review the kept food, the foods that will be removed, and the conversion factors before merging.';
+
+  @override
+  String get mergeKeepLabel => 'Keep';
+
+  @override
+  String get mergeRemoveLabel => 'Remove';
+
+  @override
+  String get mergeConversionsTitle => 'Conversions';
+
+  @override
+  String get mergeFromLabel => 'From';
+
+  @override
+  String get mergeToLabel => 'To';
+
+  @override
+  String get mergeFactorLabel => 'Conversion factor';
+
+  @override
+  String get mergeManualFactorHint =>
+      'Units differ. Enter the factor needed to convert past logged amounts to the kept food\'s unit system.';
+
+  @override
+  String get mergePreviewPending =>
+      'Enter a valid factor to preview the converted amount.';
+
+  @override
+  String mergePreviewExample(Object oldAmount, Object newAmount) {
+    return 'Example: $oldAmount -> $newAmount';
+  }
+
+  @override
+  String mergeAffectedEntriesCount(Object count) {
+    return 'Affected entries: $count';
+  }
+
+  @override
+  String mergeTotalAffectedEntries(Object count) {
+    return 'Total affected entries: $count';
+  }
+
+  @override
+  String get mergeNutritionWarning =>
+      'Nutrition differs noticeably. Review this merge carefully.';
 
   @override
   String foodUsageCount(Object count) {

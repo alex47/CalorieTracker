@@ -9,6 +9,7 @@
   "addButton": "Add",
   "saveButton": "Save",
   "cancelButton": "Cancel",
+  "backButton": "Back",
   "acceptButton": "Accept",
   "deleteButton": "Delete",
   "reestimateButton": "Re-estimate",
@@ -38,6 +39,52 @@
       "count": {}
     }
   },
+  "mergeFoodsIntro": "Choose the food to keep. The other {count} selected foods will be removed, and past logged amounts will be converted using the factors below.",
+  "@mergeFoodsIntro": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "mergeStepIndicator": "Step {current} of {total}",
+  "@mergeStepIndicator": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "mergeChooseTargetIntro": "Choose the food definition to keep.",
+  "nextButton": "Next",
+  "mergeReviewIntro": "Review and adjust how past logged amounts should be converted to the kept food.",
+  "mergeConfirmTitle": "Confirm merge",
+  "mergeConfirmIntro": "Review the kept food, the foods that will be removed, and the conversion factors before merging.",
+  "mergeKeepLabel": "Keep",
+  "mergeRemoveLabel": "Remove",
+  "mergeConversionsTitle": "Conversions",
+  "mergeFromLabel": "From",
+  "mergeToLabel": "To",
+  "mergeFactorLabel": "Conversion factor",
+  "mergeManualFactorHint": "Units differ. Enter the factor needed to convert past logged amounts to the kept food's unit system.",
+  "mergePreviewPending": "Enter a valid factor to preview the converted amount.",
+  "mergePreviewExample": "Example: {oldAmount} -> {newAmount}",
+  "@mergePreviewExample": {
+    "placeholders": {
+      "oldAmount": {},
+      "newAmount": {}
+    }
+  },
+  "mergeAffectedEntriesCount": "Affected entries: {count}",
+  "@mergeAffectedEntriesCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "mergeTotalAffectedEntries": "Total affected entries: {count}",
+  "@mergeTotalAffectedEntries": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "mergeNutritionWarning": "Nutrition differs noticeably. Review this merge carefully.",
   "foodUsageCount": "{count} uses",
   "@foodUsageCount": {
     "placeholders": {

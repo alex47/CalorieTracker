@@ -36,6 +36,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get cancelButton => 'Mégse';
 
   @override
+  String get backButton => 'Vissza';
+
+  @override
   String get acceptButton => 'Elfogadás';
 
   @override
@@ -108,6 +111,79 @@ class AppLocalizationsHu extends AppLocalizations {
   String mergeFoodsConfirmMessage(Object count) {
     return '$count étel egyesítése a kiválasztott ételbe?';
   }
+
+  @override
+  String mergeFoodsIntro(Object count) {
+    return 'Válaszd ki a megtartandó ételt. A többi kijelölt étel törlésre kerül, és a korábbi rögzített mennyiségek az alábbi szorzók alapján lesznek átváltva.';
+  }
+
+  @override
+  String mergeStepIndicator(Object current, Object total) {
+    return '$current. lépés / $total';
+  }
+
+  @override
+  String get mergeChooseTargetIntro =>
+      'Válaszd ki a megtartandó étel definíciót.';
+
+  @override
+  String get nextButton => 'Tovább';
+
+  @override
+  String get mergeReviewIntro =>
+      'Nézd át és állítsd be, hogyan legyenek a korábbi rögzített mennyiségek átváltva a megtartott ételhez.';
+
+  @override
+  String get mergeConfirmTitle => 'Egyesítés megerősítése';
+
+  @override
+  String get mergeConfirmIntro =>
+      'Nézd át a megtartott ételt, a törlésre kerülő ételeket és az átváltási szorzókat az egyesítés előtt.';
+
+  @override
+  String get mergeKeepLabel => 'Megtartva';
+
+  @override
+  String get mergeRemoveLabel => 'Törlendő';
+
+  @override
+  String get mergeConversionsTitle => 'Átváltások';
+
+  @override
+  String get mergeFromLabel => 'Ebből';
+
+  @override
+  String get mergeToLabel => 'Erre';
+
+  @override
+  String get mergeFactorLabel => 'Átváltási szorzó';
+
+  @override
+  String get mergeManualFactorHint =>
+      'Az egységek eltérnek. Add meg azt a szorzót, amellyel a korábbi rögzített mennyiségeket a megtartott étel egységrendszerére kell átváltani.';
+
+  @override
+  String get mergePreviewPending =>
+      'Adj meg egy érvényes szorzót az átváltott mennyiség előnézetéhez.';
+
+  @override
+  String mergePreviewExample(Object oldAmount, Object newAmount) {
+    return 'Példa: $oldAmount -> $newAmount';
+  }
+
+  @override
+  String mergeAffectedEntriesCount(Object count) {
+    return 'Érintett bejegyzések: $count';
+  }
+
+  @override
+  String mergeTotalAffectedEntries(Object count) {
+    return 'Összes érintett bejegyzés: $count';
+  }
+
+  @override
+  String get mergeNutritionWarning =>
+      'A tápértékek érezhetően eltérnek. Ellenőrizd ezt az egyesítést.';
 
   @override
   String foodUsageCount(Object count) {

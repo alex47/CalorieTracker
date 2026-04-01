@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancelButton;
 
+  /// No description provided for @backButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get backButton;
+
   /// No description provided for @acceptButton.
   ///
   /// In en, this message translates to:
@@ -295,6 +301,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Merge {count} foods into the selected food?'**
   String mergeFoodsConfirmMessage(Object count);
+
+  /// No description provided for @mergeFoodsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the food to keep. The other {count} selected foods will be removed, and past logged amounts will be converted using the factors below.'**
+  String mergeFoodsIntro(Object count);
+
+  /// No description provided for @mergeStepIndicator.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String mergeStepIndicator(Object current, Object total);
+
+  /// No description provided for @mergeChooseTargetIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the food definition to keep.'**
+  String get mergeChooseTargetIntro;
+
+  /// No description provided for @nextButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextButton;
+
+  /// No description provided for @mergeReviewIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Review and adjust how past logged amounts should be converted to the kept food.'**
+  String get mergeReviewIntro;
+
+  /// No description provided for @mergeConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm merge'**
+  String get mergeConfirmTitle;
+
+  /// No description provided for @mergeConfirmIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Review the kept food, the foods that will be removed, and the conversion factors before merging.'**
+  String get mergeConfirmIntro;
+
+  /// No description provided for @mergeKeepLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get mergeKeepLabel;
+
+  /// No description provided for @mergeRemoveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get mergeRemoveLabel;
+
+  /// No description provided for @mergeConversionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversions'**
+  String get mergeConversionsTitle;
+
+  /// No description provided for @mergeFromLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get mergeFromLabel;
+
+  /// No description provided for @mergeToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get mergeToLabel;
+
+  /// No description provided for @mergeFactorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversion factor'**
+  String get mergeFactorLabel;
+
+  /// No description provided for @mergeManualFactorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Units differ. Enter the factor needed to convert past logged amounts to the kept food\'s unit system.'**
+  String get mergeManualFactorHint;
+
+  /// No description provided for @mergePreviewPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid factor to preview the converted amount.'**
+  String get mergePreviewPending;
+
+  /// No description provided for @mergePreviewExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: {oldAmount} -> {newAmount}'**
+  String mergePreviewExample(Object oldAmount, Object newAmount);
+
+  /// No description provided for @mergeAffectedEntriesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Affected entries: {count}'**
+  String mergeAffectedEntriesCount(Object count);
+
+  /// No description provided for @mergeTotalAffectedEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Total affected entries: {count}'**
+  String mergeTotalAffectedEntries(Object count);
+
+  /// No description provided for @mergeNutritionWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition differs noticeably. Review this merge carefully.'**
+  String get mergeNutritionWarning;
 
   /// No description provided for @foodUsageCount.
   ///

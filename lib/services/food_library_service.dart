@@ -3,6 +3,16 @@ import 'package:sqflite/sqflite.dart';
 import '../models/food_definition.dart';
 import 'database_service.dart';
 
+class FoodMergeSource {
+  const FoodMergeSource({
+    required this.sourceFoodId,
+    required this.conversionFactor,
+  });
+
+  final int sourceFoodId;
+  final double conversionFactor;
+}
+
 class FoodLibraryService {
   FoodLibraryService._();
 
@@ -296,25 +306,48 @@ class FoodLibraryService {
 
   Future<void> mergeFoods({
     required int targetFoodId,
-    required List<int> sourceFoodIds,
+    required List<FoodMergeSource> sources,
   }) async {
     final db = await DatabaseService.instance.database;
-    final normalizedSources = sourceFoodIds.where((id) => id != targetFoodId).toSet().toList();
+    final normalizedSources = <int, double>{};
+    for (final source in sources) {
+      if (source.sourceFoodId == targetFoodId) {
+        throw ArgumentError('Target food cannot also be a merge source.');
+      }
+      if (source.conversionFactor <= 0) {
+        throw ArgumentError('Conversion factor must be greater than 0.');
+      }
+      if (normalizedSources.containsKey(source.sourceFoodId)) {
+        throw ArgumentError('Duplicate merge source: ${source.sourceFoodId}.');
+      }
+      normalizedSources[source.sourceFoodId] = source.conversionFactor;
+    }
     if (normalizedSources.isEmpty) {
       return;
     }
     await db.transaction((txn) async {
-      final placeholders = List.filled(normalizedSources.length, '?').join(', ');
-      await txn.update(
-        'entry_items',
-        {'food_id': targetFoodId},
-        where: 'food_id IN ($placeholders)',
-        whereArgs: normalizedSources,
-      );
+      for (final entry in normalizedSources.entries) {
+        await txn.rawUpdate(
+          '''
+          UPDATE entry_items
+          SET multiplier = multiplier * ?
+          WHERE food_id = ?
+          ''',
+          [entry.value, entry.key],
+        );
+        await txn.update(
+          'entry_items',
+          {'food_id': targetFoodId},
+          where: 'food_id = ?',
+          whereArgs: [entry.key],
+        );
+      }
+      final sourceIds = normalizedSources.keys.toList(growable: false);
+      final placeholders = List.filled(sourceIds.length, '?').join(', ');
       await txn.delete(
         'foods',
         where: 'id IN ($placeholders)',
-        whereArgs: normalizedSources,
+        whereArgs: sourceIds,
       );
     });
   }
