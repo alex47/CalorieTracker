@@ -36,6 +36,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   late DateTime _entryDate;
   bool _didResolveRouteArgs = false;
   bool _loading = false;
+  int _libraryReloadToken = 0;
   String? _errorMessage;
   String? _rawAiResponseText;
 
@@ -95,6 +96,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       final l10n = AppLocalizations.of(context)!;
       setState(() {
         _errorMessage = l10n.failedToSaveItem(localizeError(error, l10n));
+        _libraryReloadToken++;
       });
     }
   }
@@ -295,6 +297,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           padding: const EdgeInsets.all(UiConstants.pagePadding),
           children: [
             FoodLibraryBrowser(
+              reloadToken: _libraryReloadToken,
               onFoodTap: _openExistingFood,
             ),
             const SizedBox(height: UiConstants.largeSpacing),

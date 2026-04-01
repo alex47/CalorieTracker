@@ -17,17 +17,17 @@ class FoodsScreen extends StatefulWidget {
 }
 
 class _FoodsScreenState extends State<FoodsScreen> {
-  final Set<int> _selectedIds = <int>{};
-  List<FoodDefinition> _visibleFoods = const <FoodDefinition>[];
+  final Map<int, FoodDefinition> _selectedFoods = <int, FoodDefinition>{};
+  int _reloadToken = 0;
 
-  bool get _selectionMode => _selectedIds.isNotEmpty;
+  bool get _selectionMode => _selectedFoods.isNotEmpty;
 
-  void _toggleSelection(int foodId) {
+  void _toggleSelection(FoodDefinition food) {
     setState(() {
-      if (_selectedIds.contains(foodId)) {
-        _selectedIds.remove(foodId);
+      if (_selectedFoods.containsKey(food.id)) {
+        _selectedFoods.remove(food.id);
       } else {
-        _selectedIds.add(foodId);
+        _selectedFoods[food.id] = food;
       }
     });
   }
@@ -40,12 +40,14 @@ class _FoodsScreenState extends State<FoodsScreen> {
       ),
     );
     if (changed == true) {
-      setState(() {});
+      setState(() {
+        _reloadToken++;
+      });
     }
   }
 
   Future<void> _mergeSelected() async {
-    final selectedFoods = _visibleFoods.where((food) => _selectedIds.contains(food.id)).toList();
+    final selectedFoods = _selectedFoods.values.toList(growable: false);
     if (selectedFoods.length < 2) {
       return;
     }
@@ -60,7 +62,8 @@ class _FoodsScreenState extends State<FoodsScreen> {
       return;
     }
     setState(() {
-      _selectedIds.clear();
+      _selectedFoods.clear();
+      _reloadToken++;
     });
   }
 
@@ -72,7 +75,7 @@ class _FoodsScreenState extends State<FoodsScreen> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && _selectionMode) {
           setState(() {
-            _selectedIds.clear();
+            _selectedFoods.clear();
           });
         }
       },
@@ -88,7 +91,7 @@ class _FoodsScreenState extends State<FoodsScreen> {
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: _selectedIds.length >= 2
+        floatingActionButton: _selectedFoods.length >= 2
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
                 child: Row(
@@ -108,24 +111,22 @@ class _FoodsScreenState extends State<FoodsScreen> {
             UiConstants.pagePadding,
             UiConstants.pagePadding,
             UiConstants.pagePadding,
-            _selectedIds.length >= 2
+            _selectedFoods.length >= 2
                 ? UiConstants.pagePadding + kMinInteractiveDimension + UiConstants.largeSpacing
                 : UiConstants.pagePadding,
           ),
           children: [
             FoodLibraryBrowser(
-              selectedIds: _selectedIds,
-              onFoodsChanged: (foods) {
-                _visibleFoods = foods;
-              },
+              selectedIds: _selectedFoods.keys.toSet(),
+              reloadToken: _reloadToken,
               onFoodTap: (food) async {
                 if (_selectionMode) {
-                  _toggleSelection(food.id);
+                  _toggleSelection(food);
                   return;
                 }
                 await _openFoodEditor(food: food);
               },
-              onFoodLongPress: (food) => _toggleSelection(food.id),
+              onFoodLongPress: _toggleSelection,
             ),
           ],
         ),

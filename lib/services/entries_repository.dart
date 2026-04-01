@@ -38,6 +38,29 @@ class EntriesRepository {
     });
   }
 
+  Future<int> _findOrCreateLibraryEntryRow({
+    required DateTime date,
+  }) async {
+    final db = await DatabaseService.instance.database;
+    final day = AppDateUtils.dayOnly(date).toIso8601String();
+    final existingRows = await db.query(
+      'entries',
+      columns: ['id'],
+      where: 'entry_date = ? AND prompt = ? AND response = ?',
+      whereArgs: [day, 'Food library add', ''],
+      orderBy: 'created_at DESC, id DESC',
+      limit: 1,
+    );
+    if (existingRows.isNotEmpty) {
+      return (existingRows.first['id'] as num).toInt();
+    }
+    return _createEntryRow(
+      date: date,
+      prompt: 'Food library add',
+      response: '',
+    );
+  }
+
   Future<int> _resolveFoodIdFromItem(
     DatabaseExecutor db,
     Map<String, dynamic> item, {
@@ -132,11 +155,7 @@ class EntriesRepository {
     required double multiplier,
   }) async {
     final db = await DatabaseService.instance.database;
-    final entryId = await _createEntryRow(
-      date: date,
-      prompt: 'Food library add',
-      response: '',
-    );
+    final entryId = await _findOrCreateLibraryEntryRow(date: date);
     await db.insert('entry_items', {
       'entry_id': entryId,
       'food_id': foodId,
@@ -245,49 +264,6 @@ class EntriesRepository {
       },
       where: 'id = ?',
       whereArgs: [itemId],
-    );
-  }
-
-  Future<void> updateEntryItem({
-    required int itemId,
-    required String name,
-    required String amount,
-    required String standardUnit,
-    required double standardUnitAmount,
-    required double multiplier,
-    required double standardCalories,
-    required double standardFat,
-    required double standardProtein,
-    required double standardCarbs,
-    required String notes,
-  }) async {
-    final db = await DatabaseService.instance.database;
-    final foodIdRows = await db.query(
-      'entry_items',
-      columns: ['food_id'],
-      where: 'id = ?',
-      whereArgs: [itemId],
-      limit: 1,
-    );
-    if (foodIdRows.isEmpty) {
-      throw StateError('Entry item not found.');
-    }
-    final foodId = (foodIdRows.first['food_id'] as num).toInt();
-    await FoodLibraryService.instance.updateFood(
-      foodId: foodId,
-      name: name,
-      standardUnit: standardUnit,
-      standardUnitAmount: standardUnitAmount,
-      standardCalories: standardCalories,
-      standardFat: standardFat,
-      standardProtein: standardProtein,
-      standardCarbs: standardCarbs,
-      notes: notes,
-      isVisibleInLibrary: true,
-    );
-    await updateEntryItemMultiplier(
-      itemId: itemId,
-      multiplier: multiplier,
     );
   }
 

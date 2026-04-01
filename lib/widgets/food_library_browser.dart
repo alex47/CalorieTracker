@@ -4,6 +4,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
 import '../theme/ui_constants.dart';
+import 'labeled_input_box.dart';
 import 'food_table_card.dart';
 
 class FoodLibraryBrowser extends StatefulWidget {
@@ -12,13 +13,13 @@ class FoodLibraryBrowser extends StatefulWidget {
     required this.onFoodTap,
     this.onFoodLongPress,
     this.selectedIds = const <int>{},
-    this.onFoodsChanged,
+    this.reloadToken = 0,
   });
 
   final ValueChanged<FoodDefinition> onFoodTap;
   final ValueChanged<FoodDefinition>? onFoodLongPress;
   final Set<int> selectedIds;
-  final ValueChanged<List<FoodDefinition>>? onFoodsChanged;
+  final int reloadToken;
 
   @override
   State<FoodLibraryBrowser> createState() => _FoodLibraryBrowserState();
@@ -32,6 +33,14 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
   void initState() {
     super.initState();
     _foodsFuture = _loadFoods();
+  }
+
+  @override
+  void didUpdateWidget(covariant FoodLibraryBrowser oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.reloadToken != widget.reloadToken) {
+      _reload();
+    }
   }
 
   @override
@@ -58,14 +67,13 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
     final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        TextField(
+        LabeledInputBox(
           controller: _searchController,
-          decoration: InputDecoration(
-            labelText: l10n.searchFoodsLabel,
-            suffixIcon: IconButton(
-              onPressed: _reload,
-              icon: const Icon(Icons.search_outlined),
-            ),
+          label: l10n.searchFoodsLabel,
+          contentHeight: UiConstants.settingsFieldHeight,
+          suffixIcon: IconButton(
+            onPressed: _reload,
+            icon: const Icon(Icons.search_outlined),
           ),
           onChanged: (_) => _reload(),
         ),
@@ -77,7 +85,6 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
               return const Center(child: CircularProgressIndicator());
             }
             final foods = snapshot.data ?? const <FoodDefinition>[];
-            widget.onFoodsChanged?.call(foods);
             if (foods.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
