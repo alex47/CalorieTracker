@@ -13,6 +13,7 @@ import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../utils/app_date_utils.dart';
 import '../widgets/food_table_card.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
@@ -97,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   }
 
   DateTime _dayOnly(DateTime date) {
-    return DateTime(date.year, date.month, date.day);
+    return AppDateUtils.dayOnly(date);
   }
 
   String _dateKey(DateTime date) {
@@ -106,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
   }
 
   DateTime _dateForPage(int page) {
-    return _dayOnly(_baseDate.add(Duration(days: page - _initialPage)));
+    return AppDateUtils.addCalendarDays(_baseDate, page - _initialPage);
   }
 
   void _syncToTodayIfNeeded() {

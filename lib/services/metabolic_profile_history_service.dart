@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../models/metabolic_profile.dart';
+import '../utils/app_date_utils.dart';
 import 'macro_ratio_preset_catalog.dart';
 import 'database_service.dart';
 
@@ -86,8 +87,8 @@ class MetabolicProfileHistoryService {
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    final start = DateTime(startDate.year, startDate.month, startDate.day);
-    final end = DateTime(endDate.year, endDate.month, endDate.day);
+    final start = AppDateUtils.dayOnly(startDate);
+    final end = AppDateUtils.dayOnly(endDate);
     final db = await DatabaseService.instance.database;
     final rows = await db.query(
       'metabolic_profile_history',
@@ -106,7 +107,7 @@ class MetabolicProfileHistoryService {
     var cursor = 0;
     MetabolicProfile? active = fallbackProfile;
 
-    for (var date = start; !date.isAfter(end); date = date.add(const Duration(days: 1))) {
+    for (var date = start; !date.isAfter(end); date = AppDateUtils.addCalendarDays(date, 1)) {
       final dateKey = _dayKey(date);
       while (cursor < rows.length) {
         final row = rows[cursor];

@@ -12,6 +12,7 @@ import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../utils/app_date_utils.dart';
 import '../widgets/labeled_group_box.dart';
 
 class WeeklySummaryScreen extends StatefulWidget {
@@ -56,19 +57,18 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   }
 
   DateTime _startOfWeek(DateTime date) {
-    final dayOnly = DateTime(date.year, date.month, date.day);
-    return dayOnly.subtract(Duration(days: dayOnly.weekday - DateTime.monday));
+    return AppDateUtils.startOfWeekMonday(date);
   }
 
   Future<List<_DayMetricTotals>> _loadWeekTotals(DateTime weekStart) async {
     final futures = List<Future<List<FoodItem>>>.generate(
       7,
       (index) => EntriesRepository.instance.fetchItemsForDate(
-        weekStart.add(Duration(days: index)),
+        AppDateUtils.addCalendarDays(weekStart, index),
       ),
     );
     final dailyItems = await Future.wait(futures);
-    final weekEnd = weekStart.add(const Duration(days: 6));
+    final weekEnd = AppDateUtils.addCalendarDays(weekStart, 6);
     final profilesByDate = await MetabolicProfileHistoryService.instance.getEffectiveProfileForDateRange(
       startDate: weekStart,
       endDate: weekEnd,
@@ -76,7 +76,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     return List<_DayMetricTotals>.generate(
       7,
       (index) {
-        final date = weekStart.add(Duration(days: index));
+        final date = AppDateUtils.addCalendarDays(weekStart, index);
         final dateKey = _weekKey(date);
         final profile = profilesByDate[dateKey];
         final targets = profile == null ? null : NutritionTargetService.targetsFromProfile(profile);
@@ -96,7 +96,10 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   }
 
   DateTime _weekStartForPage(int page) {
-    return _baseWeekStart.add(Duration(days: (page - _initialPage) * 7));
+    return AppDateUtils.addCalendarDays(
+      _baseWeekStart,
+      (page - _initialPage) * 7,
+    );
   }
 
   Future<List<_DayMetricTotals>> _totalsForWeek(DateTime weekStart) {
@@ -262,7 +265,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
             },
             itemBuilder: (context, page) {
             final weekStart = _weekStartForPage(page);
-            final weekEnd = weekStart.add(const Duration(days: 6));
+            final weekEnd = AppDateUtils.addCalendarDays(weekStart, 6);
 
             return RefreshIndicator(
               color: AppColors.text,

@@ -1,5 +1,6 @@
 
 import '../models/food_item.dart';
+import '../utils/app_date_utils.dart';
 import 'database_service.dart';
 
 class EntriesRepository {
@@ -121,8 +122,8 @@ class EntriesRepository {
 
   Future<List<FoodItem>> fetchItemsForDate(DateTime date) async {
     final db = await DatabaseService.instance.database;
-    final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
+    final start = AppDateUtils.dayOnly(date);
+    final end = AppDateUtils.addCalendarDays(start, 1);
     final rows = await db.rawQuery(
       '''
       SELECT entry_items.*
