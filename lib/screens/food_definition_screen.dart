@@ -3,6 +3,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/labeled_input_box.dart';
 
@@ -195,29 +196,37 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
               controller: _caloriesController,
-              label: l10n.standardCaloriesLabel,
+              label: l10n.caloriesLabel,
               contentHeight: UiConstants.settingsFieldHeight,
+              borderColor: AppColors.calories,
+              textColor: AppColors.calories,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
               controller: _fatController,
-              label: l10n.fatLabel,
+              label: '${l10n.fatLabel} (g)',
               contentHeight: UiConstants.settingsFieldHeight,
+              borderColor: AppColors.fat,
+              textColor: AppColors.fat,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
               controller: _proteinController,
-              label: l10n.proteinLabel,
+              label: '${l10n.proteinLabel} (g)',
               contentHeight: UiConstants.settingsFieldHeight,
+              borderColor: AppColors.protein,
+              textColor: AppColors.protein,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
               controller: _carbsController,
-              label: l10n.carbsLabel,
+              label: '${l10n.carbsLabel} (g)',
               contentHeight: UiConstants.settingsFieldHeight,
+              borderColor: AppColors.carbs,
+              textColor: AppColors.carbs,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
