@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'Select foods'**
   String get selectFoodsButton;
 
+  /// No description provided for @mergeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge'**
+  String get mergeTitle;
+
   /// No description provided for @mergeFoodsButton.
   ///
   /// In en, this message translates to:

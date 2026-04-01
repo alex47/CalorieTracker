@@ -96,6 +96,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get selectFoodsButton => 'Ételek kijelölése';
 
   @override
+  String get mergeTitle => 'Egyesítés';
+
+  @override
   String get mergeFoodsButton => 'Ételek egyesítése';
 
   @override

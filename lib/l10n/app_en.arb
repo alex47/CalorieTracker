@@ -29,6 +29,7 @@
   "editFoodButton": "Edit food",
   "addFoodDefinitionTitle": "Add food definition",
   "selectFoodsButton": "Select foods",
+  "mergeTitle": "Merge",
   "mergeFoodsButton": "Merge foods",
   "chooseMergeTargetTitle": "Choose food to keep",
   "mergeFoodsConfirmMessage": "Merge {count} foods into the selected food?",

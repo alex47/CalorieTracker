@@ -56,7 +56,7 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.chooseMergeTargetTitle),
+        title: Text(l10n.mergeTitle),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(

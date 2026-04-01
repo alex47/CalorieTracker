@@ -29,6 +29,7 @@
   "editFoodButton": "Étel szerkesztése",
   "addFoodDefinitionTitle": "Étel hozzáadása",
   "selectFoodsButton": "Ételek kijelölése",
+  "mergeTitle": "Egyesítés",
   "mergeFoodsButton": "Ételek egyesítése",
   "chooseMergeTargetTitle": "Válaszd ki a megtartandó ételt",
   "mergeFoodsConfirmMessage": "{count} étel egyesítése a kiválasztott ételbe?",

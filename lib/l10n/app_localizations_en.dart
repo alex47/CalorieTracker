@@ -96,6 +96,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectFoodsButton => 'Select foods';
 
   @override
+  String get mergeTitle => 'Merge';
+
+  @override
   String get mergeFoodsButton => 'Merge foods';
 
   @override
