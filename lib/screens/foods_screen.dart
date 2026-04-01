@@ -4,10 +4,9 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
 import '../theme/ui_constants.dart';
-import '../widgets/app_dialog.dart';
-import '../widgets/dialog_action_row.dart';
 import '../widgets/food_table_card.dart';
 import 'food_definition_screen.dart';
+import 'merge_foods_screen.dart';
 
 class FoodsScreen extends StatefulWidget {
   const FoodsScreen({super.key});
@@ -73,73 +72,20 @@ class _FoodsScreenState extends State<FoodsScreen> {
   }
 
   Future<void> _mergeSelected(List<FoodDefinition> foods) async {
-    final l10n = AppLocalizations.of(context)!;
     final selectedFoods = foods.where((food) => _selectedIds.contains(food.id)).toList();
     if (selectedFoods.length < 2) {
       return;
     }
-    var selectedTargetId = selectedFoods.first.id;
-    final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => StatefulBuilder(
-            builder: (context, setDialogState) => AppDialog(
-              title: Text(l10n.chooseMergeTargetTitle),
-              content: SizedBox(
-                width: UiConstants.reestimateDialogWidth,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(l10n.mergeFoodsConfirmMessage(selectedFoods.length)),
-                    const SizedBox(height: UiConstants.mediumSpacing),
-                    ...selectedFoods.map(
-                      (food) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        onTap: () {
-                          setDialogState(() {
-                            selectedTargetId = food.id;
-                          });
-                        },
-                        leading: Icon(
-                          selectedTargetId == food.id
-                              ? Icons.radio_button_checked_outlined
-                              : Icons.radio_button_off_outlined,
-                        ),
-                        title: Text(food.name),
-                        subtitle: Text(l10n.foodUsageCount(food.usageCount)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actionItems: [
-                DialogActionItem(
-                  width: UiConstants.buttonMinWidth,
-                  child: FilledButton.icon(
-                    onPressed: () => Navigator.pop(dialogContext, true),
-                    icon: const Icon(Icons.merge_outlined),
-                    label: Text(l10n.mergeFoodsButton, textAlign: TextAlign.center),
-                  ),
-                ),
-                DialogActionItem(
-                  width: UiConstants.buttonMinWidth,
-                  child: FilledButton.icon(
-                    onPressed: () => Navigator.pop(dialogContext, false),
-                    icon: const Icon(Icons.close),
-                    label: Text(l10n.cancelButton, textAlign: TextAlign.center),
-                  ),
-                ),
-              ],
-            ),
+    final merged = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MergeFoodsScreen(foods: selectedFoods),
           ),
         ) ??
         false;
-    if (!confirmed) {
+    if (!merged) {
       return;
     }
-    await FoodLibraryService.instance.mergeFoods(
-      targetFoodId: selectedTargetId,
-      sourceFoodIds: _selectedIds.toList(),
-    );
     setState(() {
       _selectedIds.clear();
       _foodsFuture = _loadFoods();
