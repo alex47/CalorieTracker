@@ -16,6 +16,8 @@ class LabeledInputBox extends StatelessWidget {
     this.keyboardType,
     this.onChanged,
     this.contentHeight = UiConstants.progressBarHeight,
+    this.minLines = 1,
+    this.maxLines = 1,
     this.borderColor,
     this.textColor,
     this.suffixIcon,
@@ -30,6 +32,8 @@ class LabeledInputBox extends StatelessWidget {
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
   final double contentHeight;
+  final int minLines;
+  final int maxLines;
   final Color? borderColor;
   final Color? textColor;
   final Widget? suffixIcon;
@@ -49,7 +53,7 @@ class LabeledInputBox extends StatelessWidget {
       borderColor: resolvedBorderColor,
       textStyle: textStyle,
       backgroundColor: Colors.transparent,
-      contentHeight: contentHeight,
+      contentHeight: maxLines > 1 ? null : contentHeight,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: UiConstants.tableRowHorizontalPadding,
       ),
@@ -63,9 +67,9 @@ class LabeledInputBox extends StatelessWidget {
                 obscureText: obscureText,
                 keyboardType: keyboardType,
                 onChanged: onChanged,
-                minLines: 1,
-                maxLines: 1,
-                textAlignVertical: TextAlignVertical.center,
+                minLines: minLines,
+                maxLines: maxLines,
+                textAlignVertical: maxLines > 1 ? TextAlignVertical.top : TextAlignVertical.center,
                 style: textStyle,
                 decoration: InputDecoration(
                   isDense: true,
@@ -73,9 +77,14 @@ class LabeledInputBox extends StatelessWidget {
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: UiConstants.xSmallSpacing,
-                  ),
+                  contentPadding: maxLines > 1
+                      ? const EdgeInsets.only(
+                          top: UiConstants.mediumSpacing,
+                          bottom: UiConstants.mediumSpacing,
+                        )
+                      : const EdgeInsets.symmetric(
+                          vertical: UiConstants.xSmallSpacing,
+                        ),
                   suffixIcon: suffixIcon,
                 ),
               )
@@ -85,8 +94,8 @@ class LabeledInputBox extends StatelessWidget {
                 readOnly: true,
                 keyboardType: keyboardType,
                 onChanged: onChanged,
-                minLines: 1,
-                maxLines: 1,
+                minLines: minLines,
+                maxLines: maxLines,
                 style: textStyle,
                 decoration: InputDecoration(
                   isDense: true,
@@ -94,9 +103,14 @@ class LabeledInputBox extends StatelessWidget {
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
                   disabledBorder: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: UiConstants.xSmallSpacing,
-                  ),
+                  contentPadding: maxLines > 1
+                      ? const EdgeInsets.only(
+                          top: UiConstants.mediumSpacing,
+                          bottom: UiConstants.mediumSpacing,
+                        )
+                      : const EdgeInsets.symmetric(
+                          vertical: UiConstants.xSmallSpacing,
+                        ),
                   suffixIcon: suffixIcon,
                 ),
               ),

@@ -3,12 +3,10 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
-import '../services/food_library_service.dart';
 import '../theme/ui_constants.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
-import 'food_definition_screen.dart';
 
 class FoodItemDetailScreen extends StatefulWidget {
   const FoodItemDetailScreen({
@@ -65,58 +63,6 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
       return null;
     }
     return value;
-  }
-
-  Future<void> _openFoodEditor() async {
-    final food = await FoodLibraryService.instance.fetchFoodById(_item.foodId);
-    if (!mounted || food == null) {
-      return;
-    }
-    final changed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FoodDefinitionScreen(food: food),
-      ),
-    );
-    if (changed != true || !mounted) {
-      return;
-    }
-    final updatedFood = await FoodLibraryService.instance.fetchFoodById(_item.foodId);
-    if (!mounted || updatedFood == null) {
-      return;
-    }
-    setState(() {
-      _item = _item.copyWith(
-        name: updatedFood.name,
-        standardUnit: updatedFood.standardUnit,
-        standardUnitAmount: updatedFood.standardUnitAmount,
-        standardCalories: updatedFood.standardCalories,
-        standardFat: updatedFood.standardFat,
-        standardProtein: updatedFood.standardProtein,
-        standardCarbs: updatedFood.standardCarbs,
-        notes: updatedFood.notes,
-        calories: FoodItem.computeCalories(
-          standardCalories: updatedFood.standardCalories,
-          multiplier: _item.multiplier,
-          standardUnitAmount: updatedFood.standardUnitAmount,
-        ),
-        fat: FoodItem.computeMacro(
-          standardMacro: updatedFood.standardFat,
-          multiplier: _item.multiplier,
-          standardUnitAmount: updatedFood.standardUnitAmount,
-        ),
-        protein: FoodItem.computeMacro(
-          standardMacro: updatedFood.standardProtein,
-          multiplier: _item.multiplier,
-          standardUnitAmount: updatedFood.standardUnitAmount,
-        ),
-        carbs: FoodItem.computeMacro(
-          standardMacro: updatedFood.standardCarbs,
-          multiplier: _item.multiplier,
-          standardUnitAmount: updatedFood.standardUnitAmount,
-        ),
-      );
-    });
   }
 
   Future<void> _saveChanges() async {
@@ -284,13 +230,7 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
               ),
             ],
             const SizedBox(height: UiConstants.mediumSpacing),
-            FilledButton.icon(
-              onPressed: isBusy ? null : _openFoodEditor,
-              icon: const Icon(Icons.edit_outlined),
-              label: Text(l10n.editFoodButton, textAlign: TextAlign.center),
-            ),
             if (!widget.isNew) ...[
-              const SizedBox(height: UiConstants.buttonSpacing),
               FilledButton.icon(
                 onPressed: isBusy ? null : _deleteItem,
                 icon: const Icon(Icons.delete_outline),

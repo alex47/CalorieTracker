@@ -4,6 +4,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/labeled_input_box.dart';
 
 class FoodDefinitionScreen extends StatefulWidget {
   const FoodDefinitionScreen({
@@ -161,6 +162,7 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    const controlSpacing = UiConstants.smallSpacing;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -172,51 +174,58 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
         child: ListView(
           padding: const EdgeInsets.all(UiConstants.pagePadding),
           children: [
-            TextField(
+            LabeledInputBox(
               controller: _nameController,
-              decoration: InputDecoration(labelText: l10n.foodLabel),
+              label: l10n.foodLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _unitController,
-              decoration: InputDecoration(labelText: l10n.standardUnitLabel),
+              label: l10n.standardUnitLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _unitAmountController,
+              label: l10n.standardUnitAmountLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.standardUnitAmountLabel),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _caloriesController,
+              label: l10n.standardCaloriesLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.standardCaloriesLabel),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _fatController,
+              label: l10n.fatLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.fatLabel),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _proteinController,
+              label: l10n.proteinLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.proteinLabel),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _carbsController,
+              label: l10n.carbsLabel,
+              contentHeight: UiConstants.settingsFieldHeight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(labelText: l10n.carbsLabel),
             ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            TextField(
+            const SizedBox(height: controlSpacing),
+            LabeledInputBox(
               controller: _notesController,
+              label: l10n.notesLabel,
               minLines: 3,
               maxLines: 5,
-              decoration: InputDecoration(labelText: l10n.notesLabel),
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: UiConstants.smallSpacing),
