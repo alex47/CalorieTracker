@@ -30,3 +30,4 @@ doc/api/
 
 # IDE local settings
 .vscode/
+.codex/
