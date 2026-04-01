@@ -83,6 +83,12 @@ class _FoodsScreenState extends State<FoodsScreen> {
         appBar: AppBar(
           title: Text(l10n.foodsTitle),
           actions: [
+            if (_selectedFoods.length >= 2)
+              IconButton(
+                onPressed: _mergeSelected,
+                icon: const Icon(Icons.merge_outlined),
+                tooltip: l10n.mergeFoodsButton,
+              ),
             IconButton(
               onPressed: () => _openFoodEditor(),
               icon: const Icon(Icons.add_outlined),
@@ -90,31 +96,8 @@ class _FoodsScreenState extends State<FoodsScreen> {
             ),
           ],
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: _selectedFoods.length >= 2
-            ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FilledButton.icon(
-                      onPressed: _mergeSelected,
-                      icon: const Icon(Icons.merge_outlined),
-                      label: Text(l10n.mergeFoodsButton, textAlign: TextAlign.center),
-                    ),
-                  ],
-                ),
-              )
-            : null,
         body: ListView(
-          padding: EdgeInsets.fromLTRB(
-            UiConstants.pagePadding,
-            UiConstants.pagePadding,
-            UiConstants.pagePadding,
-            _selectedFoods.length >= 2
-                ? UiConstants.pagePadding + kMinInteractiveDimension + UiConstants.largeSpacing
-                : UiConstants.pagePadding,
-          ),
+          padding: const EdgeInsets.all(UiConstants.pagePadding),
           children: [
             FoodLibraryBrowser(
               selectedIds: _selectedFoods.keys.toSet(),
