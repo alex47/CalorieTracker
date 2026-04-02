@@ -22,6 +22,14 @@ class MergeFoodsScreen extends StatefulWidget {
 }
 
 class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
+  static const EdgeInsets _mergeCardPadding = EdgeInsets.all(UiConstants.smallSpacing);
+  static const EdgeInsets _mergeHeaderPadding = EdgeInsets.fromLTRB(
+    UiConstants.smallSpacing,
+    0,
+    UiConstants.smallSpacing,
+    UiConstants.smallSpacing,
+  );
+
   late int _selectedTargetId;
   final Map<int, TextEditingController> _factorControllers = <int, TextEditingController>{};
   bool _merging = false;
@@ -160,9 +168,44 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
   int get _totalAffectedEntries =>
       _sourceFoods.fold<int>(0, (sum, food) => sum + food.usageCount);
 
-  Widget _buildFoodSelectionStep(AppLocalizations l10n) {
+  Widget _buildSection({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: UiConstants.mediumSpacing),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _buildGroupShell({
+    required String label,
+    required Widget child,
+  }) {
+    return LabeledGroupBox(
+      label: label,
+      value: '',
+      borderColor: AppColors.subtleBorder,
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      contentHeight: null,
+      backgroundColor: Colors.transparent,
+      child: Padding(
+        padding: _mergeCardPadding,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildFoodSelectionStep(AppLocalizations l10n) {
+    return _buildSection(
+      title: l10n.chooseMergeTargetTitle,
       children: [
         ...widget.foods.map((food) {
           final isSelected = food.id == _selectedTargetId;
@@ -182,44 +225,57 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
               child: AnimatedContainer(
                 duration: UiConstants.homePageSnapDuration,
                 curve: Curves.easeOutCubic,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-                ),
-                padding: const EdgeInsets.all(UiConstants.smallSpacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: UiConstants.smallSpacing,
-                        left: UiConstants.smallSpacing,
-                        right: UiConstants.smallSpacing,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _formatAmount(food.standardUnitAmount, food.standardUnit),
-                              style: Theme.of(context).textTheme.bodyMedium,
+                    if (isSelected)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: AppColors.selectionHighlight,
+                              border: Border.all(
+                                color: AppColors.selectionBorder,
+                                width: UiConstants.borderWidth,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                UiConstants.cornerRadius,
+                              ),
                             ),
                           ),
-                          Text(
-                            l10n.foodUsageCount(food.usageCount),
-                            style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    Padding(
+                      padding: _mergeCardPadding,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: _mergeHeaderPadding,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _formatAmount(food.standardUnitAmount, food.standardUnit),
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                ),
+                                Text(
+                                  l10n.foodUsageCount(food.usageCount),
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                          FoodBreakdownCard(
+                            name: food.name,
+                            calories: food.standardCalories.round(),
+                            fat: food.standardFat,
+                            protein: food.standardProtein,
+                            carbs: food.standardCarbs,
+                            notes: food.notes,
                           ),
                         ],
                       ),
-                    ),
-                    FoodBreakdownCard(
-                      name: food.name,
-                      calories: food.standardCalories.round(),
-                      fat: food.standardFat,
-                      protein: food.standardProtein,
-                      carbs: food.standardCarbs,
-                      notes: food.notes,
                     ),
                   ],
                 ),
@@ -233,14 +289,9 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
 
   Widget _buildConversionsStep(AppLocalizations l10n) {
     final target = _targetFood;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _buildSection(
+      title: l10n.mergeConversionsTitle,
       children: [
-        Text(
-          l10n.mergeConversionsTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: UiConstants.mediumSpacing),
         ..._sourceFoods.map((food) {
           final factor = _parseFactor(food.id);
           final previewTargetAmount = factor == null ? null : food.standardUnitAmount * factor;
@@ -248,22 +299,15 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
               food.standardUnit.trim().toLowerCase() == target.standardUnit.trim().toLowerCase();
           return Padding(
             padding: const EdgeInsets.only(bottom: UiConstants.mediumSpacing),
-            child: LabeledGroupBox(
+            child: _buildGroupShell(
               label: food.name,
-              value: '',
-              borderColor: AppColors.subtleBorder,
-              textStyle: Theme.of(context).textTheme.bodyMedium,
-              contentHeight: null,
-              backgroundColor: Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.all(UiConstants.smallSpacing),
-                child: Column(
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (_hasMaterialNutritionDifference(food, target)) ...[
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(UiConstants.smallSpacing),
+                        padding: _mergeCardPadding,
                         decoration: BoxDecoration(
                           color: AppColors.daySummaryIssues.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
@@ -328,7 +372,6 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
-                ),
               ),
             ),
           );
@@ -339,31 +382,18 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
 
   Widget _buildConfirmationStep(AppLocalizations l10n) {
     final target = _targetFood;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _buildSection(
+      title: l10n.mergeConfirmTitle,
       children: [
-        Text(
-          l10n.mergeConfirmTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: UiConstants.mediumSpacing),
-        LabeledGroupBox(
+        _buildGroupShell(
           label: l10n.mergeKeepLabel,
-          value: '',
-          borderColor: AppColors.subtleBorder,
-          textStyle: Theme.of(context).textTheme.bodyMedium,
-          contentHeight: null,
-          backgroundColor: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.all(UiConstants.smallSpacing),
-            child: FoodBreakdownCard(
-              name: target.name,
-              calories: target.standardCalories.round(),
-              fat: target.standardFat,
-              protein: target.standardProtein,
-              carbs: target.standardCarbs,
-              notes: target.notes,
-            ),
+          child: FoodBreakdownCard(
+            name: target.name,
+            calories: target.standardCalories.round(),
+            fat: target.standardFat,
+            protein: target.standardProtein,
+            carbs: target.standardCarbs,
+            notes: target.notes,
           ),
         ),
         const SizedBox(height: UiConstants.mediumSpacing),
@@ -371,16 +401,9 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
           final factor = _parseFactor(food.id);
           return Padding(
             padding: const EdgeInsets.only(bottom: UiConstants.mediumSpacing),
-            child: LabeledGroupBox(
+            child: _buildGroupShell(
               label: '${l10n.mergeRemoveLabel}: ${food.name}',
-              value: '',
-              borderColor: AppColors.subtleBorder,
-              textStyle: Theme.of(context).textTheme.bodyMedium,
-              contentHeight: null,
-              backgroundColor: Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.all(UiConstants.smallSpacing),
-                child: Column(
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -406,7 +429,6 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
-                ),
               ),
             ),
           );
@@ -498,7 +520,7 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
               l10n.mergeStepIndicator(_stepIndex + 1, 3),
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            const SizedBox(height: UiConstants.largeSpacing),
+            const SizedBox(height: UiConstants.mediumSpacing),
             body,
           ],
         ),

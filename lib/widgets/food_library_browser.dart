@@ -3,6 +3,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'labeled_input_box.dart';
 import 'food_table_card.dart';
@@ -101,9 +102,8 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
               rows: foods.map((food) {
                 final isSelected = widget.selectedIds.contains(food.id);
                 return FoodTableRowData(
-                  backgroundColor: isSelected
-                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                      : null,
+                  backgroundColor: isSelected ? AppColors.selectionHighlight : null,
+                  borderColor: isSelected ? AppColors.selectionBorder : null,
                   cells: [
                     FoodTableCell(text: food.name),
                     FoodTableCell(

@@ -41,6 +41,7 @@ class FoodTableRowData {
     this.onTap,
     this.onLongPress,
     this.backgroundColor,
+    this.borderColor,
     this.fat,
     this.protein,
     this.carbs,
@@ -51,6 +52,7 @@ class FoodTableRowData {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final Color? backgroundColor;
+  final Color? borderColor;
   final double? fat;
   final double? protein;
   final double? carbs;
@@ -178,9 +180,38 @@ class FoodTableCard extends StatelessWidget {
                   ),
                 );
 
-                final decoratedContent = Container(
-                  color: row.backgroundColor,
-                  child: content,
+                final decoratedContent = Stack(
+                  children: [
+                    if (row.borderColor == null)
+                      Container(
+                        color: row.backgroundColor,
+                        child: content,
+                      )
+                    else
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: UiConstants.xxSmallSpacing,
+                            vertical: UiConstants.xSmallSpacing / 2,
+                          ),
+                          child: IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: row.backgroundColor,
+                                border: Border.all(
+                                  color: row.borderColor!,
+                                  width: UiConstants.borderWidth,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  UiConstants.cornerRadius,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (row.borderColor != null) content,
+                  ],
                 );
 
                 if (row.onTap == null && row.onLongPress == null) {
