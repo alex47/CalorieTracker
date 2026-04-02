@@ -8,6 +8,7 @@ import '../theme/ui_constants.dart';
 import '../widgets/food_breakdown_card.dart';
 import '../widgets/labeled_group_box.dart';
 import '../widgets/labeled_input_box.dart';
+import '../widgets/wizard_step_bar.dart';
 
 class MergeFoodsScreen extends StatefulWidget {
   const MergeFoodsScreen({
@@ -249,33 +250,50 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: _mergeHeaderPadding,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _formatAmount(food.standardUnitAmount, food.standardUnit),
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
+                    Padding(
+                      padding: _mergeHeaderPadding,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  food.name.trim().isEmpty ? '-' : food.name,
+                                  style: Theme.of(context).textTheme.titleMedium,
                                 ),
-                                Text(
-                                  l10n.foodUsageCount(food.usageCount),
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          FoodBreakdownCard(
-                            name: food.name,
-                            calories: food.standardCalories.round(),
-                            fat: food.standardFat,
-                            protein: food.standardProtein,
-                            carbs: food.standardCarbs,
-                            notes: food.notes,
+                          const SizedBox(height: UiConstants.xSmallSpacing),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _formatAmount(food.standardUnitAmount, food.standardUnit),
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ),
+                              Text(
+                                l10n.foodUsageCount(food.usageCount),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                    ),
+                    FoodBreakdownCard(
+                      name: food.name,
+                      calories: food.standardCalories.round(),
+                            fat: food.standardFat,
+                            protein: food.standardProtein,
+                      carbs: food.standardCarbs,
+                      notes: food.notes,
+                      showName: false,
+                    ),
+                  ],
+                ),
                     ),
                   ],
                 ),
@@ -516,9 +534,9 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
                 UiConstants.largeSpacing,
           ),
           children: [
-            Text(
-              l10n.mergeStepIndicator(_stepIndex + 1, 3),
-              style: Theme.of(context).textTheme.bodySmall,
+            WizardStepBar(
+              currentStep: _stepIndex,
+              totalSteps: 3,
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
             body,

@@ -58,6 +58,7 @@
   "mergeConfirmTitle": "Egyesítés megerősítése",
   "mergeConfirmIntro": "Nézd át a megtartott ételt, a törlésre kerülő ételeket és az átváltási szorzókat az egyesítés előtt.",
   "mergeKeepLabel": "Megtartva",
+  "mergeSourceLabel": "Forrás",
   "mergeRemoveLabel": "Törlendő",
   "mergeConversionsTitle": "Átváltások",
   "mergeFromLabel": "Ebből",

@@ -28,6 +28,7 @@ class FoodBreakdownCard extends StatelessWidget {
     this.standardProtein,
     this.standardCarbs,
     this.margin,
+    this.showName = true,
   });
 
   final String name;
@@ -54,6 +55,7 @@ class FoodBreakdownCard extends StatelessWidget {
   final double? standardProtein;
   final double? standardCarbs;
   final EdgeInsetsGeometry? margin;
+  final bool showName;
 
   String _formatGrams(double value) {
     return value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
@@ -124,11 +126,13 @@ class FoodBreakdownCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              displayName,
-              style: textTheme.titleMedium,
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
+            if (showName) ...[
+              Text(
+                displayName,
+                style: textTheme.titleMedium,
+              ),
+              const SizedBox(height: UiConstants.smallSpacing),
+            ],
             LayoutBuilder(
               builder: (context, constraints) {
                 const gap = UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset;

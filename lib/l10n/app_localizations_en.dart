@@ -143,6 +143,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mergeKeepLabel => 'Keep';
 
   @override
+  String get mergeSourceLabel => 'Source';
+
+  @override
   String get mergeRemoveLabel => 'Remove';
 
   @override

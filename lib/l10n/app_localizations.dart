@@ -350,6 +350,12 @@ abstract class AppLocalizations {
   /// **'Keep'**
   String get mergeKeepLabel;
 
+  /// No description provided for @mergeSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get mergeSourceLabel;
+
   /// No description provided for @mergeRemoveLabel.
   ///
   /// In en, this message translates to:

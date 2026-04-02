@@ -144,6 +144,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get mergeKeepLabel => 'Megtartva';
 
   @override
+  String get mergeSourceLabel => 'Forrás';
+
+  @override
   String get mergeRemoveLabel => 'Törlendő';
 
   @override

@@ -58,6 +58,7 @@
   "mergeConfirmTitle": "Confirm merge",
   "mergeConfirmIntro": "Review the kept food, the foods that will be removed, and the conversion factors before merging.",
   "mergeKeepLabel": "Keep",
+  "mergeSourceLabel": "Source",
   "mergeRemoveLabel": "Remove",
   "mergeConversionsTitle": "Conversions",
   "mergeFromLabel": "From",
