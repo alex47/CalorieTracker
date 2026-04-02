@@ -140,6 +140,12 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get addButton;
 
+  /// No description provided for @addNewButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new'**
+  String get addNewButton;
+
   /// No description provided for @saveButton.
   ///
   /// In en, this message translates to:
@@ -931,6 +937,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add food'**
   String get addFoodTitle;
+
+  /// No description provided for @addNewFoodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add new food'**
+  String get addNewFoodTitle;
 
   /// No description provided for @foodAndAmountsLabel.
   ///

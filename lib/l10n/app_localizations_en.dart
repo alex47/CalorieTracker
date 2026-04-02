@@ -30,6 +30,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addButton => 'Add';
 
   @override
+  String get addNewButton => 'Add new';
+
+  @override
   String get saveButton => 'Save';
 
   @override
@@ -471,6 +474,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFoodTitle => 'Add food';
+
+  @override
+  String get addNewFoodTitle => 'Add new food';
 
   @override
   String get foodAndAmountsLabel => 'Food and amounts';

@@ -4,6 +4,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../theme/ui_constants.dart';
 import 'app_dialog.dart';
 import 'dialog_action_row.dart';
+import 'labeled_input_box.dart';
 
 Future<String?> showReestimateDialog(
   BuildContext context,
@@ -21,18 +22,15 @@ Future<String?> showReestimateDialog(
               padding: const EdgeInsets.only(top: UiConstants.mediumSpacing),
               child: SizedBox(
                 width: UiConstants.reestimateDialogWidth,
-                child: TextField(
+                child: LabeledInputBox(
+                  label: l10n.askFollowupChangesLabel,
                   controller: controller,
                   autofocus: true,
-                  textAlignVertical: TextAlignVertical.top,
                   onChanged: (_) => setDialogState(() {}),
-                  decoration: InputDecoration(
-                    labelText: l10n.askFollowupChangesLabel,
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    border: const OutlineInputBorder(),
-                  ),
                   minLines: 3,
-                  maxLines: null,
+                  maxLines: 6,
+                  keyboardType: TextInputType.multiline,
+                  contentHeight: UiConstants.settingsFieldHeight,
                 ),
               ),
             ),

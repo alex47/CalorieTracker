@@ -21,6 +21,7 @@ class LabeledInputBox extends StatelessWidget {
     this.borderColor,
     this.textColor,
     this.suffixIcon,
+    this.autofocus = false,
   });
 
   final String label;
@@ -37,6 +38,7 @@ class LabeledInputBox extends StatelessWidget {
   final Color? borderColor;
   final Color? textColor;
   final Widget? suffixIcon;
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +64,7 @@ class LabeledInputBox extends StatelessWidget {
         child: controller != null
             ? TextField(
                 controller: controller,
+                autofocus: autofocus,
                 enabled: enabled,
                 readOnly: readOnly,
                 obscureText: obscureText,
@@ -90,6 +93,7 @@ class LabeledInputBox extends StatelessWidget {
               )
             : TextFormField(
                 initialValue: initialValue,
+                autofocus: autofocus,
                 enabled: enabled,
                 readOnly: true,
                 keyboardType: keyboardType,

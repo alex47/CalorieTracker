@@ -17,6 +17,7 @@ import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
+import '../widgets/labeled_group_box.dart';
 
 class DaySummaryScreen extends StatefulWidget {
   const DaySummaryScreen({
@@ -463,8 +464,13 @@ class _SummaryOverviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
+    return LabeledGroupBox(
+      label: '',
+      value: '',
+      borderColor: AppColors.subtleBorder,
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      backgroundColor: AppColors.boxBackground,
+      contentPadding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(UiConstants.mediumSpacing),
         child: Row(
@@ -476,13 +482,11 @@ class _SummaryOverviewCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.summarize_outlined, color: AppColors.calories, size: 18),
+                      const Icon(Icons.summarize_outlined, size: 18),
                       const SizedBox(width: UiConstants.smallSpacing),
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: AppColors.calories,
-                            ),
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
                   ),
@@ -514,42 +518,50 @@ class _SummarySectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(color: accentColor);
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-        border: Border.all(color: accentColor.withValues(alpha: 0.7)),
-        color: AppColors.boxBackground,
-      ),
-      padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+    return LabeledGroupBox(
+      label: '',
+      value: '',
+      borderColor: accentColor.withValues(alpha: 0.7),
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      backgroundColor: AppColors.boxBackground,
+      contentPadding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: accentColor),
-              const SizedBox(width: UiConstants.smallSpacing),
-              Text(title, style: titleStyle),
-            ],
-          ),
-          const SizedBox(height: UiConstants.smallSpacing),
-          if (items.isEmpty)
-            Text(
-              '-',
-              style: Theme.of(context).textTheme.bodyMedium,
-            )
-          else
-            ...items.map(
-              (item) => Padding(
-                padding: const EdgeInsets.only(bottom: UiConstants.xxSmallSpacing),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text('• ', style: TextStyle(color: accentColor)),
-                    Expanded(child: Text(item)),
+                    Icon(icon, size: 18, color: accentColor),
+                    const SizedBox(width: UiConstants.smallSpacing),
+                    Text(title, style: titleStyle),
                   ],
                 ),
-              ),
+                const SizedBox(height: UiConstants.smallSpacing),
+                if (items.isEmpty)
+                  Text(
+                    '-',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  )
+                else
+                  ...items.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: UiConstants.xxSmallSpacing),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• ', style: TextStyle(color: accentColor)),
+                          Expanded(child: Text(item)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );

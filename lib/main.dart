@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import 'screens/about_screen.dart';
 import 'screens/add_entry_screen.dart';
+import 'screens/add_new_food_screen.dart';
 import 'screens/foods_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/metabolic_profile_screen.dart';
@@ -297,6 +298,13 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
           final date = args is DateTime ? args : DateTime.now();
           return MaterialPageRoute(
             builder: (_) => AddEntryScreen(date: date),
+          );
+        }
+        if (settings.name == AddNewFoodScreen.routeName) {
+          final args = settings.arguments;
+          final date = args is DateTime ? args : DateTime.now();
+          return MaterialPageRoute(
+            builder: (_) => AddNewFoodScreen(date: date),
           );
         }
         return null;

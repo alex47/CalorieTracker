@@ -30,6 +30,9 @@ class AppLocalizationsHu extends AppLocalizations {
   String get addButton => 'Hozzáadás';
 
   @override
+  String get addNewButton => 'Új hozzáadása';
+
+  @override
   String get saveButton => 'Mentés';
 
   @override
@@ -477,6 +480,9 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get addFoodTitle => 'Étel hozzáadása';
+
+  @override
+  String get addNewFoodTitle => 'Új étel hozzáadása';
 
   @override
   String get foodAndAmountsLabel => 'Ételek és mennyiségek';

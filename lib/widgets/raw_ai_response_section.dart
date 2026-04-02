@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import 'labeled_group_box.dart';
 
 class RawAiResponseSection extends StatelessWidget {
   const RawAiResponseSection({
@@ -33,16 +34,21 @@ class RawAiResponseSection extends StatelessWidget {
       shape: const Border(),
       collapsedShape: const Border(),
       children: [
-        Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxHeight: 220),
-          padding: const EdgeInsets.all(UiConstants.smallSpacing),
-          decoration: BoxDecoration(
-            border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-          ),
-          child: SingleChildScrollView(
-            child: SelectableText(trimmed),
+        LabeledGroupBox(
+          label: '',
+          value: '',
+          borderColor: AppColors.subtleBorder,
+          textStyle: Theme.of(context).textTheme.bodyMedium,
+          backgroundColor: Colors.transparent,
+          contentPadding: EdgeInsets.zero,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 220, minWidth: double.infinity),
+            child: Padding(
+              padding: const EdgeInsets.all(UiConstants.smallSpacing),
+              child: SingleChildScrollView(
+                child: SelectableText(trimmed),
+              ),
+            ),
           ),
         ),
       ],
