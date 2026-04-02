@@ -123,7 +123,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get mergeConversionsTitle => 'Átváltások';
 
   @override
-  String get mergeFromLabel => 'Ebből';
+  String get mergeFromLabel => 'Erről';
 
   @override
   String get mergeToLabel => 'Erre';

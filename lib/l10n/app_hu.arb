@@ -38,7 +38,7 @@
   "mergeKeepLabel": "Megtartva",
   "mergeRemoveLabel": "Törlendő",
   "mergeConversionsTitle": "Átváltások",
-  "mergeFromLabel": "Ebből",
+  "mergeFromLabel": "Erről",
   "mergeToLabel": "Erre",
   "mergeFactorLabel": "Átváltási szorzó",
   "mergeManualFactorHint": "Az egységek eltérnek. Add meg azt a szorzót, amellyel a korábbi rögzített mennyiségeket a megtartott étel egységrendszerére kell átváltani.",

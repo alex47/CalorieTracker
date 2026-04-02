@@ -32,4 +32,6 @@ class AppColors {
   static const amountField = Color(0xFF6FA8A8);
   static const selectionHighlight = Color(0x66264AA8);
   static const selectionBorder = Color(0xFF7FA0F5);
+  static const green = Color(0xFF4FBF83);
+  static const red = Color(0xFFD06B6B);
 }
