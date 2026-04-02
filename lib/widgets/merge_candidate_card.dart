@@ -16,7 +16,7 @@ class MergeCandidateCard extends StatelessWidget {
     this.onTap,
   });
 
-  static const EdgeInsets _cardPadding = EdgeInsets.all(UiConstants.smallSpacing);
+  static const EdgeInsets _cardPadding = EdgeInsets.all(UiConstants.mediumSpacing);
 
   final FoodDefinition food;
   final bool selected;
@@ -34,7 +34,6 @@ class MergeCandidateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final textTheme = Theme.of(context).textTheme;
 
     return InkWell(
       borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
@@ -50,42 +49,46 @@ class MergeCandidateCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  food.name.trim().isEmpty ? '-' : food.name,
-                  style: textTheme.titleMedium,
+                SizedBox(
+                  width: double.infinity,
+                  child: LabeledGroupBox(
+                    label: l10n.foodLabel,
+                    value: food.name.trim().isEmpty ? '-' : food.name,
+                    borderColor: AppColors.subtleBorder,
+                    textStyle: Theme.of(context).textTheme.bodyMedium,
+                    backgroundColor: Colors.transparent,
+                  ),
                 ),
                 const SizedBox(height: UiConstants.smallSpacing),
                 Row(
                   children: [
                     Expanded(
-                      child: MetricGroupBox(
+                      child: LabeledGroupBox(
                         label: l10n.standardUnitLabel,
                         value: _formatAmount(
                           food.standardUnitAmount,
                           food.standardUnit,
                         ),
-                        color: AppColors.text,
-                        minWidth: 0,
-                        valueAlignment: Alignment.center,
-                        valueTextAlign: TextAlign.center,
+                        borderColor: AppColors.subtleBorder,
+                        textStyle: Theme.of(context).textTheme.bodyMedium,
+                        backgroundColor: Colors.transparent,
                       ),
                     ),
                     const SizedBox(
                       width: UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset,
                     ),
                     Expanded(
-                      child: MetricGroupBox(
+                      child: LabeledGroupBox(
                         label: l10n.foodUsesLabel,
                         value: food.usageCount.toString(),
-                        color: AppColors.text,
-                        minWidth: 0,
-                        valueAlignment: Alignment.center,
-                        valueTextAlign: TextAlign.center,
+                        borderColor: AppColors.subtleBorder,
+                        textStyle: Theme.of(context).textTheme.bodyMedium,
+                        backgroundColor: Colors.transparent,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: UiConstants.smallSpacing),
+                const SizedBox(height: UiConstants.mediumSpacing),
                 FoodBreakdownCard(
                   name: food.name,
                   calories: food.standardCalories.round(),
