@@ -180,6 +180,154 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
     );
   }
 
+  Widget _buildValueBox({
+    required String label,
+    required String value,
+    Color borderColor = AppColors.subtleBorder,
+  }) {
+    return LabeledGroupBox(
+      label: label,
+      value: value,
+      borderColor: borderColor,
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      contentHeight: UiConstants.progressBarHeight,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  Widget _buildTwoColumnRow({
+    required Widget left,
+    required Widget right,
+  }) {
+    return Row(
+      children: [
+        Expanded(child: left),
+        const SizedBox(
+          width: UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset,
+        ),
+        Expanded(child: right),
+      ],
+    );
+  }
+
+  Widget _buildFromToRow({
+    required String fromValue,
+    required String toValue,
+  }) {
+    return _buildTwoColumnRow(
+      left: _buildValueBox(
+        label: AppLocalizations.of(context)!.mergeFromLabel,
+        value: fromValue,
+      ),
+      right: _buildValueBox(
+        label: AppLocalizations.of(context)!.mergeToLabel,
+        value: toValue,
+      ),
+    );
+  }
+
+  Widget _buildStepTwoConversionCard({
+    required AppLocalizations l10n,
+    required FoodDefinition food,
+    required FoodDefinition target,
+    required double? factor,
+  }) {
+    final previewTargetAmount =
+        factor == null ? null : food.standardUnitAmount * factor;
+    return _buildCardShell(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: _buildValueBox(
+              label: l10n.foodLabel,
+              value: food.name.trim().isEmpty ? '-' : food.name,
+            ),
+          ),
+          const SizedBox(height: UiConstants.smallSpacing),
+          LabeledInputBox(
+            label: l10n.mergeFactorLabel,
+            controller: _factorControllers[food.id],
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            borderColor: AppColors.selectionBorder,
+            contentHeight: UiConstants.progressBarHeight,
+            onChanged: (_) => setState(() {}),
+          ),
+          const SizedBox(height: UiConstants.mediumSpacing),
+          _buildFromToRow(
+            fromValue: _formatAmount(food.standardUnitAmount, food.standardUnit),
+            toValue: previewTargetAmount == null
+                ? '-'
+                : _formatAmount(previewTargetAmount, target.standardUnit),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepThreeRemoveCard({
+    required AppLocalizations l10n,
+    required FoodDefinition food,
+    required FoodDefinition target,
+    required double? factor,
+  }) {
+    return LabeledGroupBox(
+      label: '${l10n.mergeRemoveLabel}: ${food.name}',
+      value: '',
+      borderColor: AppColors.red,
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      contentPadding: EdgeInsets.zero,
+      contentHeight: null,
+      backgroundColor: AppColors.red.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTwoColumnRow(
+              left: _buildValueBox(
+                label: l10n.mergeFactorLabel,
+                value: factor == null ? '-' : _formatNumber(factor),
+              ),
+              right: _buildValueBox(
+                label: l10n.foodUsesLabel,
+                value: food.usageCount.toString(),
+              ),
+            ),
+            const SizedBox(height: UiConstants.mediumSpacing),
+            _buildFromToRow(
+              fromValue: _formatAmount(food.standardUnitAmount, food.standardUnit),
+              toValue: factor == null
+                  ? '-'
+                  : _formatAmount(
+                      food.standardUnitAmount * factor,
+                      target.standardUnit,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKeepSection(AppLocalizations l10n, FoodDefinition target) {
+    return LabeledGroupBox(
+      label: l10n.mergeKeepLabel,
+      value: '',
+      borderColor: AppColors.green,
+      textStyle: Theme.of(context).textTheme.bodyMedium,
+      contentPadding: EdgeInsets.zero,
+      contentHeight: null,
+      backgroundColor: AppColors.green.withValues(alpha: 0.08),
+      child: MergeCandidateCardContent(
+        food: target,
+        showNameBox: false,
+        formatAmount: _formatAmount,
+      ),
+    );
+  }
+
   Widget _buildFoodSelectionStep(AppLocalizations l10n) {
     return _buildSection(
       title: l10n.chooseMergeTargetTitle,
@@ -225,75 +373,15 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
         ],
         ..._sourceFoods.map((food) {
           final factor = _parseFactor(food.id);
-          final previewTargetAmount =
-              factor == null ? null : food.standardUnitAmount * factor;
           return Padding(
-              padding: const EdgeInsets.only(bottom: UiConstants.largeSpacing),
-              child: _buildCardShell(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: LabeledGroupBox(
-                        label: l10n.foodLabel,
-                        value: food.name.trim().isEmpty ? '-' : food.name,
-                        borderColor: AppColors.subtleBorder,
-                        textStyle: Theme.of(context).textTheme.bodyMedium,
-                        backgroundColor: Colors.transparent,
-                      ),
-                    ),
-                    const SizedBox(height: UiConstants.smallSpacing),
-                    LabeledInputBox(
-                      label: l10n.mergeFactorLabel,
-                      controller: _factorControllers[food.id],
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      borderColor: AppColors.selectionBorder,
-                      contentHeight: UiConstants.progressBarHeight,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: UiConstants.mediumSpacing),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: LabeledGroupBox(
-                            label: l10n.mergeFromLabel,
-                            value: _formatAmount(
-                              food.standardUnitAmount,
-                              food.standardUnit,
-                            ),
-                            borderColor: AppColors.subtleBorder,
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                            contentHeight: UiConstants.progressBarHeight,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: UiConstants.smallSpacing +
-                              UiConstants.groupBoxHeaderTopInset,
-                        ),
-                        Expanded(
-                          child: LabeledGroupBox(
-                            label: l10n.mergeToLabel,
-                            value: previewTargetAmount == null
-                                ? '-'
-                                : _formatAmount(
-                                    previewTargetAmount,
-                                    target.standardUnit,
-                                  ),
-                            borderColor: AppColors.subtleBorder,
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                            contentHeight: UiConstants.progressBarHeight,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
+            padding: const EdgeInsets.only(bottom: UiConstants.largeSpacing),
+            child: _buildStepTwoConversionCard(
+              l10n: l10n,
+              food: food,
+              target: target,
+              factor: factor,
+            ),
+          );
         }),
       ],
     );
@@ -304,106 +392,17 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        LabeledGroupBox(
-          label: l10n.mergeKeepLabel,
-          value: '',
-          borderColor: AppColors.green,
-          textStyle: Theme.of(context).textTheme.bodyMedium,
-          contentPadding: EdgeInsets.zero,
-          contentHeight: null,
-          backgroundColor: Colors.transparent,
-          child: MergeCandidateCardContent(
-            food: target,
-            showNameBox: false,
-            formatAmount: _formatAmount,
-          ),
-        ),
+        _buildKeepSection(l10n, target),
         const SizedBox(height: UiConstants.mediumSpacing),
         ..._sourceFoods.map((food) {
           final factor = _parseFactor(food.id);
           return Padding(
             padding: const EdgeInsets.only(bottom: UiConstants.mediumSpacing),
-            child: LabeledGroupBox(
-              label: '${l10n.mergeRemoveLabel}: ${food.name}',
-              value: '',
-              borderColor: AppColors.red,
-              textStyle: Theme.of(context).textTheme.bodyMedium,
-              contentPadding: EdgeInsets.zero,
-              contentHeight: null,
-              backgroundColor: Colors.transparent,
-              child: Padding(
-                padding: const EdgeInsets.all(UiConstants.mediumSpacing),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: LabeledGroupBox(
-                            label: l10n.mergeFactorLabel,
-                            value: factor == null ? '-' : _formatNumber(factor),
-                            borderColor: AppColors.subtleBorder,
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                            contentHeight: UiConstants.progressBarHeight,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: UiConstants.smallSpacing +
-                              UiConstants.groupBoxHeaderTopInset,
-                        ),
-                        Expanded(
-                          child: LabeledGroupBox(
-                            label: l10n.foodUsesLabel,
-                            value: food.usageCount.toString(),
-                            borderColor: AppColors.subtleBorder,
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                            contentHeight: UiConstants.progressBarHeight,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: UiConstants.mediumSpacing),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: LabeledGroupBox(
-                            label: l10n.mergeFromLabel,
-                            value: _formatAmount(
-                              food.standardUnitAmount,
-                              food.standardUnit,
-                            ),
-                            borderColor: AppColors.subtleBorder,
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                            contentHeight: UiConstants.progressBarHeight,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        ),
-                        const SizedBox(
-                          width: UiConstants.smallSpacing +
-                              UiConstants.groupBoxHeaderTopInset,
-                        ),
-                        Expanded(
-                          child: LabeledGroupBox(
-                            label: l10n.mergeToLabel,
-                            value: factor == null
-                                ? '-'
-                                : _formatAmount(
-                                    food.standardUnitAmount * factor,
-                                    target.standardUnit,
-                                  ),
-                            borderColor: AppColors.subtleBorder,
-                            textStyle: Theme.of(context).textTheme.bodyMedium,
-                            contentHeight: UiConstants.progressBarHeight,
-                            backgroundColor: Colors.transparent,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+            child: _buildStepThreeRemoveCard(
+              l10n: l10n,
+              food: food,
+              target: target,
+              factor: factor,
             ),
           );
         }),

@@ -14,9 +14,6 @@ class MergeCandidateCard extends StatelessWidget {
     required this.food,
     required this.selected,
     this.onTap,
-    this.nameLabel,
-    this.showNameBox = true,
-    this.showOuterSurface = true,
   });
 
   static const EdgeInsets _cardPadding = EdgeInsets.all(UiConstants.mediumSpacing);
@@ -24,9 +21,6 @@ class MergeCandidateCard extends StatelessWidget {
   final FoodDefinition food;
   final bool selected;
   final VoidCallback? onTap;
-  final String? nameLabel;
-  final bool showNameBox;
-  final bool showOuterSurface;
 
   String _formatNumber(double value) {
     return value % 1 == 0 ? value.toInt().toString() : value.toString();
@@ -47,13 +41,8 @@ class MergeCandidateCard extends StatelessWidget {
         curve: Curves.easeOutCubic,
         child: SelectedSurface(
           selected: selected,
-          showBaseBorder: showOuterSurface,
-          child: MergeCandidateCardContent(
-            food: food,
-            nameLabel: nameLabel,
-            showNameBox: showNameBox,
-            formatAmount: _formatAmount,
-          ),
+          showBaseBorder: true,
+          child: MergeCandidateCardContent(food: food, formatAmount: _formatAmount),
         ),
       ),
     );
@@ -65,13 +54,11 @@ class MergeCandidateCardContent extends StatelessWidget {
     super.key,
     required this.food,
     required this.formatAmount,
-    this.nameLabel,
     this.showNameBox = true,
   });
 
   final FoodDefinition food;
   final String Function(double value, String unit) formatAmount;
-  final String? nameLabel;
   final bool showNameBox;
 
   @override
@@ -87,7 +74,7 @@ class MergeCandidateCardContent extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: LabeledGroupBox(
-                label: nameLabel ?? l10n.foodLabel,
+                label: l10n.foodLabel,
                 value: food.name.trim().isEmpty ? '-' : food.name,
                 borderColor: AppColors.subtleBorder,
                 textStyle: Theme.of(context).textTheme.bodyMedium,
