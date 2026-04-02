@@ -2,8 +2,10 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../models/food_definition.dart';
+import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'food_breakdown_card.dart';
+import 'labeled_group_box.dart';
 import 'selected_surface.dart';
 
 class MergeCandidateCard extends StatelessWidget {
@@ -15,12 +17,6 @@ class MergeCandidateCard extends StatelessWidget {
   });
 
   static const EdgeInsets _cardPadding = EdgeInsets.all(UiConstants.smallSpacing);
-  static const EdgeInsets _headerPadding = EdgeInsets.fromLTRB(
-    UiConstants.smallSpacing,
-    0,
-    UiConstants.smallSpacing,
-    UiConstants.smallSpacing,
-  );
 
   final FoodDefinition food;
   final bool selected;
@@ -48,38 +44,48 @@ class MergeCandidateCard extends StatelessWidget {
         curve: Curves.easeOutCubic,
         child: SelectedSurface(
           selected: selected,
+          showBaseBorder: true,
           child: Padding(
             padding: _cardPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: _headerPadding,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        food.name.trim().isEmpty ? '-' : food.name,
-                        style: textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: UiConstants.xSmallSpacing),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _formatAmount(food.standardUnitAmount, food.standardUnit),
-                              style: textTheme.bodySmall,
-                            ),
-                          ),
-                          Text(
-                            l10n.foodUsageCount(food.usageCount),
-                            style: textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                Text(
+                  food.name.trim().isEmpty ? '-' : food.name,
+                  style: textTheme.titleMedium,
                 ),
+                const SizedBox(height: UiConstants.smallSpacing),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MetricGroupBox(
+                        label: l10n.standardUnitLabel,
+                        value: _formatAmount(
+                          food.standardUnitAmount,
+                          food.standardUnit,
+                        ),
+                        color: AppColors.text,
+                        minWidth: 0,
+                        valueAlignment: Alignment.center,
+                        valueTextAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: UiConstants.smallSpacing + UiConstants.groupBoxHeaderTopInset,
+                    ),
+                    Expanded(
+                      child: MetricGroupBox(
+                        label: l10n.foodUsesLabel,
+                        value: food.usageCount.toString(),
+                        color: AppColors.text,
+                        minWidth: 0,
+                        valueAlignment: Alignment.center,
+                        valueTextAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: UiConstants.smallSpacing),
                 FoodBreakdownCard(
                   name: food.name,
                   calories: food.standardCalories.round(),

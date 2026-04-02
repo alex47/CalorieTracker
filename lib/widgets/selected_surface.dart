@@ -11,6 +11,7 @@ class SelectedSurface extends StatelessWidget {
     this.inset = false,
     this.backgroundColor,
     this.borderColor,
+    this.showBaseBorder = false,
   });
 
   final bool selected;
@@ -18,19 +19,25 @@ class SelectedSurface extends StatelessWidget {
   final bool inset;
   final Color? backgroundColor;
   final Color? borderColor;
+  final bool showBaseBorder;
 
   @override
   Widget build(BuildContext context) {
-    if (!selected) {
-      return child;
-    }
-
     final insetPadding = inset
         ? const EdgeInsets.symmetric(
             horizontal: UiConstants.xxSmallSpacing,
             vertical: UiConstants.xSmallSpacing / 2,
           )
         : EdgeInsets.zero;
+    final resolvedBorderColor = selected
+        ? (borderColor ?? AppColors.selectionBorder)
+        : (showBaseBorder ? AppColors.subtleBorder : null);
+    final resolvedBackgroundColor =
+        selected ? (backgroundColor ?? AppColors.selectionHighlight) : null;
+
+    if (resolvedBorderColor == null && resolvedBackgroundColor == null) {
+      return child;
+    }
 
     return Stack(
       children: [
@@ -40,11 +47,13 @@ class SelectedSurface extends StatelessWidget {
             child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: backgroundColor ?? AppColors.selectionHighlight,
-                  border: Border.all(
-                    color: borderColor ?? AppColors.selectionBorder,
-                    width: UiConstants.borderWidth,
-                  ),
+                  color: resolvedBackgroundColor,
+                  border: resolvedBorderColor == null
+                      ? null
+                      : Border.all(
+                          color: resolvedBorderColor,
+                          width: UiConstants.borderWidth,
+                        ),
                   borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
                 ),
               ),
