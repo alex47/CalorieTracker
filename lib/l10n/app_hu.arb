@@ -33,32 +33,9 @@
   "mergeTitle": "Egyesítés",
   "mergeFoodsButton": "Ételek egyesítése",
   "chooseMergeTargetTitle": "Válaszd ki a megtartandó ételt",
-  "mergeFoodsConfirmMessage": "{count} étel egyesítése a kiválasztott ételbe?",
-  "@mergeFoodsConfirmMessage": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "mergeFoodsIntro": "Válaszd ki a megtartandó ételt. A többi kijelölt étel törlésre kerül, és a korábbi rögzített mennyiségek az alábbi szorzók alapján lesznek átváltva.",
-  "@mergeFoodsIntro": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "mergeStepIndicator": "{current}. lépés / {total}",
-  "@mergeStepIndicator": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "mergeChooseTargetIntro": "Válaszd ki a megtartandó étel definíciót.",
   "nextButton": "Tovább",
-  "mergeReviewIntro": "Nézd át és állítsd be, hogyan legyenek a korábbi rögzített mennyiségek átváltva a megtartott ételhez.",
   "mergeConfirmTitle": "Egyesítés megerősítése",
-  "mergeConfirmIntro": "Nézd át a megtartott ételt, a törlésre kerülő ételeket és az átváltási szorzókat az egyesítés előtt.",
   "mergeKeepLabel": "Megtartva",
-  "mergeSourceLabel": "Forrás",
   "mergeRemoveLabel": "Törlendő",
   "mergeConversionsTitle": "Átváltások",
   "mergeFromLabel": "Ebből",

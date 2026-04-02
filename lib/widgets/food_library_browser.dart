@@ -28,6 +28,7 @@ class FoodLibraryBrowser extends StatefulWidget {
 
 class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
   final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   late Future<List<FoodDefinition>> _foodsFuture;
 
   @override
@@ -40,7 +41,7 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
   void didUpdateWidget(covariant FoodLibraryBrowser oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.reloadToken != widget.reloadToken) {
-      _reload();
+      _refreshFoods();
     }
   }
 
@@ -52,15 +53,20 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
 
   Future<List<FoodDefinition>> _loadFoods() {
     return FoodLibraryService.instance.fetchFoods(
-      searchQuery: _searchController.text,
+      searchQuery: _searchQuery,
       visibleOnly: true,
     );
   }
 
-  void _reload() {
+  void _refreshFoods() {
     setState(() {
       _foodsFuture = _loadFoods();
     });
+  }
+
+  void _updateSearchQuery(String value) {
+    _searchQuery = value;
+    _refreshFoods();
   }
 
   @override
@@ -73,10 +79,10 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
           label: l10n.searchFoodsLabel,
           contentHeight: UiConstants.settingsFieldHeight,
           suffixIcon: IconButton(
-            onPressed: _reload,
+            onPressed: _refreshFoods,
             icon: const Icon(Icons.search_outlined),
           ),
-          onChanged: (_) => _reload(),
+          onChanged: _updateSearchQuery,
         ),
         const SizedBox(height: UiConstants.mediumSpacing),
         FutureBuilder<List<FoodDefinition>>(

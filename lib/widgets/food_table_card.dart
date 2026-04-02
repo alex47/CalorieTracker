@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import 'painters/notched_border_painter.dart';
+import 'selected_surface.dart';
 
 class FoodTableColumn {
   const FoodTableColumn({
@@ -180,38 +181,15 @@ class FoodTableCard extends StatelessWidget {
                   ),
                 );
 
-                final decoratedContent = Stack(
-                  children: [
-                    if (row.borderColor == null)
-                      Container(
-                        color: row.backgroundColor,
-                        child: content,
-                      )
-                    else
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: UiConstants.xxSmallSpacing,
-                            vertical: UiConstants.xSmallSpacing / 2,
-                          ),
-                          child: IgnorePointer(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: row.backgroundColor,
-                                border: Border.all(
-                                  color: row.borderColor!,
-                                  width: UiConstants.borderWidth,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  UiConstants.cornerRadius,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (row.borderColor != null) content,
-                  ],
+                final decoratedContent = SelectedSurface(
+                  selected: row.borderColor != null,
+                  inset: true,
+                  backgroundColor: row.backgroundColor,
+                  borderColor: row.borderColor,
+                  child: Container(
+                    color: row.borderColor == null ? row.backgroundColor : null,
+                    child: content,
+                  ),
                 );
 
                 if (row.onTap == null && row.onLongPress == null) {

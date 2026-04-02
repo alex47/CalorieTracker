@@ -108,42 +108,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseMergeTargetTitle => 'Choose food to keep';
 
   @override
-  String mergeFoodsConfirmMessage(Object count) {
-    return 'Merge $count foods into the selected food?';
-  }
-
-  @override
-  String mergeFoodsIntro(Object count) {
-    return 'Choose the food to keep. The other $count selected foods will be removed, and past logged amounts will be converted using the factors below.';
-  }
-
-  @override
-  String mergeStepIndicator(Object current, Object total) {
-    return 'Step $current of $total';
-  }
-
-  @override
-  String get mergeChooseTargetIntro => 'Choose the food definition to keep.';
-
-  @override
   String get nextButton => 'Next';
-
-  @override
-  String get mergeReviewIntro =>
-      'Review and adjust how past logged amounts should be converted to the kept food.';
 
   @override
   String get mergeConfirmTitle => 'Confirm merge';
 
   @override
-  String get mergeConfirmIntro =>
-      'Review the kept food, the foods that will be removed, and the conversion factors before merging.';
-
-  @override
   String get mergeKeepLabel => 'Keep';
-
-  @override
-  String get mergeSourceLabel => 'Source';
 
   @override
   String get mergeRemoveLabel => 'Remove';

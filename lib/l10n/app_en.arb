@@ -33,32 +33,9 @@
   "mergeTitle": "Merge",
   "mergeFoodsButton": "Merge foods",
   "chooseMergeTargetTitle": "Choose food to keep",
-  "mergeFoodsConfirmMessage": "Merge {count} foods into the selected food?",
-  "@mergeFoodsConfirmMessage": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "mergeFoodsIntro": "Choose the food to keep. The other {count} selected foods will be removed, and past logged amounts will be converted using the factors below.",
-  "@mergeFoodsIntro": {
-    "placeholders": {
-      "count": {}
-    }
-  },
-  "mergeStepIndicator": "Step {current} of {total}",
-  "@mergeStepIndicator": {
-    "placeholders": {
-      "current": {},
-      "total": {}
-    }
-  },
-  "mergeChooseTargetIntro": "Choose the food definition to keep.",
   "nextButton": "Next",
-  "mergeReviewIntro": "Review and adjust how past logged amounts should be converted to the kept food.",
   "mergeConfirmTitle": "Confirm merge",
-  "mergeConfirmIntro": "Review the kept food, the foods that will be removed, and the conversion factors before merging.",
   "mergeKeepLabel": "Keep",
-  "mergeSourceLabel": "Source",
   "mergeRemoveLabel": "Remove",
   "mergeConversionsTitle": "Conversions",
   "mergeFromLabel": "From",

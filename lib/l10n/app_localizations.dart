@@ -296,41 +296,11 @@ abstract class AppLocalizations {
   /// **'Choose food to keep'**
   String get chooseMergeTargetTitle;
 
-  /// No description provided for @mergeFoodsConfirmMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Merge {count} foods into the selected food?'**
-  String mergeFoodsConfirmMessage(Object count);
-
-  /// No description provided for @mergeFoodsIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the food to keep. The other {count} selected foods will be removed, and past logged amounts will be converted using the factors below.'**
-  String mergeFoodsIntro(Object count);
-
-  /// No description provided for @mergeStepIndicator.
-  ///
-  /// In en, this message translates to:
-  /// **'Step {current} of {total}'**
-  String mergeStepIndicator(Object current, Object total);
-
-  /// No description provided for @mergeChooseTargetIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose the food definition to keep.'**
-  String get mergeChooseTargetIntro;
-
   /// No description provided for @nextButton.
   ///
   /// In en, this message translates to:
   /// **'Next'**
   String get nextButton;
-
-  /// No description provided for @mergeReviewIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Review and adjust how past logged amounts should be converted to the kept food.'**
-  String get mergeReviewIntro;
 
   /// No description provided for @mergeConfirmTitle.
   ///
@@ -338,23 +308,11 @@ abstract class AppLocalizations {
   /// **'Confirm merge'**
   String get mergeConfirmTitle;
 
-  /// No description provided for @mergeConfirmIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Review the kept food, the foods that will be removed, and the conversion factors before merging.'**
-  String get mergeConfirmIntro;
-
   /// No description provided for @mergeKeepLabel.
   ///
   /// In en, this message translates to:
   /// **'Keep'**
   String get mergeKeepLabel;
-
-  /// No description provided for @mergeSourceLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Source'**
-  String get mergeSourceLabel;
 
   /// No description provided for @mergeRemoveLabel.
   ///

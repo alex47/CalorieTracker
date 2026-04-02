@@ -108,43 +108,13 @@ class AppLocalizationsHu extends AppLocalizations {
   String get chooseMergeTargetTitle => 'Válaszd ki a megtartandó ételt';
 
   @override
-  String mergeFoodsConfirmMessage(Object count) {
-    return '$count étel egyesítése a kiválasztott ételbe?';
-  }
-
-  @override
-  String mergeFoodsIntro(Object count) {
-    return 'Válaszd ki a megtartandó ételt. A többi kijelölt étel törlésre kerül, és a korábbi rögzített mennyiségek az alábbi szorzók alapján lesznek átváltva.';
-  }
-
-  @override
-  String mergeStepIndicator(Object current, Object total) {
-    return '$current. lépés / $total';
-  }
-
-  @override
-  String get mergeChooseTargetIntro =>
-      'Válaszd ki a megtartandó étel definíciót.';
-
-  @override
   String get nextButton => 'Tovább';
-
-  @override
-  String get mergeReviewIntro =>
-      'Nézd át és állítsd be, hogyan legyenek a korábbi rögzített mennyiségek átváltva a megtartott ételhez.';
 
   @override
   String get mergeConfirmTitle => 'Egyesítés megerősítése';
 
   @override
-  String get mergeConfirmIntro =>
-      'Nézd át a megtartott ételt, a törlésre kerülő ételeket és az átváltási szorzókat az egyesítés előtt.';
-
-  @override
   String get mergeKeepLabel => 'Megtartva';
-
-  @override
-  String get mergeSourceLabel => 'Forrás';
 
   @override
   String get mergeRemoveLabel => 'Törlendő';
