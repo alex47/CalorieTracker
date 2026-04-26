@@ -3,6 +3,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/food_definition.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/app_button.dart';
 import '../widgets/food_library_browser.dart';
 import 'food_definition_screen.dart';
 import 'merge_foods_screen.dart';
@@ -84,12 +85,12 @@ class _FoodsScreenState extends State<FoodsScreen> {
           title: Text(l10n.foodsTitle),
           actions: [
             if (_selectedFoods.length >= 2)
-              IconButton(
+              AppIconButton(
                 onPressed: _mergeSelected,
                 icon: const Icon(Icons.merge_outlined),
                 tooltip: l10n.mergeFoodsButton,
               ),
-            IconButton(
+            AppIconButton(
               onPressed: () => _openFoodEditor(),
               icon: const Icon(Icons.add_outlined),
               tooltip: l10n.addButton,

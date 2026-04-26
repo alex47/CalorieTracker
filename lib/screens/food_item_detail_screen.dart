@@ -4,6 +4,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 import '../models/food_item.dart';
 import '../services/entries_repository.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
@@ -31,8 +32,10 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   String? _errorMessage;
 
   bool get _canCopyToToday {
-    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    final itemDay = DateTime(widget.itemDate.year, widget.itemDate.month, widget.itemDate.day);
+    final today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final itemDay = DateTime(
+        widget.itemDate.year, widget.itemDate.month, widget.itemDate.day);
     return !widget.isNew && itemDay.isBefore(today);
   }
 
@@ -40,7 +43,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   void initState() {
     super.initState();
     _item = widget.item;
-    _multiplierController = TextEditingController(text: _formatNumber(_item.multiplier));
+    _multiplierController =
+        TextEditingController(text: _formatNumber(_item.multiplier));
   }
 
   @override
@@ -58,7 +62,8 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
   }
 
   double? _parseMultiplier() {
-    final value = double.tryParse(_multiplierController.text.trim().replaceAll(',', '.'));
+    final value =
+        double.tryParse(_multiplierController.text.trim().replaceAll(',', '.'));
     if (value == null || value <= 0) {
       return null;
     }
@@ -114,18 +119,18 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             actionItems: [
               DialogActionItem(
                 width: UiConstants.buttonMinWidth,
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: () => Navigator.pop(context, true),
                   icon: const Icon(Icons.delete_outline),
-                  label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+                  label: l10n.deleteButton,
                 ),
               ),
               DialogActionItem(
                 width: UiConstants.buttonMinWidth,
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: () => Navigator.pop(context, false),
                   icon: const Icon(Icons.close),
-                  label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                  label: l10n.cancelButton,
                 ),
               ),
             ],
@@ -231,25 +236,25 @@ class _FoodItemDetailScreenState extends State<FoodItemDetailScreen> {
             ],
             const SizedBox(height: UiConstants.mediumSpacing),
             if (!widget.isNew) ...[
-              FilledButton.icon(
+              AppButton(
                 onPressed: isBusy ? null : _deleteItem,
                 icon: const Icon(Icons.delete_outline),
-                label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+                label: l10n.deleteButton,
               ),
             ],
             if (_canCopyToToday) ...[
               const SizedBox(height: UiConstants.buttonSpacing),
-              FilledButton.icon(
+              AppButton(
                 onPressed: isBusy ? null : _copyToToday,
                 icon: const Icon(Icons.content_copy_outlined),
-                label: Text(l10n.copyToTodayButton, textAlign: TextAlign.center),
+                label: l10n.copyToTodayButton,
               ),
             ],
             const SizedBox(height: UiConstants.buttonSpacing),
-            FilledButton.icon(
+            AppButton(
               onPressed: isBusy ? null : _saveChanges,
               icon: const Icon(Icons.save_outlined),
-              label: Text(l10n.saveButton, textAlign: TextAlign.center),
+              label: l10n.saveButton,
             ),
           ],
         ),

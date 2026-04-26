@@ -5,6 +5,7 @@ import '../models/food_definition.dart';
 import '../services/entries_repository.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_button.dart';
 import '../widgets/food_library_browser.dart';
 import 'add_new_food_screen.dart';
 
@@ -94,10 +95,10 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             onFoodTap: _openExistingFood,
           ),
           const SizedBox(height: UiConstants.largeSpacing),
-          FilledButton.icon(
+          AppButton(
             onPressed: _openAddNew,
             icon: const Icon(Icons.add_outlined),
-            label: Text(l10n.addNewButton, textAlign: TextAlign.center),
+            label: l10n.addNewButton,
           ),
           if (_errorMessage != null) ...[
             const SizedBox(height: UiConstants.mediumSpacing),

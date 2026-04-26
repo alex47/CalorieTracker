@@ -5,6 +5,7 @@ import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/app_button.dart';
 import '../widgets/labeled_group_box.dart';
 import '../widgets/labeled_input_box.dart';
 import '../widgets/merge_candidate_card.dart';
@@ -24,10 +25,12 @@ class MergeFoodsScreen extends StatefulWidget {
 }
 
 class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
-  static const EdgeInsets _contentPadding = EdgeInsets.all(UiConstants.mediumSpacing);
+  static const EdgeInsets _contentPadding =
+      EdgeInsets.all(UiConstants.mediumSpacing);
 
   late int _selectedTargetId;
-  final Map<int, TextEditingController> _factorControllers = <int, TextEditingController>{};
+  final Map<int, TextEditingController> _factorControllers =
+      <int, TextEditingController>{};
   bool _merging = false;
   int _stepIndex = 0;
 
@@ -96,8 +99,10 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
         source.standardUnit.trim().toLowerCase()) {
       return null;
     }
-    final sourceAmount = source.standardUnitAmount > 0 ? source.standardUnitAmount : 1.0;
-    final targetAmount = target.standardUnitAmount > 0 ? target.standardUnitAmount : 1.0;
+    final sourceAmount =
+        source.standardUnitAmount > 0 ? source.standardUnitAmount : 1.0;
+    final targetAmount =
+        target.standardUnitAmount > 0 ? target.standardUnitAmount : 1.0;
     return targetAmount / sourceAmount;
   }
 
@@ -256,7 +261,8 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
           ),
           const SizedBox(height: UiConstants.mediumSpacing),
           _buildFromToRow(
-            fromValue: _formatAmount(food.standardUnitAmount, food.standardUnit),
+            fromValue:
+                _formatAmount(food.standardUnitAmount, food.standardUnit),
             toValue: previewTargetAmount == null
                 ? '-'
                 : _formatAmount(previewTargetAmount, target.standardUnit),
@@ -297,7 +303,8 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
             _buildFromToRow(
-              fromValue: _formatAmount(food.standardUnitAmount, food.standardUnit),
+              fromValue:
+                  _formatAmount(food.standardUnitAmount, food.standardUnit),
               toValue: factor == null
                   ? '-'
                   : _formatAmount(
@@ -425,24 +432,26 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+        padding:
+            const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
         child: Row(
           children: [
             if (_stepIndex > 0)
               Expanded(
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: _merging
                       ? null
                       : () => setState(() {
                             _stepIndex--;
                           }),
                   icon: const Icon(Icons.arrow_back_outlined),
-                  label: Text(l10n.backButton),
+                  label: l10n.backButton,
                 ),
               ),
-            if (_stepIndex > 0) const SizedBox(width: UiConstants.buttonSpacing),
+            if (_stepIndex > 0)
+              const SizedBox(width: UiConstants.buttonSpacing),
             Expanded(
-              child: FilledButton.icon(
+              child: AppButton(
                 onPressed: !_canAdvanceFromCurrentStep
                     ? null
                     : _stepIndex == 2
@@ -456,15 +465,14 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
                             height: UiConstants.loadingIndicatorSize,
                             width: UiConstants.loadingIndicatorSize,
                             child: CircularProgressIndicator(
-                              strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                              strokeWidth:
+                                  UiConstants.loadingIndicatorStrokeWidth,
                             ),
                           )
                         : const Icon(Icons.merge_outlined))
                     : const Icon(Icons.arrow_forward_outlined),
-                label: Text(
-                  _stepIndex == 2 ? l10n.mergeFoodsButton : l10n.nextButton,
-                  textAlign: TextAlign.center,
-                ),
+                label:
+                    _stepIndex == 2 ? l10n.mergeFoodsButton : l10n.nextButton,
               ),
             ),
           ],

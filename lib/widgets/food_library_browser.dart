@@ -5,6 +5,7 @@ import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import 'app_button.dart';
 import 'labeled_input_box.dart';
 import 'food_table_card.dart';
 
@@ -78,7 +79,7 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
           controller: _searchController,
           label: l10n.searchFoodsLabel,
           contentHeight: UiConstants.settingsFieldHeight,
-          suffixIcon: IconButton(
+          suffixIcon: AppIconButton(
             onPressed: _refreshFoods,
             icon: const Icon(Icons.search_outlined),
           ),
@@ -88,13 +89,15 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
         FutureBuilder<List<FoodDefinition>>(
           future: _foodsFuture,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
             final foods = snapshot.data ?? const <FoodDefinition>[];
             if (foods.isEmpty) {
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
+                padding: const EdgeInsets.symmetric(
+                    vertical: UiConstants.largeSpacing),
                 child: Text(l10n.noFoodsFound),
               );
             }
@@ -108,7 +111,8 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
               rows: foods.map((food) {
                 final isSelected = widget.selectedIds.contains(food.id);
                 return FoodTableRowData(
-                  backgroundColor: isSelected ? AppColors.selectionHighlight : null,
+                  backgroundColor:
+                      isSelected ? AppColors.selectionHighlight : null,
                   borderColor: isSelected ? AppColors.selectionBorder : null,
                   cells: [
                     FoodTableCell(text: food.name),

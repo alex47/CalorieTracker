@@ -14,4 +14,18 @@ class AppDateUtils {
     final day = dayOnly(date);
     return addCalendarDays(day, DateTime.monday - day.weekday);
   }
+
+  static int calendarDaysBetween(DateTime startDate, DateTime endDate) {
+    final start = DateTime.utc(startDate.year, startDate.month, startDate.day);
+    final end = DateTime.utc(endDate.year, endDate.month, endDate.day);
+    return end.difference(start).inDays;
+  }
+
+  static int calendarWeeksBetween(DateTime startWeek, DateTime endWeek) {
+    return calendarDaysBetween(
+          startOfWeekMonday(startWeek),
+          startOfWeekMonday(endWeek),
+        ) ~/
+        7;
+  }
 }

@@ -43,8 +43,10 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     super.initState();
     _baseWeekStart = _startOfWeek(widget.anchorDate);
     final currentWeekStart = _startOfWeek(DateTime.now());
-    final weeksUntilCurrent =
-        currentWeekStart.difference(_baseWeekStart).inDays ~/ 7;
+    final weeksUntilCurrent = AppDateUtils.calendarWeeksBetween(
+      _baseWeekStart,
+      currentWeekStart,
+    );
     _maxPage = _initialPage + (weeksUntilCurrent < 0 ? 0 : weeksUntilCurrent);
     _pageController = PageController(initialPage: _initialPage);
     _selectedPage = _initialPage;
@@ -123,6 +125,12 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
   bool _isFutureDay(DateTime day) => day.isAfter(_todayDayOnly());
   bool _isToday(DateTime day) => day.isAtSameMomentAs(_todayDayOnly());
+  bool _isCompletedWeek(List<_DayMetricTotals> dailyTotals) {
+    if (dailyTotals.isEmpty) {
+      return false;
+    }
+    return dailyTotals.last.date.isBefore(_todayDayOnly());
+  }
 
   void _openDay(DateTime date) {
     if (_isFutureDay(date)) {
@@ -167,7 +175,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     List<_DayMetricTotals> dailyTotals,
     AppLocalizations l10n,
   ) {
-    if (dailyTotals.any((day) => _isFutureDay(day.date))) {
+    if (!_isCompletedWeek(dailyTotals)) {
       return '-';
     }
     final resolvedDeficits = _resolvedDailyDeficits(dailyTotals);

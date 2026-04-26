@@ -13,6 +13,7 @@ import '../services/update_coordinator.dart';
 import '../services/update_service.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_button.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({
@@ -47,7 +48,8 @@ class _AboutScreenState extends State<AboutScreen> {
   void initState() {
     super.initState();
     _packageInfoFuture = PackageInfo.fromPlatform();
-    _updateResult = widget.initialUpdateResult ?? UpdateCoordinator.instance.latestResult;
+    _updateResult =
+        widget.initialUpdateResult ?? UpdateCoordinator.instance.latestResult;
   }
 
   Future<void> _openRepo(BuildContext context) async {
@@ -76,7 +78,9 @@ class _AboutScreenState extends State<AboutScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateCheckFailed(localizeError(error, l10n)))),
+          SnackBar(
+              content:
+                  Text(l10n.updateCheckFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
@@ -98,7 +102,8 @@ class _AboutScreenState extends State<AboutScreen> {
 
     if (!Platform.isAndroid) {
       final uri = Uri.parse(url);
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched =
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.couldNotOpenUpdateUrl)),
@@ -115,7 +120,9 @@ class _AboutScreenState extends State<AboutScreen> {
       final client = HttpClient();
       _activeDownloadClient = client;
       _downloadCancelledByUser = false;
-      final response = await client.getUrl(Uri.parse(url)).then((request) => request.close());
+      final response = await client
+          .getUrl(Uri.parse(url))
+          .then((request) => request.close());
       if (response.statusCode >= 400) {
         client.close(force: true);
         throw StateError('APK download failed: HTTP ${response.statusCode}.');
@@ -138,7 +145,9 @@ class _AboutScreenState extends State<AboutScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateInstallFailed(localizeError(error, l10n)))),
+          SnackBar(
+              content:
+                  Text(l10n.updateInstallFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
@@ -172,7 +181,8 @@ class _AboutScreenState extends State<AboutScreen> {
       receivedBytes += chunk.length;
       if (mounted) {
         setState(() {
-          _downloadProgress = totalBytes == null ? null : receivedBytes / totalBytes;
+          _downloadProgress =
+              totalBytes == null ? null : receivedBytes / totalBytes;
         });
       }
     }
@@ -227,97 +237,101 @@ class _AboutScreenState extends State<AboutScreen> {
             builder: (context, snapshot) {
               final version = snapshot.data?.version ?? '...';
               return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text(
-                  l10n.aboutDescription,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: UiConstants.largeSpacing),
-                Text(
-                  l10n.versionLabel(version),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: UiConstants.buttonSpacing),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: isBusy ? null : () => _openRepo(context),
-                    icon: const Icon(Icons.open_in_new_outlined),
-                    label: Text(l10n.githubRepositoryButton, textAlign: TextAlign.center),
-                  ),
-                ),
-                const SizedBox(height: UiConstants.buttonSpacing),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: isBusy ? null : _checkForUpdates,
-                    icon: _checkingUpdates
-                        ? const SizedBox(
-                            height: UiConstants.loadingIndicatorSize,
-                            width: UiConstants.loadingIndicatorSize,
-                            child: CircularProgressIndicator(
-                              strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
-                            ),
-                          )
-                        : const Icon(Icons.update_outlined),
-                    label: Text(l10n.checkForUpdatesButton, textAlign: TextAlign.center),
-                    ),
-                  ),
-                if (_updateResult != null) ...[
-                  const SizedBox(height: UiConstants.mediumSpacing),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    _updateResult!.updateAvailable
-                        ? l10n.updateAvailableStatus(
-                            _updateResult!.latestVersion,
-                          )
-                        : l10n.upToDateStatus,
+                    l10n.aboutDescription,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  if (_updateResult!.updateAvailable) ...[
-                    const SizedBox(height: UiConstants.buttonSpacing),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: isBusy ? null : _downloadUpdate,
-                        icon: _installingUpdate
-                            ? const SizedBox(
-                                height: UiConstants.loadingIndicatorSize,
-                                width: UiConstants.loadingIndicatorSize,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
-                                ),
-                              )
-                            : const Icon(Icons.system_update_alt_outlined),
-                        label: Text(l10n.installLatestApkButton, textAlign: TextAlign.center),
-                      ),
+                  const SizedBox(height: UiConstants.largeSpacing),
+                  Text(
+                    l10n.versionLabel(version),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: UiConstants.buttonSpacing),
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppButton(
+                      onPressed: isBusy ? null : () => _openRepo(context),
+                      icon: const Icon(Icons.open_in_new_outlined),
+                      label: l10n.githubRepositoryButton,
                     ),
-                    if (_installingUpdate) ...[
+                  ),
+                  const SizedBox(height: UiConstants.buttonSpacing),
+                  SizedBox(
+                    width: double.infinity,
+                    child: AppButton(
+                      onPressed: isBusy ? null : _checkForUpdates,
+                      icon: _checkingUpdates
+                          ? const SizedBox(
+                              height: UiConstants.loadingIndicatorSize,
+                              width: UiConstants.loadingIndicatorSize,
+                              child: CircularProgressIndicator(
+                                strokeWidth:
+                                    UiConstants.loadingIndicatorStrokeWidth,
+                              ),
+                            )
+                          : const Icon(Icons.update_outlined),
+                      label: l10n.checkForUpdatesButton,
+                    ),
+                  ),
+                  if (_updateResult != null) ...[
+                    const SizedBox(height: UiConstants.mediumSpacing),
+                    Text(
+                      _updateResult!.updateAvailable
+                          ? l10n.updateAvailableStatus(
+                              _updateResult!.latestVersion,
+                            )
+                          : l10n.upToDateStatus,
+                    ),
+                    if (_updateResult!.updateAvailable) ...[
                       const SizedBox(height: UiConstants.buttonSpacing),
                       SizedBox(
                         width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: _cancelDownload,
-                          icon: const Icon(Icons.close),
-                          label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                        child: AppButton(
+                          onPressed: isBusy ? null : _downloadUpdate,
+                          icon: _installingUpdate
+                              ? const SizedBox(
+                                  height: UiConstants.loadingIndicatorSize,
+                                  width: UiConstants.loadingIndicatorSize,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth:
+                                        UiConstants.loadingIndicatorStrokeWidth,
+                                  ),
+                                )
+                              : const Icon(Icons.system_update_alt_outlined),
+                          label: l10n.installLatestApkButton,
                         ),
                       ),
-                    ],
-                    if (_installingUpdate) ...[
-                      const SizedBox(height: UiConstants.smallSpacing),
-                      LinearProgressIndicator(value: _downloadProgress),
-                      const SizedBox(height: UiConstants.xxSmallSpacing),
-                      Text(
-                        _downloadProgress == null
-                            ? l10n.downloadingUpdate
-                            : l10n.downloadingUpdateProgress(
-                                (_downloadProgress! * 100).clamp(0, 100).toStringAsFixed(0),
-                              ),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
+                      if (_installingUpdate) ...[
+                        const SizedBox(height: UiConstants.buttonSpacing),
+                        SizedBox(
+                          width: double.infinity,
+                          child: AppButton(
+                            onPressed: _cancelDownload,
+                            icon: const Icon(Icons.close),
+                            label: l10n.cancelButton,
+                          ),
+                        ),
+                      ],
+                      if (_installingUpdate) ...[
+                        const SizedBox(height: UiConstants.smallSpacing),
+                        LinearProgressIndicator(value: _downloadProgress),
+                        const SizedBox(height: UiConstants.xxSmallSpacing),
+                        Text(
+                          _downloadProgress == null
+                              ? l10n.downloadingUpdate
+                              : l10n.downloadingUpdateProgress(
+                                  (_downloadProgress! * 100)
+                                      .clamp(0, 100)
+                                      .toStringAsFixed(0),
+                                ),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
                     ],
                   ],
                 ],
-                  ],
               );
             },
           ),

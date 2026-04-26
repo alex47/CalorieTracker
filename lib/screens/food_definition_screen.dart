@@ -5,6 +5,7 @@ import '../models/food_definition.dart';
 import '../services/food_library_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/app_button.dart';
 import '../widgets/labeled_input_box.dart';
 
 class FoodDefinitionScreen extends StatefulWidget {
@@ -191,7 +192,8 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
               controller: _unitAmountController,
               label: l10n.standardUnitAmountLabel,
               contentHeight: UiConstants.settingsFieldHeight,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
@@ -200,7 +202,8 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
               contentHeight: UiConstants.settingsFieldHeight,
               borderColor: AppColors.calories,
               textColor: AppColors.calories,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
@@ -209,7 +212,8 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
               contentHeight: UiConstants.settingsFieldHeight,
               borderColor: AppColors.fat,
               textColor: AppColors.fat,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
@@ -218,7 +222,8 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
               contentHeight: UiConstants.settingsFieldHeight,
               borderColor: AppColors.protein,
               textColor: AppColors.protein,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
@@ -227,7 +232,8 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
               contentHeight: UiConstants.settingsFieldHeight,
               borderColor: AppColors.carbs,
               textColor: AppColors.carbs,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: controlSpacing),
             LabeledInputBox(
@@ -244,10 +250,10 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
               ),
             ],
             const SizedBox(height: UiConstants.mediumSpacing),
-            FilledButton.icon(
+            AppButton(
               onPressed: _saving ? null : _save,
               icon: const Icon(Icons.save_outlined),
-              label: Text(l10n.saveButton, textAlign: TextAlign.center),
+              label: l10n.saveButton,
             ),
           ],
         ),

@@ -6,6 +6,7 @@ import '../services/macro_ratio_preset_catalog.dart';
 import '../services/metabolic_profile_history_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_table_card.dart';
@@ -28,7 +29,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _historyFuture = MetabolicProfileHistoryService.instance.fetchProfileHistory();
+    _historyFuture =
+        MetabolicProfileHistoryService.instance.fetchProfileHistory();
   }
 
   DateTime _dayOnly(DateTime date) => DateTime(date.year, date.month, date.day);
@@ -42,7 +44,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
 
   void _reloadHistory() {
     setState(() {
-      _historyFuture = MetabolicProfileHistoryService.instance.fetchProfileHistory();
+      _historyFuture =
+          MetabolicProfileHistoryService.instance.fetchProfileHistory();
     });
   }
 
@@ -63,7 +66,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   }
 
   Future<MetabolicProfile> _defaultProfileForAdd() async {
-    final profile = await MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(
+    final profile = await MetabolicProfileHistoryService.instance
+        .getEffectiveProfileForDate(
       date: DateTime.now(),
     );
     if (profile != null) {
@@ -143,7 +147,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
     try {
       if (result.delete) {
         final deleteDate = result.profileDate;
-        await MetabolicProfileHistoryService.instance.deleteProfileForDate(deleteDate);
+        await MetabolicProfileHistoryService.instance
+            .deleteProfileForDate(deleteDate);
         _reloadHistory();
         return;
       }
@@ -152,8 +157,10 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
         date: result.profileDate,
         profile: result.profile!,
       );
-      if (originalDate != null && _dayOnly(originalDate) != _dayOnly(result.profileDate)) {
-        await MetabolicProfileHistoryService.instance.deleteProfileForDate(originalDate);
+      if (originalDate != null &&
+          _dayOnly(originalDate) != _dayOnly(result.profileDate)) {
+        await MetabolicProfileHistoryService.instance
+            .deleteProfileForDate(originalDate);
       }
       _reloadHistory();
     } catch (e) {
@@ -191,7 +198,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
           FutureBuilder<List<MetabolicProfileHistoryEntry>>(
             future: _historyFuture,
             builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
               if (snapshot.hasError) {
@@ -200,10 +208,10 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 );
               }
-              final entries = snapshot.data ?? const <MetabolicProfileHistoryEntry>[];
-              final existingDateKeys = entries
-                  .map((e) => _formatDateKey(e.profileDate))
-                  .toSet();
+              final entries =
+                  snapshot.data ?? const <MetabolicProfileHistoryEntry>[];
+              final existingDateKeys =
+                  entries.map((e) => _formatDateKey(e.profileDate)).toSet();
               return Column(
                 children: [
                   if (entries.isEmpty)
@@ -245,10 +253,11 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
                   const SizedBox(height: UiConstants.largeSpacing),
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => _openAddDialog(existingDateKeys: existingDateKeys),
+                    child: AppButton(
+                      onPressed: () =>
+                          _openAddDialog(existingDateKeys: existingDateKeys),
                       icon: const Icon(Icons.add_outlined),
-                      label: Text(l10n.addButton, textAlign: TextAlign.center),
+                      label: l10n.addButton,
                     ),
                   ),
                 ],
@@ -283,10 +292,12 @@ class _MetabolicProfileEditorDialog extends StatefulWidget {
   final String Function(AppLocalizations l10n, String key) presetLabel;
 
   @override
-  State<_MetabolicProfileEditorDialog> createState() => _MetabolicProfileEditorDialogState();
+  State<_MetabolicProfileEditorDialog> createState() =>
+      _MetabolicProfileEditorDialogState();
 }
 
-class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDialog> {
+class _MetabolicProfileEditorDialogState
+    extends State<_MetabolicProfileEditorDialog> {
   late final TextEditingController _ageController;
   late final TextEditingController _heightController;
   late final TextEditingController _weightController;
@@ -307,7 +318,8 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
     _selectedSex = widget.initialProfile.sex;
     _selectedActivityLevel = widget.initialProfile.activityLevel;
     _selectedMacroPresetKey = widget.initialPresetKey;
-    _ageController = TextEditingController(text: widget.initialProfile.age.toString());
+    _ageController =
+        TextEditingController(text: widget.initialProfile.age.toString());
     _heightController = TextEditingController(
       text: widget.initialProfile.heightCm % 1 == 0
           ? widget.initialProfile.heightCm.toStringAsFixed(0)
@@ -421,17 +433,17 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
             ),
             actionItems: [
               DialogActionItem(
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: () => Navigator.pop(dialogContext, true),
                   icon: const Icon(Icons.delete_outline),
-                  label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+                  label: l10n.deleteButton,
                 ),
               ),
               DialogActionItem(
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: () => Navigator.pop(dialogContext, false),
                   icon: const Icon(Icons.close),
-                  label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                  label: l10n.cancelButton,
                 ),
               ),
             ],
@@ -455,7 +467,8 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
     const dialogHorizontalPadding = UiConstants.pagePadding;
     const dialogVerticalPadding = UiConstants.largeSpacing;
     final maxDialogContentWidth = windowWidth - (dialogHorizontalPadding * 2);
-    final dialogContentWidth = maxDialogContentWidth.clamp(0.0, 560.0).toDouble();
+    final dialogContentWidth =
+        maxDialogContentWidth.clamp(0.0, 560.0).toDouble();
 
     return AppDialog(
       insetPadding: const EdgeInsets.symmetric(
@@ -469,113 +482,123 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            LabeledGroupBox(
-              label: l10n.profileDateLabel,
-              value: '',
-              borderColor: AppColors.subtleBorder,
-              textStyle: Theme.of(context).textTheme.bodyMedium,
-              backgroundColor: Colors.transparent,
-              contentHeight: UiConstants.settingsFieldHeight,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: UiConstants.tableRowHorizontalPadding,
-              ),
-              child: InkWell(
-                onTap: () => _pickDate(context),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        widget.formatDateKey(_selectedDate),
-                        style: Theme.of(context).textTheme.bodyMedium,
+              LabeledGroupBox(
+                label: l10n.profileDateLabel,
+                value: '',
+                borderColor: AppColors.subtleBorder,
+                textStyle: Theme.of(context).textTheme.bodyMedium,
+                backgroundColor: Colors.transparent,
+                contentHeight: UiConstants.settingsFieldHeight,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: UiConstants.tableRowHorizontalPadding,
+                ),
+                child: InkWell(
+                  onTap: () => _pickDate(context),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.formatDateKey(_selectedDate),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
                       ),
-                    ),
-                    const Icon(Icons.calendar_today_outlined, size: 18),
-                  ],
+                      const Icon(Icons.calendar_today_outlined, size: 18),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledInputBox(
-              label: l10n.ageLabel,
-              controller: _ageController,
-              contentHeight: UiConstants.settingsFieldHeight,
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledDropdownBox<String>(
-              label: l10n.sexLabel,
-              value: _selectedSex,
-              contentHeight: UiConstants.settingsFieldHeight,
-              items: [
-                DropdownMenuItem(value: 'male', child: Text(l10n.sexMale)),
-                DropdownMenuItem(value: 'female', child: Text(l10n.sexFemale)),
-              ],
-              onChanged: (value) {
-                if (value == null) {
-                  return;
-                }
-                setState(() => _selectedSex = value);
-              },
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledInputBox(
-              label: l10n.heightCmLabel,
-              controller: _heightController,
-              contentHeight: UiConstants.settingsFieldHeight,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledInputBox(
-              label: l10n.weightKgLabel,
-              controller: _weightController,
-              contentHeight: UiConstants.settingsFieldHeight,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledDropdownBox<String>(
-              label: l10n.activityLevelLabel,
-              value: _selectedActivityLevel,
-              contentHeight: UiConstants.settingsFieldHeight,
-              items: [
-                DropdownMenuItem(value: 'bmr', child: Text(l10n.activityBmr)),
-                DropdownMenuItem(value: 'sedentary', child: Text(l10n.activitySedentary)),
-                DropdownMenuItem(value: 'light', child: Text(l10n.activityLight)),
-                DropdownMenuItem(value: 'moderate', child: Text(l10n.activityModerate)),
-                DropdownMenuItem(value: 'active', child: Text(l10n.activityActive)),
-                DropdownMenuItem(value: 'very_active', child: Text(l10n.activityVeryActive)),
-              ],
-              onChanged: (value) {
-                if (value == null) {
-                  return;
-                }
-                setState(() => _selectedActivityLevel = value);
-              },
-            ),
-            const SizedBox(height: UiConstants.smallSpacing),
-            LabeledDropdownBox<String>(
-              label: l10n.macroPresetLabel,
-              value: _selectedMacroPresetKey,
-              contentHeight: UiConstants.settingsFieldHeight,
-              items: widget.macroRatioPresets.map((preset) {
-                return DropdownMenuItem<String>(
-                  value: preset.key,
-                  child: Text(widget.presetLabel(l10n, preset.key)),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value == null) {
-                  return;
-                }
-                setState(() => _selectedMacroPresetKey = value);
-              },
-            ),
+              const SizedBox(height: UiConstants.smallSpacing),
+              LabeledInputBox(
+                label: l10n.ageLabel,
+                controller: _ageController,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: UiConstants.smallSpacing),
+              LabeledDropdownBox<String>(
+                label: l10n.sexLabel,
+                value: _selectedSex,
+                contentHeight: UiConstants.settingsFieldHeight,
+                items: [
+                  DropdownMenuItem(value: 'male', child: Text(l10n.sexMale)),
+                  DropdownMenuItem(
+                      value: 'female', child: Text(l10n.sexFemale)),
+                ],
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() => _selectedSex = value);
+                },
+              ),
+              const SizedBox(height: UiConstants.smallSpacing),
+              LabeledInputBox(
+                label: l10n.heightCmLabel,
+                controller: _heightController,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: UiConstants.smallSpacing),
+              LabeledInputBox(
+                label: l10n.weightKgLabel,
+                controller: _weightController,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: UiConstants.smallSpacing),
+              LabeledDropdownBox<String>(
+                label: l10n.activityLevelLabel,
+                value: _selectedActivityLevel,
+                contentHeight: UiConstants.settingsFieldHeight,
+                items: [
+                  DropdownMenuItem(value: 'bmr', child: Text(l10n.activityBmr)),
+                  DropdownMenuItem(
+                      value: 'sedentary', child: Text(l10n.activitySedentary)),
+                  DropdownMenuItem(
+                      value: 'light', child: Text(l10n.activityLight)),
+                  DropdownMenuItem(
+                      value: 'moderate', child: Text(l10n.activityModerate)),
+                  DropdownMenuItem(
+                      value: 'active', child: Text(l10n.activityActive)),
+                  DropdownMenuItem(
+                      value: 'very_active',
+                      child: Text(l10n.activityVeryActive)),
+                ],
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() => _selectedActivityLevel = value);
+                },
+              ),
+              const SizedBox(height: UiConstants.smallSpacing),
+              LabeledDropdownBox<String>(
+                label: l10n.macroPresetLabel,
+                value: _selectedMacroPresetKey,
+                contentHeight: UiConstants.settingsFieldHeight,
+                items: widget.macroRatioPresets.map((preset) {
+                  return DropdownMenuItem<String>(
+                    value: preset.key,
+                    child: Text(widget.presetLabel(l10n, preset.key)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() => _selectedMacroPresetKey = value);
+                },
+              ),
               if (_validationMessage != null) ...[
                 const SizedBox(height: UiConstants.mediumSpacing),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _validationMessage!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
                   ),
                 ),
               ],
@@ -585,28 +608,25 @@ class _MetabolicProfileEditorDialogState extends State<_MetabolicProfileEditorDi
       ),
       actionItems: [
         DialogActionItem(
-          child: FilledButton.icon(
+          child: AppButton(
             onPressed: () => _save(l10n),
             icon: const Icon(Icons.save_outlined),
-            label: Text(
-              l10n.saveButton,
-              textAlign: TextAlign.center,
-            ),
+            label: l10n.saveButton,
           ),
         ),
         if (widget.isEditing)
           DialogActionItem(
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => _confirmAndDelete(l10n),
               icon: const Icon(Icons.delete_outline),
-              label: Text(l10n.deleteButton, textAlign: TextAlign.center),
+              label: l10n.deleteButton,
             ),
           ),
         DialogActionItem(
-          child: FilledButton.icon(
+          child: AppButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close),
-            label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+            label: l10n.cancelButton,
           ),
         ),
       ],

@@ -9,6 +9,7 @@ import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/food_breakdown_card.dart';
@@ -84,7 +85,8 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
         items.map((item) {
           final multiplier = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
           final safeMultiplier = multiplier > 0 ? multiplier : 1.0;
-          return TextEditingController(text: _formatNumberNoForcedRounding(safeMultiplier));
+          return TextEditingController(
+              text: _formatNumberNoForcedRounding(safeMultiplier));
         }),
       );
   }
@@ -107,10 +109,13 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
         return false;
       }
       final item = _items[i];
-      final standardUnitAmount = ((item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0);
-      final standardCalories = ((item['standard_calories'] as num?)?.toDouble() ?? 0);
+      final standardUnitAmount =
+          ((item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0);
+      final standardCalories =
+          ((item['standard_calories'] as num?)?.toDouble() ?? 0);
       final standardFat = ((item['standard_fat'] as num?)?.toDouble() ?? 0);
-      final standardProtein = ((item['standard_protein'] as num?)?.toDouble() ?? 0);
+      final standardProtein =
+          ((item['standard_protein'] as num?)?.toDouble() ?? 0);
       final standardCarbs = ((item['standard_carbs'] as num?)?.toDouble() ?? 0);
       item['multiplier'] = parsed;
       item['calories'] = FoodItem.computeCalories(
@@ -175,7 +180,8 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
         _rawAiResponseText = null;
       });
     } catch (error) {
-      final rawResponse = error is AiParseException ? error.rawResponseText : null;
+      final rawResponse =
+          error is AiParseException ? error.rawResponseText : null;
       setState(() {
         _errorMessage = l10n.failedToFetchCalories(localizeError(error, l10n));
         _rawAiResponseText = rawResponse;
@@ -195,26 +201,26 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
         actionItems: [
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               icon: const Icon(Icons.bookmark_add_outlined),
-              label: Text(l10n.saveToLibraryButton, textAlign: TextAlign.center),
+              label: l10n.saveToLibraryButton,
             ),
           ),
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext, false),
               icon: const Icon(Icons.visibility_off_outlined),
-              label: Text(l10n.keepPrivateButton, textAlign: TextAlign.center),
+              label: l10n.keepPrivateButton,
             ),
           ),
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
-              label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+              label: l10n.cancelButton,
             ),
           ),
         ],
@@ -280,7 +286,7 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
               keyboardType: TextInputType.multiline,
             ),
             const SizedBox(height: UiConstants.mediumSpacing),
-            FilledButton.icon(
+            AppButton(
               onPressed: isBusy
                   ? null
                   : () {
@@ -306,7 +312,7 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
                       ),
                     )
                   : const Icon(Icons.auto_awesome_outlined),
-              label: Text(l10n.estimateCaloriesButton, textAlign: TextAlign.center),
+              label: l10n.estimateCaloriesButton,
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: UiConstants.mediumSpacing),
@@ -315,7 +321,8 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
                 style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ],
-            if (_rawAiResponseText != null && _rawAiResponseText!.trim().isNotEmpty) ...[
+            if (_rawAiResponseText != null &&
+                _rawAiResponseText!.trim().isNotEmpty) ...[
               const SizedBox(height: UiConstants.smallSpacing),
               RawAiResponseSection(
                 title: l10n.showAiResponseButton,
@@ -355,18 +362,18 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton.icon(
+                    child: AppButton(
                       onPressed: isBusy ? null : () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
-                      label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                      label: l10n.cancelButton,
                     ),
                   ),
                   const SizedBox(width: UiConstants.buttonSpacing),
                   Expanded(
-                    child: FilledButton.icon(
+                    child: AppButton(
                       onPressed: isBusy ? null : _saveAiItems,
                       icon: const Icon(Icons.save_outlined),
-                      label: Text(l10n.saveButton, textAlign: TextAlign.center),
+                      label: l10n.saveButton,
                     ),
                   ),
                 ],
@@ -413,21 +420,26 @@ class _AiResultsCard extends StatelessWidget {
                   '')
               .trim();
           return FoodBreakdownCard(
-            margin: const EdgeInsets.only(bottom: UiConstants.tableRowVerticalPadding),
+            margin: const EdgeInsets.only(
+                bottom: UiConstants.tableRowVerticalPadding),
             name: (item['name'] as String?) ?? '',
             calories: (item['calories'] as num?)?.round() ?? 0,
             fat: (item['fat'] as num?)?.toDouble() ?? 0,
             protein: (item['protein'] as num?)?.toDouble() ?? 0,
             carbs: (item['carbs'] as num?)?.toDouble() ?? 0,
             notes: (item['notes'] as String?) ?? '',
-            multiplierLabel: '${l10n.amountLabel} (${standardUnit.isEmpty ? '-' : standardUnit})',
+            multiplierLabel:
+                '${l10n.amountLabel} (${standardUnit.isEmpty ? '-' : standardUnit})',
             multiplierController: multiplierControllers[index],
             multiplierEnabled: true,
             onMultiplierChanged: (value) => onMultiplierChanged(index, value),
-            standardUnitAmount: (item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0,
-            standardCalories: (item['standard_calories'] as num?)?.toDouble() ?? 0,
+            standardUnitAmount:
+                (item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0,
+            standardCalories:
+                (item['standard_calories'] as num?)?.toDouble() ?? 0,
             standardFat: (item['standard_fat'] as num?)?.toDouble() ?? 0,
-            standardProtein: (item['standard_protein'] as num?)?.toDouble() ?? 0,
+            standardProtein:
+                (item['standard_protein'] as num?)?.toDouble() ?? 0,
             standardCarbs: (item['standard_carbs'] as num?)?.toDouble() ?? 0,
             onComputedValuesChanged: ({
               required calories,

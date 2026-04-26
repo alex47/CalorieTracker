@@ -16,10 +16,12 @@ import 'services/settings_service.dart';
 import 'services/update_coordinator.dart';
 import 'theme/app_colors.dart';
 import 'theme/ui_constants.dart';
+import 'widgets/app_button.dart';
 import 'widgets/app_dialog.dart';
 import 'widgets/dialog_action_row.dart';
 
-final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
@@ -87,21 +89,18 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
                 actionItems: [
                   DialogActionItem(
                     width: UiConstants.buttonMinWidth,
-                    child: FilledButton.icon(
+                    child: AppButton(
                       onPressed: () => Navigator.pop(dialogContext, false),
                       icon: const Icon(Icons.schedule_outlined),
-                      label: Text(
-                        l10n.updateAvailableDialogLater,
-                        textAlign: TextAlign.center,
-                      ),
+                      label: l10n.updateAvailableDialogLater,
                     ),
                   ),
                   DialogActionItem(
                     width: UiConstants.buttonMinWidth,
-                    child: FilledButton.icon(
+                    child: AppButton(
                       onPressed: () => Navigator.pop(dialogContext, true),
                       icon: const Icon(Icons.info_outline),
-                      label: Text(l10n.updateAvailableDialogView, textAlign: TextAlign.center),
+                      label: l10n.updateAvailableDialogView,
                     ),
                   ),
                 ],
@@ -175,148 +174,150 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
         navigatorKey: navigatorKey,
         locale: _resolveLocale(settingsService.settings.languageCode),
         onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.buttonBackground,
-          brightness: Brightness.dark,
-        )
-            .copyWith(
-              primary: AppColors.buttonBackground,
-              onPrimary: AppColors.buttonForeground,
-              surface: AppColors.boxBackground,
-              surfaceContainerHighest: AppColors.boxBackground,
-              onSurface: AppColors.text,
-              onSurfaceVariant: AppColors.text,
-              outline: AppColors.border,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.buttonBackground,
+            brightness: Brightness.dark,
+          ).copyWith(
+            primary: AppColors.buttonBackground,
+            onPrimary: AppColors.buttonForeground,
+            surface: AppColors.boxBackground,
+            surfaceContainerHighest: AppColors.boxBackground,
+            onSurface: AppColors.text,
+            onSurfaceVariant: AppColors.text,
+            outline: AppColors.border,
+          ),
+          scaffoldBackgroundColor: AppColors.pageBackground,
+          cardTheme: const CardThemeData(
+            color: AppColors.boxBackground,
+            shape: RoundedRectangleBorder(
+              side: BorderSide(color: AppColors.border),
+              borderRadius:
+                  BorderRadius.all(Radius.circular(UiConstants.cornerRadius)),
             ),
-        scaffoldBackgroundColor: AppColors.pageBackground,
-        cardTheme: const CardThemeData(
-          color: AppColors.boxBackground,
-          shape: RoundedRectangleBorder(
-            side: BorderSide(color: AppColors.border),
-            borderRadius: BorderRadius.all(Radius.circular(UiConstants.cornerRadius)),
           ),
-        ),
-        dividerTheme: const DividerThemeData(
-          color: AppColors.border,
-          thickness: 1,
-        ),
-        textTheme: appTextTheme,
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.boxBackground,
-          foregroundColor: AppColors.text,
-          centerTitle: true,
-          titleTextStyle: appTextTheme.titleLarge?.copyWith(
-            color: AppColors.text,
-            fontSize: UiConstants.textLarge,
+          dividerTheme: const DividerThemeData(
+            color: AppColors.border,
+            thickness: 1,
           ),
-        ),
-        popupMenuTheme: PopupMenuThemeData(
-          color: AppColors.boxBackground,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-            side: const BorderSide(color: AppColors.border, width: 1),
+          textTheme: appTextTheme,
+          appBarTheme: AppBarTheme(
+            backgroundColor: AppColors.boxBackground,
+            foregroundColor: AppColors.text,
+            centerTitle: true,
+            titleTextStyle: appTextTheme.titleLarge?.copyWith(
+              color: AppColors.text,
+              fontSize: UiConstants.textLarge,
+            ),
           ),
-          textStyle: appTextTheme.bodyMedium?.copyWith(
-            fontSize: UiConstants.textMedium,
-            color: AppColors.text,
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-            borderSide: const BorderSide(color: AppColors.border),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-            borderSide: const BorderSide(color: AppColors.border, width: 2),
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-            borderSide: const BorderSide(color: AppColors.border),
-          ),
-          labelStyle: appTextTheme.bodyLarge?.copyWith(
-            color: AppColors.text,
-            fontSize: UiConstants.textMedium,
-          ),
-          floatingLabelStyle: appTextTheme.bodyLarge?.copyWith(
-            color: AppColors.text,
-            fontSize: UiConstants.textMedium,
-          ),
-        ),
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: AppColors.text,
-          selectionHandleColor: AppColors.text,
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.buttonBackground,
-            foregroundColor: AppColors.buttonForeground,
-            minimumSize: const Size(0, 52),
-            padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-            textStyle: appTextTheme.labelLarge,
+          popupMenuTheme: PopupMenuThemeData(
+            color: AppColors.boxBackground,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+              side: const BorderSide(color: AppColors.border, width: 1),
             ),
+            textStyle: appTextTheme.bodyMedium?.copyWith(
+              fontSize: UiConstants.textMedium,
+              color: AppColors.text,
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+              borderSide: const BorderSide(color: AppColors.border, width: 2),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            labelStyle: appTextTheme.bodyLarge?.copyWith(
+              color: AppColors.text,
+              fontSize: UiConstants.textMedium,
+            ),
+            floatingLabelStyle: appTextTheme.bodyLarge?.copyWith(
+              color: AppColors.text,
+              fontSize: UiConstants.textMedium,
+            ),
+          ),
+          textSelectionTheme: const TextSelectionThemeData(
+            cursorColor: AppColors.text,
+            selectionHandleColor: AppColors.text,
+          ),
+          filledButtonTheme: FilledButtonThemeData(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.buttonBackground,
+              foregroundColor: AppColors.buttonForeground,
+              minimumSize: const Size(0, 52),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: UiConstants.pagePadding),
+              textStyle: appTextTheme.labelLarge,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+              ),
+            ).copyWith(
+              side: WidgetStateProperty.resolveWith<BorderSide>((states) {
+                if (states.contains(WidgetState.disabled)) {
+                  return BorderSide(color: disabledButtonBorderColor, width: 1);
+                }
+                return BorderSide(color: buttonBorderColor, width: 1);
+              }),
+            ),
+          ),
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            backgroundColor: AppColors.buttonBackground,
+            foregroundColor: AppColors.buttonForeground,
           ).copyWith(
-            side: WidgetStateProperty.resolveWith<BorderSide>((states) {
-              if (states.contains(WidgetState.disabled)) {
-                return BorderSide(color: disabledButtonBorderColor, width: 1);
-              }
-              return BorderSide(color: buttonBorderColor, width: 1);
-            }),
-          ),
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: AppColors.buttonBackground,
-          foregroundColor: AppColors.buttonForeground,
-        ).copyWith(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
-            side: BorderSide(
-              color: buttonBorderColor,
-              width: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+              side: BorderSide(
+                color: buttonBorderColor,
+                width: 1,
+              ),
             ),
           ),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
-      ),
-      themeMode: ThemeMode.dark,
-      routes: {
-        SettingsScreen.routeName: (_) => const SettingsScreen(),
-        FoodsScreen.routeName: (_) => const FoodsScreen(),
-        MetabolicProfileScreen.routeName: (_) => const MetabolicProfileScreen(),
-        AboutScreen.routeName: (_) => const AboutScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == AddEntryScreen.routeName) {
-          final args = settings.arguments;
-          final date = args is DateTime ? args : DateTime.now();
-          return MaterialPageRoute(
-            builder: (_) => AddEntryScreen(date: date),
-          );
-        }
-        if (settings.name == AddNewFoodScreen.routeName) {
-          final args = settings.arguments;
-          final date = args is DateTime ? args : DateTime.now();
-          return MaterialPageRoute(
-            builder: (_) => AddNewFoodScreen(date: date),
-          );
-        }
-        return null;
-      },
-      home: const HomeScreen(),
-      navigatorObservers: [routeObserver],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+        themeMode: ThemeMode.dark,
+        routes: {
+          SettingsScreen.routeName: (_) => const SettingsScreen(),
+          FoodsScreen.routeName: (_) => const FoodsScreen(),
+          MetabolicProfileScreen.routeName: (_) =>
+              const MetabolicProfileScreen(),
+          AboutScreen.routeName: (_) => const AboutScreen(),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == AddEntryScreen.routeName) {
+            final args = settings.arguments;
+            final date = args is DateTime ? args : DateTime.now();
+            return MaterialPageRoute(
+              builder: (_) => AddEntryScreen(date: date),
+            );
+          }
+          if (settings.name == AddNewFoodScreen.routeName) {
+            final args = settings.arguments;
+            final date = args is DateTime ? args : DateTime.now();
+            return MaterialPageRoute(
+              builder: (_) => AddNewFoodScreen(date: date),
+            );
+          }
+          return null;
+        },
+        home: const HomeScreen(),
+        navigatorObservers: [routeObserver],
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         supportedLocales: AppLocalizations.supportedLocales,
       ),
     );
@@ -324,6 +325,7 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
 }
 
 String formatDate(DateTime date, {String? languageCode}) {
-  final resolvedLanguageCode = languageCode ?? SettingsService.instance.settings.languageCode;
+  final resolvedLanguageCode =
+      languageCode ?? SettingsService.instance.settings.languageCode;
   return DateFormat.yMMMMd(resolvedLanguageCode).format(date);
 }

@@ -15,6 +15,7 @@ import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/labeled_group_box.dart';
@@ -41,7 +42,8 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
   String? _sourceHash;
   Map<String, dynamic>? _snapshot;
 
-  DateTime get _dayOnlyDate => DateTime(widget.date.year, widget.date.month, widget.date.day);
+  DateTime get _dayOnlyDate =>
+      DateTime(widget.date.year, widget.date.month, widget.date.day);
 
   @override
   void initState() {
@@ -58,10 +60,13 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
       final date = _dayOnlyDate;
       final settings = SettingsService.instance.settings;
       final items = await EntriesRepository.instance.fetchItemsForDate(date);
-      final profile = await MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(
+      final profile = await MetabolicProfileHistoryService.instance
+          .getEffectiveProfileForDate(
         date: date,
       );
-      final targets = profile == null ? null : NutritionTargetService.targetsFromProfile(profile);
+      final targets = profile == null
+          ? null
+          : NutritionTargetService.targetsFromProfile(profile);
       final snapshot = _buildSummarySnapshot(
         date: date,
         items: items,
@@ -161,7 +166,9 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.failedToSummarizeDay(localizeError(error, l10n)))),
+        SnackBar(
+            content:
+                Text(l10n.failedToSummarizeDay(localizeError(error, l10n)))),
       );
       final raw = error is AiParseException ? error.rawResponseText : null;
       if (raw != null && raw.trim().isNotEmpty) {
@@ -189,10 +196,10 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
         ),
         actionItems: [
           DialogActionItem(
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
-              label: Text(l10n.acceptButton, textAlign: TextAlign.center),
+              label: l10n.acceptButton,
             ),
           ),
         ],
@@ -208,9 +215,11 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
     required String languageCode,
   }) {
     final sortedItems = [...items]..sort((a, b) => a.id.compareTo(b.id));
-    final calories = sortedItems.fold<int>(0, (sum, item) => sum + item.calories);
+    final calories =
+        sortedItems.fold<int>(0, (sum, item) => sum + item.calories);
     final fat = sortedItems.fold<double>(0, (sum, item) => sum + item.fat);
-    final protein = sortedItems.fold<double>(0, (sum, item) => sum + item.protein);
+    final protein =
+        sortedItems.fold<double>(0, (sum, item) => sum + item.protein);
     final carbs = sortedItems.fold<double>(0, (sum, item) => sum + item.carbs);
     final summaryDateKey = DaySummaryService.instance.dayKey(date);
     final macroPresetKey = profile == null
@@ -268,9 +277,11 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
 
     Map<String, dynamic>? goalAdherence;
     if (targets != null) {
-      final caloriesStatus = adherenceStatus(actual: calories, target: targets.calories);
+      final caloriesStatus =
+          adherenceStatus(actual: calories, target: targets.calories);
       final fatStatus = adherenceStatus(actual: fat, target: targets.fat);
-      final proteinStatus = adherenceStatus(actual: protein, target: targets.protein);
+      final proteinStatus =
+          adherenceStatus(actual: protein, target: targets.protein);
       final carbsStatus = adherenceStatus(actual: carbs, target: targets.carbs);
       final hasGoalGap = caloriesStatus != 'on_target' ||
           fatStatus != 'on_target' ||
@@ -394,9 +405,11 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
                 if (_loadError != null)
                   Text(
                     _loadError!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error),
                   )
-                else if (summary == null && !(_summarizing && _summarizingAgain))
+                else if (summary == null &&
+                    !(_summarizing && _summarizingAgain))
                   Text(l10n.noDailySummaryYet),
                 if (_loadError == null && summary != null) ...[
                   _SummaryOverviewCard(
@@ -428,23 +441,22 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
                 const SizedBox(height: UiConstants.largeSpacing),
                 SizedBox(
                   width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _summarizing || _items.isEmpty ? null : _summarize,
+                  child: AppButton(
+                    onPressed:
+                        _summarizing || _items.isEmpty ? null : _summarize,
                     icon: _summarizing
                         ? const SizedBox(
                             height: UiConstants.loadingIndicatorSize,
                             width: UiConstants.loadingIndicatorSize,
                             child: CircularProgressIndicator(
-                              strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                              strokeWidth:
+                                  UiConstants.loadingIndicatorStrokeWidth,
                             ),
                           )
                         : const Icon(Icons.auto_awesome_outlined),
-                    label: Text(
-                      (summary != null || _summarizingAgain)
-                          ? l10n.summarizeAgainButton
-                          : l10n.summarizeDayButton,
-                      textAlign: TextAlign.center,
-                    ),
+                    label: (summary != null || _summarizingAgain)
+                        ? l10n.summarizeAgainButton
+                        : l10n.summarizeDayButton,
                   ),
                 ),
               ],
@@ -517,7 +529,8 @@ class _SummarySectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleStyle = Theme.of(context).textTheme.titleSmall?.copyWith(color: accentColor);
+    final titleStyle =
+        Theme.of(context).textTheme.titleSmall?.copyWith(color: accentColor);
     return LabeledGroupBox(
       label: '',
       value: '',
@@ -549,7 +562,8 @@ class _SummarySectionCard extends StatelessWidget {
                 else
                   ...items.map(
                     (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: UiConstants.xxSmallSpacing),
+                      padding: const EdgeInsets.only(
+                          bottom: UiConstants.xxSmallSpacing),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

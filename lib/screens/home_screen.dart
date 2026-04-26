@@ -14,6 +14,7 @@ import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/app_date_utils.dart';
+import '../widgets/app_button.dart';
 import '../widgets/food_table_card.dart';
 import '../widgets/labeled_progress_bar.dart';
 import 'about_screen.dart';
@@ -35,7 +36,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen>
+    with RouteAware, WidgetsBindingObserver {
   static const int _initialPage = 10000;
   static const double _progressBarHeight = UiConstants.progressBarHeight;
   static const double _macroCounterGap = UiConstants.macroCounterGap;
@@ -156,7 +158,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
     final key = _dateKey(date);
     return _profileFutures.putIfAbsent(
       key,
-      () => MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(date: date),
+      () => MetabolicProfileHistoryService.instance
+          .getEffectiveProfileForDate(date: date),
     );
   }
 
@@ -287,7 +290,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
           actions: [
             PopupMenuButton<String>(
               iconSize: UiConstants.menuIconSize,
-              constraints: const BoxConstraints(minWidth: UiConstants.popupMenuMinWidth),
+              constraints:
+                  const BoxConstraints(minWidth: UiConstants.popupMenuMinWidth),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
                 side: BorderSide(color: Theme.of(context).colorScheme.outline),
@@ -306,7 +310,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     setState(() {});
                   }
                 } else if (value == MetabolicProfileScreen.routeName) {
-                  await Navigator.pushNamed(context, MetabolicProfileScreen.routeName);
+                  await Navigator.pushNamed(
+                      context, MetabolicProfileScreen.routeName);
                   if (mounted) {
                     _targetFutures.clear();
                     _profileFutures.clear();
@@ -320,7 +325,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                 }
               },
               itemBuilder: (context) {
-                final menuTextStyle = Theme.of(context).popupMenuTheme.textStyle;
+                final menuTextStyle =
+                    Theme.of(context).popupMenuTheme.textStyle;
                 return [
                   PopupMenuItem(
                     value: SettingsScreen.routeName,
@@ -346,7 +352,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                       dense: true,
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.monitor_weight_outlined),
-                      title: Text(l10n.metabolicProfileTitle, style: menuTextStyle),
+                      title: Text(l10n.metabolicProfileTitle,
+                          style: menuTextStyle),
                     ),
                   ),
                   PopupMenuItem(
@@ -365,30 +372,35 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+          padding:
+              const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
           child: Row(
             children: [
               Expanded(
                 child: FutureBuilder<List<FoodItem>>(
                   future: _itemsForDate(_selectedDate),
                   builder: (context, snapshot) {
-                    final hasItems = (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
+                    final hasItems =
+                        (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
                     final canSummarize =
-                        snapshot.connectionState != ConnectionState.waiting && hasItems;
-                    return FilledButton.icon(
-                      onPressed: canSummarize ? () => _openDaySummaryScreen(_selectedDate) : null,
+                        snapshot.connectionState != ConnectionState.waiting &&
+                            hasItems;
+                    return AppButton(
+                      onPressed: canSummarize
+                          ? () => _openDaySummaryScreen(_selectedDate)
+                          : null,
                       icon: const Icon(Icons.auto_awesome_outlined),
-                      label: Text(l10n.summarizeDayButton, textAlign: TextAlign.center),
+                      label: l10n.summarizeDayButton,
                     );
                   },
                 ),
               ),
               const SizedBox(width: UiConstants.buttonSpacing),
               Expanded(
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: _navigateToAdd,
                   icon: const Icon(Icons.add_outlined),
-                  label: Text(l10n.addButton, textAlign: TextAlign.center),
+                  label: l10n.addButton,
                 ),
               ),
             ],
@@ -411,14 +423,17 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                 onRefresh: () => _reloadDate(pageDate),
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(vertical: UiConstants.largeSpacing),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: UiConstants.largeSpacing),
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: UiConstants.pagePadding),
                       child: Center(
                         child: InkWell(
                           onTap: _openWeeklySummary,
-                          borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                          borderRadius:
+                              BorderRadius.circular(UiConstants.cornerRadius),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: UiConstants.smallSpacing,
@@ -437,24 +452,28 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     ),
                     const SizedBox(height: UiConstants.mediumSpacing),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: UiConstants.pagePadding),
                       child: FutureBuilder<List<FoodItem>>(
                         future: _itemsForDate(pageDate),
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting &&
+                          if (snapshot.connectionState ==
+                                  ConnectionState.waiting &&
                               !snapshot.hasData) {
                             return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: UiConstants.smallSpacing),
                               child: Center(child: CircularProgressIndicator()),
                             );
                           }
                           if (snapshot.hasError) {
                             return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: UiConstants.smallSpacing),
                               child: Text(
                                 l10n.failedToLoadDailyTotals,
-                                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                                style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error),
                               ),
                             );
                           }
@@ -466,13 +485,15 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                           return FutureBuilder<DailyTargets?>(
                             future: _targetsForDate(pageDate),
                             builder: (context, targetSnapshot) {
-                              if (targetSnapshot.connectionState == ConnectionState.waiting &&
+                              if (targetSnapshot.connectionState ==
+                                      ConnectionState.waiting &&
                                   !targetSnapshot.hasData) {
                                 return const Padding(
                                   padding: EdgeInsets.symmetric(
                                     vertical: UiConstants.smallSpacing,
                                   ),
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
                                 );
                               }
                               final targets = targetSnapshot.data;
@@ -480,7 +501,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                 return Card(
                                   margin: EdgeInsets.zero,
                                   child: Padding(
-                                    padding: const EdgeInsets.all(UiConstants.mediumSpacing),
+                                    padding: const EdgeInsets.all(
+                                        UiConstants.mediumSpacing),
                                     child: Text(l10n.setMetabolicProfileHint),
                                   ),
                                 );
@@ -508,11 +530,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                     carbsGoal: targets.carbs.toDouble(),
                                     height: _progressBarHeight,
                                     gap: _macroCounterHorizontalGap,
-                                    onFatTap: () => _openMetricDetails(pageDate, MetricType.fat),
-                                    onProteinTap: () =>
-                                        _openMetricDetails(pageDate, MetricType.protein),
-                                    onCarbsTap: () =>
-                                        _openMetricDetails(pageDate, MetricType.carbs),
+                                    onFatTap: () => _openMetricDetails(
+                                        pageDate, MetricType.fat),
+                                    onProteinTap: () => _openMetricDetails(
+                                        pageDate, MetricType.protein),
+                                    onCarbsTap: () => _openMetricDetails(
+                                        pageDate, MetricType.carbs),
                                   ),
                                 ],
                               );
@@ -523,7 +546,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     ),
                     const SizedBox(height: UiConstants.largeSpacing),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: UiConstants.pagePadding),
                       child: Text(
                         l10n.trackedFoods,
                         style: Theme.of(context).textTheme.titleMedium,
@@ -533,10 +557,12 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                     FutureBuilder<List<FoodItem>>(
                       future: _itemsForDate(pageDate),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting &&
+                        if (snapshot.connectionState ==
+                                ConnectionState.waiting &&
                             !snapshot.hasData) {
                           return const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: UiConstants.pagePadding),
                             child: Center(child: CircularProgressIndicator()),
                           );
                         }
@@ -548,7 +574,8 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                             ),
                             child: Text(
                               l10n.failedToLoadEntries,
-                              style: TextStyle(color: Theme.of(context).colorScheme.error),
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error),
                             ),
                           );
                         }
@@ -574,23 +601,28 @@ class _HomeScreenState extends State<HomeScreen> with RouteAware, WidgetsBinding
                                   rows: items.map((item) {
                                     return FoodTableRowData(
                                       onTap: () async {
-                                        final result = await Navigator.push<dynamic>(
+                                        final result =
+                                            await Navigator.push<dynamic>(
                                           context,
                                           MaterialPageRoute(
                                             builder: (_) =>
-                                                FoodItemDetailScreen(item: item, itemDate: pageDate),
+                                                FoodItemDetailScreen(
+                                                    item: item,
+                                                    itemDate: pageDate),
                                           ),
                                         );
                                         if (result == true) {
                                           await _reloadDate(pageDate);
                                           return;
                                         }
-                                        if (result is Map && result['reloadToday'] == true) {
+                                        if (result is Map &&
+                                            result['reloadToday'] == true) {
                                           await _reloadDate(DateTime.now());
                                           if (!_isTodaySelected()) {
                                             await _pageController.animateToPage(
                                               _initialPage,
-                                              duration: UiConstants.homePageSnapDuration,
+                                              duration: UiConstants
+                                                  .homePageSnapDuration,
                                               curve: Curves.easeOutCubic,
                                             );
                                           }

@@ -15,6 +15,7 @@ import '../services/openai_service.dart';
 import '../services/settings_service.dart';
 import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/labeled_dropdown_box.dart';
@@ -31,8 +32,10 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _apiKeyController = TextEditingController();
-  final TextEditingController _maxOutputTokensController = TextEditingController();
-  final TextEditingController _openAiTimeoutController = TextEditingController();
+  final TextEditingController _maxOutputTokensController =
+      TextEditingController();
+  final TextEditingController _openAiTimeoutController =
+      TextEditingController();
   Timer? _autosaveTimer;
   late String _selectedLanguageCode;
   late String _selectedModel;
@@ -78,12 +81,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _saveNonSensitiveSettings() async {
     final current = SettingsService.instance.settings;
-    final shouldSaveSelectedModel =
-        _availableModels.isNotEmpty && _availableModels.contains(_selectedModel);
+    final shouldSaveSelectedModel = _availableModels.isNotEmpty &&
+        _availableModels.contains(_selectedModel);
     final maxOutputTokens =
-        int.tryParse(_maxOutputTokensController.text.trim()) ?? current.maxOutputTokens;
+        int.tryParse(_maxOutputTokensController.text.trim()) ??
+            current.maxOutputTokens;
     final openAiTimeoutSeconds =
-        int.tryParse(_openAiTimeoutController.text.trim()) ?? current.openAiTimeoutSeconds;
+        int.tryParse(_openAiTimeoutController.text.trim()) ??
+            current.openAiTimeoutSeconds;
     await SettingsService.instance.updateSettings(
       AppSettings(
         languageCode: _selectedLanguageCode,
@@ -92,8 +97,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         maxOutputTokens: maxOutputTokens < AppDefaults.minOutputTokens
             ? current.maxOutputTokens
             : maxOutputTokens,
-        openAiTimeoutSeconds:
-            openAiTimeoutSeconds <= 0 ? current.openAiTimeoutSeconds : openAiTimeoutSeconds,
+        openAiTimeoutSeconds: openAiTimeoutSeconds <= 0
+            ? current.openAiTimeoutSeconds
+            : openAiTimeoutSeconds,
       ),
     );
   }
@@ -113,12 +119,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _loadModelsForApiKey(String apiKey, {required bool showError}) async {
+  Future<void> _loadModelsForApiKey(String apiKey,
+      {required bool showError}) async {
     setState(() => _loadingModels = true);
     try {
       final service = OpenAIService(
         apiKey,
-        requestTimeout: Duration(seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
+        requestTimeout: Duration(
+            seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
       );
       final models = await service.fetchAvailableModels();
       if (!mounted) {
@@ -174,7 +182,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final service = OpenAIService(
         apiKey,
-        requestTimeout: Duration(seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
+        requestTimeout: Duration(
+            seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
       );
       await service.testConnection(model: _selectedModel);
       await SettingsService.instance.setApiKey(apiKey);
@@ -187,7 +196,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.apiKeyTestFailed(localizeError(error, l10n)))),
+          SnackBar(
+              content: Text(l10n.apiKeyTestFailed(localizeError(error, l10n)))),
         );
       }
     } finally {
@@ -206,7 +216,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() => _dataTransferBusy = true);
     try {
-      final apiKey = includeApiKey ? await SettingsService.instance.getApiKey() : null;
+      final apiKey =
+          includeApiKey ? await SettingsService.instance.getApiKey() : null;
       final path = await DataTransferService.instance.exportData(
         includeApiKey: includeApiKey,
         apiKey: apiKey,
@@ -249,10 +260,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
       final rollbackPayload = ImportPayload(
-        settings: Map<String, String>.from(SettingsService.instance.exportSettingsMap()),
+        settings: Map<String, String>.from(
+            SettingsService.instance.exportSettingsMap()),
         foods: await FoodLibraryService.instance.exportFoodRows(),
-        metabolicProfileHistory:
-            await MetabolicProfileHistoryService.instance.exportProfileHistoryRows(),
+        metabolicProfileHistory: await MetabolicProfileHistoryService.instance
+            .exportProfileHistoryRows(),
         daySummaries: await DaySummaryService.instance.exportSummaryRows(),
         entries: (await EntriesRepository.instance.exportEntriesRows())
             .map((row) => Map<String, dynamic>.from(row))
@@ -279,7 +291,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (overwriteApiKey) {
           await SettingsService.instance.setApiKey(payload.apiKeyFromBackup!);
         }
-        final summary = await DataTransferService.instance.applyImportData(payload);
+        final summary =
+            await DataTransferService.instance.applyImportData(payload);
         if (!mounted) {
           return;
         }
@@ -296,7 +309,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _selectedModel = current.model;
           _selectedReasoningEffort = current.reasoningEffort;
           _maxOutputTokensController.text = current.maxOutputTokens.toString();
-          _openAiTimeoutController.text = current.openAiTimeoutSeconds.toString();
+          _openAiTimeoutController.text =
+              current.openAiTimeoutSeconds.toString();
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -357,26 +371,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actionItems: [
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext, true),
               icon: Icon(trueIcon),
-              label: Text(trueLabel, textAlign: TextAlign.center),
+              label: trueLabel,
             ),
           ),
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext, false),
               icon: Icon(falseIcon),
-              label: Text(falseLabel, textAlign: TextAlign.center),
+              label: falseLabel,
             ),
           ),
           DialogActionItem(
             width: UiConstants.buttonMinWidth,
-            child: FilledButton.icon(
+            child: AppButton(
               onPressed: () => Navigator.pop(dialogContext),
               icon: const Icon(Icons.close),
-              label: Text(cancelLabel, textAlign: TextAlign.center),
+              label: cancelLabel,
             ),
           ),
         ],
@@ -437,164 +451,166 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: ListView(
             padding: const EdgeInsets.all(UiConstants.pagePadding),
             children: [
-          Text(
-            l10n.generalSectionTitle,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: headerToContentSpacing),
-          LabeledDropdownBox<String>(
-            label: l10n.languageLabel,
-            value: _selectedLanguageCode,
-            contentHeight: UiConstants.settingsFieldHeight,
-            items: AppLocalizations.supportedLocales
-                .map(
-                  (locale) => DropdownMenuItem(
-                    value: locale.languageCode,
-                    child: Text(
-                      lookupAppLocalizations(locale).languageNameNative,
-                    ),
-                  ),
-                )
-                .toList(),
-            enabled: !isAnyBusy,
-            onChanged: isAnyBusy
-                ? null
-                : (value) {
-                    if (value != null) {
-                      setState(() => _selectedLanguageCode = value);
-                      _scheduleSettingsAutosave();
-                    }
-                  },
-          ),
-          const SizedBox(height: sectionSpacing),
-          Text(
-            l10n.openAiSectionTitle,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: headerToContentSpacing),
-          LabeledInputBox(
-            label: l10n.openAiApiKeyLabel,
-            controller: _apiKeyController,
-            enabled: !isAnyBusy,
-            obscureText: true,
-            contentHeight: UiConstants.settingsFieldHeight,
-            suffixIcon: IconButton(
-              onPressed: isAnyBusy
-                  ? null
-                  : () async {
-                      final text = _apiKeyController.text.trim();
-                      if (text.isEmpty) {
-                        return;
-                      }
-                      await Clipboard.setData(ClipboardData(text: text));
-                    },
-              icon: const Icon(Icons.content_copy_outlined),
-            ),
-          ),
-          const SizedBox(height: UiConstants.mediumSpacing),
-          FilledButton.icon(
-            onPressed: isAnyBusy ? null : _testKey,
-            icon: _testing
-                ? const SizedBox(
-                    height: UiConstants.loadingIndicatorSize,
-                    width: UiConstants.loadingIndicatorSize,
-                    child: CircularProgressIndicator(
-                      strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
-                    ),
-                  )
-                : const Icon(Icons.key_outlined),
-            label: Text(l10n.testKeyButton, textAlign: TextAlign.center),
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledDropdownBox<String>(
-            label: l10n.modelLabel,
-            value: _availableModels.contains(_selectedModel) ? _selectedModel : null,
-            contentHeight: UiConstants.settingsFieldHeight,
-            items: _availableModels
-                .map(
-                  (model) => DropdownMenuItem(
-                    value: model,
-                    child: Text(model),
-                  ),
-                )
-                .toList(),
-            enabled: !isAnyBusy && !_loadingModels,
-            onChanged: isAnyBusy || _loadingModels
-                ? null
-                : (value) {
-                    if (value != null) {
-                      setState(() => _selectedModel = value);
-                      _scheduleSettingsAutosave();
-                    }
-                  },
-            trailing: _loadingModels
-                ? const SizedBox(
-                    height: UiConstants.loadingIndicatorSize,
-                    width: UiConstants.loadingIndicatorSize,
-                    child: CircularProgressIndicator(
-                      strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledDropdownBox<String>(
-            label: l10n.reasoningEffortLabel,
-            value: _selectedReasoningEffort,
-            contentHeight: UiConstants.settingsFieldHeight,
-            items: AppDefaults.reasoningEffortOptions
-                .map(
-                  (effort) => DropdownMenuItem(
-                    value: effort,
-                    child: Text(effort),
-                  ),
-                )
-                .toList(),
-            enabled: !isAnyBusy,
-            onChanged: isAnyBusy
-                ? null
-                : (value) {
-                    if (value != null) {
-                      setState(() => _selectedReasoningEffort = value);
-                      _scheduleSettingsAutosave();
-                    }
-                  },
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledInputBox(
-            label: l10n.maxOutputTokensLabel,
-            controller: _maxOutputTokensController,
-            enabled: !isAnyBusy,
-            contentHeight: UiConstants.settingsFieldHeight,
-            keyboardType: TextInputType.number,
-            onChanged: (_) => _scheduleSettingsAutosave(),
-          ),
-          const SizedBox(height: controlSpacing),
-          LabeledInputBox(
-            label: l10n.openAiTimeoutSecondsLabel,
-            controller: _openAiTimeoutController,
-            enabled: !isAnyBusy,
-            contentHeight: UiConstants.settingsFieldHeight,
-            keyboardType: TextInputType.number,
-            onChanged: (_) => _scheduleSettingsAutosave(),
-          ),
-          const SizedBox(height: sectionSpacing),
-          Text(
-            l10n.dataToolsSectionTitle,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: headerToContentSpacing),
-          FilledButton.icon(
-            onPressed: isAnyBusy ? null : _exportData,
-            icon: const Icon(Icons.download_outlined),
-            label: Text(l10n.exportDataButton, textAlign: TextAlign.center),
-          ),
-          const SizedBox(height: UiConstants.buttonSpacing),
-          FilledButton.icon(
-            onPressed: isAnyBusy ? null : _importData,
-            icon: const Icon(Icons.upload_outlined),
-            label: Text(l10n.importDataButton, textAlign: TextAlign.center),
-          ),
+              Text(
+                l10n.generalSectionTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: headerToContentSpacing),
+              LabeledDropdownBox<String>(
+                label: l10n.languageLabel,
+                value: _selectedLanguageCode,
+                contentHeight: UiConstants.settingsFieldHeight,
+                items: AppLocalizations.supportedLocales
+                    .map(
+                      (locale) => DropdownMenuItem(
+                        value: locale.languageCode,
+                        child: Text(
+                          lookupAppLocalizations(locale).languageNameNative,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                enabled: !isAnyBusy,
+                onChanged: isAnyBusy
+                    ? null
+                    : (value) {
+                        if (value != null) {
+                          setState(() => _selectedLanguageCode = value);
+                          _scheduleSettingsAutosave();
+                        }
+                      },
+              ),
+              const SizedBox(height: sectionSpacing),
+              Text(
+                l10n.openAiSectionTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: headerToContentSpacing),
+              LabeledInputBox(
+                label: l10n.openAiApiKeyLabel,
+                controller: _apiKeyController,
+                enabled: !isAnyBusy,
+                obscureText: true,
+                contentHeight: UiConstants.settingsFieldHeight,
+                suffixIcon: AppIconButton(
+                  onPressed: isAnyBusy
+                      ? null
+                      : () async {
+                          final text = _apiKeyController.text.trim();
+                          if (text.isEmpty) {
+                            return;
+                          }
+                          await Clipboard.setData(ClipboardData(text: text));
+                        },
+                  icon: const Icon(Icons.content_copy_outlined),
+                ),
+              ),
+              const SizedBox(height: UiConstants.mediumSpacing),
+              AppButton(
+                onPressed: isAnyBusy ? null : _testKey,
+                icon: _testing
+                    ? const SizedBox(
+                        height: UiConstants.loadingIndicatorSize,
+                        width: UiConstants.loadingIndicatorSize,
+                        child: CircularProgressIndicator(
+                          strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                        ),
+                      )
+                    : const Icon(Icons.key_outlined),
+                label: l10n.testKeyButton,
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledDropdownBox<String>(
+                label: l10n.modelLabel,
+                value: _availableModels.contains(_selectedModel)
+                    ? _selectedModel
+                    : null,
+                contentHeight: UiConstants.settingsFieldHeight,
+                items: _availableModels
+                    .map(
+                      (model) => DropdownMenuItem(
+                        value: model,
+                        child: Text(model),
+                      ),
+                    )
+                    .toList(),
+                enabled: !isAnyBusy && !_loadingModels,
+                onChanged: isAnyBusy || _loadingModels
+                    ? null
+                    : (value) {
+                        if (value != null) {
+                          setState(() => _selectedModel = value);
+                          _scheduleSettingsAutosave();
+                        }
+                      },
+                trailing: _loadingModels
+                    ? const SizedBox(
+                        height: UiConstants.loadingIndicatorSize,
+                        width: UiConstants.loadingIndicatorSize,
+                        child: CircularProgressIndicator(
+                          strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledDropdownBox<String>(
+                label: l10n.reasoningEffortLabel,
+                value: _selectedReasoningEffort,
+                contentHeight: UiConstants.settingsFieldHeight,
+                items: AppDefaults.reasoningEffortOptions
+                    .map(
+                      (effort) => DropdownMenuItem(
+                        value: effort,
+                        child: Text(effort),
+                      ),
+                    )
+                    .toList(),
+                enabled: !isAnyBusy,
+                onChanged: isAnyBusy
+                    ? null
+                    : (value) {
+                        if (value != null) {
+                          setState(() => _selectedReasoningEffort = value);
+                          _scheduleSettingsAutosave();
+                        }
+                      },
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                label: l10n.maxOutputTokensLabel,
+                controller: _maxOutputTokensController,
+                enabled: !isAnyBusy,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType: TextInputType.number,
+                onChanged: (_) => _scheduleSettingsAutosave(),
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                label: l10n.openAiTimeoutSecondsLabel,
+                controller: _openAiTimeoutController,
+                enabled: !isAnyBusy,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType: TextInputType.number,
+                onChanged: (_) => _scheduleSettingsAutosave(),
+              ),
+              const SizedBox(height: sectionSpacing),
+              Text(
+                l10n.dataToolsSectionTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: headerToContentSpacing),
+              AppButton(
+                onPressed: isAnyBusy ? null : _exportData,
+                icon: const Icon(Icons.download_outlined),
+                label: l10n.exportDataButton,
+              ),
+              const SizedBox(height: UiConstants.buttonSpacing),
+              AppButton(
+                onPressed: isAnyBusy ? null : _importData,
+                icon: const Icon(Icons.upload_outlined),
+                label: l10n.importDataButton,
+              ),
             ],
           ),
         ),

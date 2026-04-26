@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../theme/ui_constants.dart';
+import 'app_button.dart';
 import 'app_dialog.dart';
 import 'dialog_action_row.dart';
 import 'labeled_input_box.dart';
@@ -36,20 +37,20 @@ Future<String?> showReestimateDialog(
             ),
             actionItems: [
               DialogActionItem(
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: trimmed.isEmpty
                       ? null
                       : () => Navigator.pop(context, trimmed),
                   icon: const Icon(Icons.auto_awesome_outlined),
-                  label: Text(l10n.reestimateButton, textAlign: TextAlign.center),
+                  label: l10n.reestimateButton,
                 ),
               ),
               DialogActionItem(
                 width: UiConstants.buttonMinWidth,
-                child: FilledButton.icon(
+                child: AppButton(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close),
-                  label: Text(l10n.cancelButton, textAlign: TextAlign.center),
+                  label: l10n.cancelButton,
                 ),
               ),
             ],
