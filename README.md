@@ -1,107 +1,75 @@
 # Calorie Tracker
 
-Calorie Tracker is a Flutter app for tracking daily food intake with AI-assisted nutrition estimates.
-It stores data locally (SQLite), supports localization, and includes Android release/update tooling.
-This app was built using a vibe-coding workflow.
+Calorie Tracker is a dark-theme Flutter app for logging food intake, estimating nutrition with the OpenAI API, and tracking calories, macros, and calorie deficit over time.
 
-## What the app does
+The app is built primarily for Android, with Linux desktop support used for local development and testing. Food data is stored locally in SQLite, and the OpenAI API key is stored with `flutter_secure_storage`.
 
-- Tracks food entries by day.
-- Uses OpenAI to estimate per-item:
-  - calories (kcal)
-  - fat (g)
-  - protein (g)
-  - carbs (g)
-  - notes
-- Lets you refine/re-estimate parsed items before saving.
-- Provides daily and weekly summaries with progress/bar visualizations.
-- Supports per-day goal history (goal changes apply from the change date onward).
-- Supports import/export of app data.
-- Supports in-app update checking against GitHub Releases.
+## Features
 
-## Main features
+- Daily food logging with swipe navigation between dates.
+- Reusable food library with search, manual food definitions, portion editing, usage counts, and merge tooling.
+- AI-assisted food creation through the OpenAI Responses API with strict JSON output.
+- Daily and weekly views for calories, macros, and calorie deficit.
+- Metabolic profile history with macro goal presets.
+- AI-generated daily summaries with highlights, issues, and suggestions.
+- English and Hungarian localization.
+- JSON data export/import.
+- GitHub Releases update checks and APK install flow on Android.
 
-- **Home**
-  - Swipe between dates (no future dates).
-  - Daily total progress + macro progress.
-  - Tap metrics to open per-metric daily contribution details.
-  - Tap date to open weekly summary.
- <img width="490" height="858" alt="main_page" src="https://github.com/user-attachments/assets/4468d841-e625-4ef2-8a52-78c3e59b64cc" />
+## App Flow
 
-- **Add food**
-  - Multi-line food input.
-  - AI estimate + follow-up re-estimation.
-  - Structured nutrition breakdown preview.
-<img width="490" height="858" alt="add_food" src="https://github.com/user-attachments/assets/fd150fb8-2d53-492f-b7d6-e7c6fbaf1b04" />
+The home screen shows the selected day, daily calorie progress, macro progress, and tracked foods. Dates are paged by swiping, and future days are blocked.
 
-- **Food details**
-  - Edit via AI re-estimation.
-  - Delete item.
-  - Copy item to today (for older dates).
+Adding food starts from the saved food library. New foods can be created manually or estimated with OpenAI from free-form text, then adjusted before saving.
 
-- **Weekly summary**
-  - Per-day bars for calories/macros relative to each day’s configured goal.
-  - Swipe weeks, blocked from future weeks.
-<img width="490" height="858" alt="weekly_summary" src="https://github.com/user-attachments/assets/9b262978-2cb7-4005-ae70-3be2ba66060d" />
+The metabolic profile screen stores dated profile changes. Daily targets are calculated from the effective profile for each day.
 
-- **Settings**
-  - OpenAI key test and model selection.
-  - Reasoning effort, max output tokens, request timeout.
-  - Daily goals (calories/macros).
-  - Language selection.
-  - Data export/import.
-- **About**
-  - App version.
-  - GitHub link.
-  - Update status + install latest APK flow (Android).
+The weekly summary shows daily calorie and macro bars plus weekly deficit. The daily summary screen can generate and cache an AI-written nutrition summary for a logged day.
 
-## Tech stack
+Settings cover language, OpenAI API key, model options, request limits, and data import/export. About shows the app version, repository link, and update actions.
 
-- Flutter (Dart)
-- SQLite:
-  - `sqflite` (mobile)
-  - `sqflite_common_ffi` (Linux)
-- OpenAI Responses API (`/v1/responses`) with JSON schema output
-- `flutter_secure_storage` for sensitive settings (API key)
+## Local Setup
 
-## Local setup
+Prerequisites:
 
-### Prerequisites
+- Flutter SDK with Dart `>=3.3.0 <4.0.0`
+- Android SDK/NDK and Java for Android builds
+- Linux desktop build dependencies for local Linux runs
 
-- Flutter SDK (matching your project setup)
-- Linux desktop build deps (for local Linux dev)
-- Android SDK/NDK + Java (for Android builds)
-
-### Install
+Install dependencies:
 
 ```bash
 flutter pub get
 ```
 
-### Run (Linux)
+Run on Linux:
 
 ```bash
 flutter run -d linux
 ```
 
-If file dialogs do not open via portal on Linux, run with:
+If Linux file dialogs do not open through the portal:
 
 ```bash
 GTK_USE_PORTAL=1 flutter run -d linux
 ```
 
-### Run static checks
+Run on Android:
 
 ```bash
-flutter analyze
+flutter run -d android
 ```
 
-## In-app updates
+## Privacy and Backups
 
-The app checks GitHub Releases for latest version (`alex47/CalorieTracker`) and compares semantic version parts.
-On supported platforms, users can download/install latest APK from the About page flow.
+Food logs, food definitions, settings, metabolic profiles, and cached summaries are stored locally. OpenAI-powered features send the relevant food text or day snapshot to the OpenAI API.
 
-## Current targets
+Exports are JSON files. The app can optionally include the OpenAI API key in an export, but it warns first because that stores the key in plain text.
 
-- Primary: Android
-- Local dev/testing: Linux desktop
+## Localization
+
+The app supports English and Hungarian. Localization sources live in `lib/l10n/`.
+
+## License
+
+This project is licensed under GPL-3.0. See `LICENSE`.
