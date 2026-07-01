@@ -263,6 +263,37 @@
   "multiplierLabel": "Multiplier",
   "invalidMultiplierValue": "Please enter a valid multiplier greater than 0.",
   "copyToTodayButton": "Copy to today",
+  "selectedItemsCount": "{count} selected",
+  "@selectedItemsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "deleteSelectedItemsTitle": "Delete selected items",
+  "deleteSelectedItemsConfirmMessage": "Delete {count} selected food items?",
+  "@deleteSelectedItemsConfirmMessage": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "deletedSelectedItemsMessage": "Deleted {count} items.",
+  "@deletedSelectedItemsMessage": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "failedToCopySelectedItems": "Failed to copy selected items. {error}",
+  "@failedToCopySelectedItems": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToDeleteSelectedItems": "Failed to delete selected items. {error}",
+  "@failedToDeleteSelectedItems": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "showAiResponseButton": "Show AI response",
   "aiResponseDialogTitle": "AI response",
   "copyAiResponseButton": "Copy response",

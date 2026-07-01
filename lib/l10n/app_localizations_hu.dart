@@ -541,6 +541,34 @@ class AppLocalizationsHu extends AppLocalizations {
   String get copyToTodayButton => 'Másolás mára';
 
   @override
+  String selectedItemsCount(Object count) {
+    return '$count kijelölve';
+  }
+
+  @override
+  String get deleteSelectedItemsTitle => 'Kijelölt tételek törlése';
+
+  @override
+  String deleteSelectedItemsConfirmMessage(Object count) {
+    return 'Törlöd a(z) $count kijelölt étel tételt?';
+  }
+
+  @override
+  String deletedSelectedItemsMessage(Object count) {
+    return 'Törölve: $count tétel.';
+  }
+
+  @override
+  String failedToCopySelectedItems(Object error) {
+    return 'A kijelölt tételek másolása sikertelen. $error';
+  }
+
+  @override
+  String failedToDeleteSelectedItems(Object error) {
+    return 'A kijelölt tételek törlése sikertelen. $error';
+  }
+
+  @override
   String get showAiResponseButton => 'AI válasz megjelenítése';
 
   @override

@@ -535,6 +535,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyToTodayButton => 'Copy to today';
 
   @override
+  String selectedItemsCount(Object count) {
+    return '$count selected';
+  }
+
+  @override
+  String get deleteSelectedItemsTitle => 'Delete selected items';
+
+  @override
+  String deleteSelectedItemsConfirmMessage(Object count) {
+    return 'Delete $count selected food items?';
+  }
+
+  @override
+  String deletedSelectedItemsMessage(Object count) {
+    return 'Deleted $count items.';
+  }
+
+  @override
+  String failedToCopySelectedItems(Object error) {
+    return 'Failed to copy selected items. $error';
+  }
+
+  @override
+  String failedToDeleteSelectedItems(Object error) {
+    return 'Failed to delete selected items. $error';
+  }
+
+  @override
   String get showAiResponseButton => 'Show AI response';
 
   @override

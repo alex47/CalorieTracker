@@ -1034,6 +1034,42 @@ abstract class AppLocalizations {
   /// **'Copy to today'**
   String get copyToTodayButton;
 
+  /// No description provided for @selectedItemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String selectedItemsCount(Object count);
+
+  /// No description provided for @deleteSelectedItemsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected items'**
+  String get deleteSelectedItemsTitle;
+
+  /// No description provided for @deleteSelectedItemsConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} selected food items?'**
+  String deleteSelectedItemsConfirmMessage(Object count);
+
+  /// No description provided for @deletedSelectedItemsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted {count} items.'**
+  String deletedSelectedItemsMessage(Object count);
+
+  /// No description provided for @failedToCopySelectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy selected items. {error}'**
+  String failedToCopySelectedItems(Object error);
+
+  /// No description provided for @failedToDeleteSelectedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete selected items. {error}'**
+  String failedToDeleteSelectedItems(Object error);
+
   /// No description provided for @showAiResponseButton.
   ///
   /// In en, this message translates to:

@@ -263,6 +263,37 @@
   "multiplierLabel": "Szorzó",
   "invalidMultiplierValue": "Adj meg egy érvényes, 0-nál nagyobb szorzót.",
   "copyToTodayButton": "Másolás mára",
+  "selectedItemsCount": "{count} kijelölve",
+  "@selectedItemsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "deleteSelectedItemsTitle": "Kijelölt tételek törlése",
+  "deleteSelectedItemsConfirmMessage": "Törlöd a(z) {count} kijelölt étel tételt?",
+  "@deleteSelectedItemsConfirmMessage": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "deletedSelectedItemsMessage": "Törölve: {count} tétel.",
+  "@deletedSelectedItemsMessage": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "failedToCopySelectedItems": "A kijelölt tételek másolása sikertelen. {error}",
+  "@failedToCopySelectedItems": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedToDeleteSelectedItems": "A kijelölt tételek törlése sikertelen. {error}",
+  "@failedToDeleteSelectedItems": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "showAiResponseButton": "AI válasz megjelenítése",
   "aiResponseDialogTitle": "AI válasz",
   "copyAiResponseButton": "Válasz másolása",
