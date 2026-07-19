@@ -13,6 +13,8 @@ void main() {
     testWidgets('blocks back navigation while estimating and shows results',
         (tester) async {
       final estimateCompleter = Completer<Map<String, dynamic>>();
+      String? capturedPrompt;
+      List<Map<String, String>>? capturedHistory;
       await _openScreen(
         tester,
         AddNewFoodScreen(
@@ -21,14 +23,20 @@ void main() {
             required apiKey,
             required prompt,
             required history,
-          }) =>
-              estimateCompleter.future,
+          }) {
+            capturedPrompt = prompt;
+            capturedHistory = history;
+            return estimateCompleter.future;
+          },
         ),
       );
 
       await tester.enterText(find.byType(TextField).first, '100 g apple');
       await tester.tap(find.text('Estimate calories'));
       await tester.pump();
+
+      expect(capturedPrompt, '100 g apple');
+      expect(capturedHistory, isEmpty);
 
       await tester.binding.handlePopRoute();
       await tester.pump();

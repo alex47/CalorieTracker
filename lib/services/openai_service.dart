@@ -26,7 +26,9 @@ class OpenAIService {
   OpenAIService(
     this.apiKey, {
     Duration? requestTimeout,
-  }) : requestTimeout = requestTimeout ?? AppDefaults.openAiRequestTimeout;
+    http.Client? client,
+  }) : requestTimeout = requestTimeout ?? AppDefaults.openAiRequestTimeout,
+        _client = client;
 
   static const int maxAttempts = AppDefaults.openAiMaxAttempts;
   static const int defaultEstimateMaxOutputTokens = AppDefaults.maxOutputTokens;
@@ -35,7 +37,25 @@ class OpenAIService {
 
   final String apiKey;
   final Duration requestTimeout;
+  final http.Client? _client;
   static const String aiSaysErrorPrefix = '__AI_SAYS__:';
+
+  Future<http.Response> _get(
+    Uri url, {
+    Map<String, String>? headers,
+  }) {
+    return _client?.get(url, headers: headers) ??
+        http.get(url, headers: headers);
+  }
+
+  Future<http.Response> _post(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) {
+    return _client?.post(url, headers: headers, body: body) ??
+        http.post(url, headers: headers, body: body);
+  }
 
   static const Map<String, dynamic> estimateSchema = {
     'type': 'object',
@@ -159,8 +179,7 @@ Rules:
 ''';
 
   Future<void> testConnection({required String model}) async {
-    final response = await http
-        .post(
+    final response = await _post(
       Uri.parse('https://api.openai.com/v1/responses'),
       headers: {
         'Authorization': 'Bearer $apiKey',
@@ -172,8 +191,7 @@ Rules:
         'store': false,
         'max_output_tokens': AppDefaults.minOutputTokens,
       }),
-    )
-        .timeout(requestTimeout, onTimeout: () {
+    ).timeout(requestTimeout, onTimeout: () {
       throw StateError('OpenAI request timed out.');
     });
 
@@ -184,7 +202,7 @@ Rules:
   }
 
   Future<List<String>> fetchAvailableModels() async {
-    final response = await http.get(
+    final response = await _get(
       Uri.parse('https://api.openai.com/v1/models'),
       headers: {
         'Authorization': 'Bearer $apiKey',
@@ -326,8 +344,7 @@ Rules:
       daySnapshot: daySnapshot,
     );
     final compactSnapshot = jsonEncode(daySnapshot);
-    final response = await http
-        .post(
+    final response = await _post(
       Uri.parse('https://api.openai.com/v1/responses'),
       headers: {
         'Authorization': 'Bearer $apiKey',
@@ -355,8 +372,7 @@ Rules:
           },
         },
       }),
-    )
-        .timeout(requestTimeout, onTimeout: () {
+    ).timeout(requestTimeout, onTimeout: () {
       throw StateError('OpenAI request timed out.');
     });
 
@@ -448,8 +464,7 @@ Rules:
       },
     ];
 
-    final response = await http
-        .post(
+    final response = await _post(
       Uri.parse('https://api.openai.com/v1/responses'),
       headers: {
         'Authorization': 'Bearer $apiKey',
@@ -470,8 +485,7 @@ Rules:
           },
         },
       }),
-    )
-        .timeout(requestTimeout, onTimeout: () {
+    ).timeout(requestTimeout, onTimeout: () {
       throw StateError('OpenAI request timed out.');
     });
 

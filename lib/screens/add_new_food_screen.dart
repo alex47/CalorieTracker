@@ -205,7 +205,9 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
       final parsedItems = (response['items'] as List<dynamic>)
           .map((item) => Map<String, dynamic>.from(item as Map))
           .toList();
-      _history.add({'role': 'assistant', 'content': jsonEncode(response)});
+      _history
+        ..add({'role': 'user', 'content': prompt})
+        ..add({'role': 'assistant', 'content': jsonEncode(response)});
       _rebuildMultiplierControllers(parsedItems);
       setState(() {
         _items = parsedItems;
@@ -397,7 +399,6 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
                           _items = [];
                           _errorMessage = null;
                           _history.clear();
-                          _history.add({'role': 'user', 'content': text});
                         });
                         _submitAi(prompt: text);
                       },

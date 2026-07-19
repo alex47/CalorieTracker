@@ -111,23 +111,14 @@ verify each item independently.
   - Done when a confirmed settings edit is never silently discarded or applied
     after an import unexpectedly.
 
-- [ ] Filter OpenAI models to compatible text models.
-  - Do not offer every ID returned by the models endpoint.
-  - Validate a selected model before persisting it.
-  - Provide a clear fallback when a saved model is no longer available.
-  - Relevant code:
-    [openai_service.dart](lib/services/openai_service.dart#L177),
-    [settings_screen.dart](lib/screens/settings_screen.dart#L523)
-  - Done when users cannot select a known-incompatible model for Responses API
-    text estimation.
-
-- [ ] Stop sending the initial food-estimation input twice.
+- [x] Stop sending the initial food-estimation input twice.
   - Ensure the initial text appears exactly once in the constructed request.
   - Preserve subsequent conversation history without duplication.
   - Add a request-construction test for the initial and follow-up turns.
   - Relevant code:
     [add_new_food_screen.dart](lib/screens/add_new_food_screen.dart#L298),
-    [openai_service.dart](lib/services/openai_service.dart#L408)
+    [openai_service.dart](lib/services/openai_service.dart#L408),
+    [openai_request_history_test.dart](test/services/openai_request_history_test.dart)
   - Done when captured request payloads contain one copy of each user turn.
 
 - [ ] Make releases reproducible and add an automated regression gate.
