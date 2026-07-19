@@ -26,7 +26,7 @@ Food definitions are the live source of truth for linked logs. Editing a food up
 
 The metabolic profile screen stores dated profile changes. Daily targets are calculated from the effective profile for each day.
 
-The weekly summary shows daily calorie and macro bars plus weekly deficit. The daily summary screen can generate and cache an AI-written nutrition summary for a logged day.
+The weekly summary shows daily calorie and macro bars plus weekly deficit. For completed weeks, days without food entries use the average deficit from logged days. A zero-calorie food entry counts as a logged day and uses its target-based deficit instead of an estimate. The daily summary screen can generate and cache an AI-written nutrition summary for a logged day.
 
 Settings cover language, OpenAI API key, model options, request limits, and data import/export. About shows the app version, repository link, and update actions.
 

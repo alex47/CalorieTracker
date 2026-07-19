@@ -167,11 +167,13 @@ verify each item independently.
     [entries_repository_test.dart](test/services/entries_repository_test.dart),
     [README.md](README.md)
 
-- [ ] Decide how completed weeks with missing logged days affect deficit.
-  - Current behavior fills missing past days using the average of logged days.
-  - Choose between estimation, treating missing days as unknown, or requiring
-    sufficient data before reporting a weekly deficit.
+- [x] Keep estimating missing days in completed weekly deficit.
+  - Missing days use the average deficit from logged days in the week.
+  - A zero-calorie food entry counts as a logged day and uses its actual
+    target-based deficit rather than an estimate.
+  - Estimated values are marked in the weekly summary.
   - Relevant code:
-    [weekly_summary_screen.dart](lib/screens/weekly_summary_screen.dart#L142)
-  - Done when the intended calculation is documented, visible to users where
-    necessary, and covered by tests.
+    [weekly_deficit_calculator.dart](lib/services/weekly_deficit_calculator.dart),
+    [weekly_summary_screen.dart](lib/screens/weekly_summary_screen.dart),
+    [weekly_deficit_calculator_test.dart](test/services/weekly_deficit_calculator_test.dart),
+    [README.md](README.md)

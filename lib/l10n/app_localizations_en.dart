@@ -27,6 +27,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyDeficitTitle => 'Weekly deficit';
 
   @override
+  String get weeklyDeficitEstimateHint =>
+      '* Estimated from the average of logged days.';
+
+  @override
   String get addButton => 'Add';
 
   @override

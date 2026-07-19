@@ -27,6 +27,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get weeklyDeficitTitle => 'Heti deficit';
 
   @override
+  String get weeklyDeficitEstimateHint =>
+      '* A becslés a naplózott napok átlagán alapul.';
+
+  @override
   String get addButton => 'Hozzáadás';
 
   @override

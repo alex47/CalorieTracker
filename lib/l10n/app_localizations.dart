@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Weekly deficit'**
   String get weeklyDeficitTitle;
 
+  /// No description provided for @weeklyDeficitEstimateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'* Estimated from the average of logged days.'**
+  String get weeklyDeficitEstimateHint;
+
   /// No description provided for @addButton.
   ///
   /// In en, this message translates to:

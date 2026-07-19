@@ -6,6 +6,7 @@
   "aboutTitle": "Névjegy",
   "weeklySummaryTitle": "Heti összesítés",
   "weeklyDeficitTitle": "Heti deficit",
+  "weeklyDeficitEstimateHint": "* A becslés a naplózott napok átlagán alapul.",
   "addButton": "Hozzáadás",
   "addNewButton": "Új hozzáadása",
   "saveButton": "Mentés",

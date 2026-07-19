@@ -6,6 +6,7 @@
   "aboutTitle": "About",
   "weeklySummaryTitle": "Weekly summary",
   "weeklyDeficitTitle": "Weekly deficit",
+  "weeklyDeficitEstimateHint": "* Estimated from the average of logged days.",
   "addButton": "Add",
   "addNewButton": "Add new",
   "saveButton": "Save",

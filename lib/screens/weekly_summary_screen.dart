@@ -10,6 +10,7 @@ import '../services/entries_repository.dart';
 import '../services/metabolic_profile_history_service.dart';
 import '../services/nutrition_target_service.dart';
 import '../services/settings_service.dart';
+import '../services/weekly_deficit_calculator.dart';
 import '../theme/app_colors.dart';
 import '../theme/ui_constants.dart';
 import '../utils/app_date_utils.dart';
@@ -71,7 +72,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     );
     final dailyItems = await Future.wait(futures);
     final weekEnd = AppDateUtils.addCalendarDays(weekStart, 6);
-    final profilesByDate = await MetabolicProfileHistoryService.instance.getEffectiveProfileForDateRange(
+    final profilesByDate = await MetabolicProfileHistoryService.instance
+        .getEffectiveProfileForDateRange(
       startDate: weekStart,
       endDate: weekEnd,
     );
@@ -81,7 +83,9 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
         final date = AppDateUtils.addCalendarDays(weekStart, index);
         final dateKey = _weekKey(date);
         final profile = profilesByDate[dateKey];
-        final targets = profile == null ? null : NutritionTargetService.targetsFromProfile(profile);
+        final targets = profile == null
+            ? null
+            : NutritionTargetService.targetsFromProfile(profile);
         return _DayMetricTotals.fromItems(
           date: date,
           targets: targets,
@@ -124,7 +128,6 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   }
 
   bool _isFutureDay(DateTime day) => day.isAfter(_todayDayOnly());
-  bool _isToday(DateTime day) => day.isAtSameMomentAs(_todayDayOnly());
   bool _isCompletedWeek(List<_DayMetricTotals> dailyTotals) {
     if (dailyTotals.isEmpty) {
       return false;
@@ -139,99 +142,45 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     Navigator.of(context).pop(DateTime(date.year, date.month, date.day));
   }
 
-  List<int?>? _resolvedDailyDeficits(List<_DayMetricTotals> dailyTotals) {
-    final deficitValues = dailyTotals
-        .where((day) {
-          if (_isFutureDay(day.date) || _isToday(day.date)) {
-            return false;
-          }
-          return day.itemCount > 0 && day.targets != null;
-        })
-        .map((day) => day.targets!.calories - day.calories)
-        .toList(growable: false);
-    if (deficitValues.isEmpty) {
-      return null;
-    }
-
-    final average = deficitValues.reduce((a, b) => a + b) / deficitValues.length;
-    return dailyTotals.map((day) {
-      if (_isFutureDay(day.date)) {
-        return null;
-      }
-      if (_isToday(day.date)) {
-        if (day.itemCount > 0 && day.targets != null) {
-          return day.targets!.calories - day.calories;
-        }
-        return null;
-      }
-      if (day.itemCount > 0 && day.targets != null) {
-        return day.targets!.calories - day.calories;
-      }
-      return average.round();
-    }).toList(growable: false);
+  List<ResolvedDailyDeficit?>? _resolvedDailyDeficits(
+    List<_DayMetricTotals> dailyTotals,
+  ) {
+    return WeeklyDeficitCalculator.resolveDailyDeficits(
+      days: dailyTotals
+          .map(
+            (day) => WeeklyDeficitDay(
+              date: day.date,
+              calorieTarget: day.targets?.calories,
+              itemCount: day.itemCount,
+              calories: day.calories,
+            ),
+          )
+          .toList(growable: false),
+      today: _todayDayOnly(),
+    );
   }
 
   String _weeklyDeficitDisplay(
     List<_DayMetricTotals> dailyTotals,
+    List<ResolvedDailyDeficit?>? resolvedDeficits,
     AppLocalizations l10n,
   ) {
     if (!_isCompletedWeek(dailyTotals)) {
       return '-';
     }
-    final resolvedDeficits = _resolvedDailyDeficits(dailyTotals);
     if (resolvedDeficits == null) {
       return '-';
     }
-    final nonNull = resolvedDeficits.whereType<int>().toList(growable: false);
+    final nonNull = resolvedDeficits
+        .whereType<ResolvedDailyDeficit>()
+        .toList(growable: false);
     if (nonNull.isEmpty) {
       return '-';
     }
-    final weeklyDeficit = nonNull.fold<int>(0, (sum, value) => sum + value);
-    return l10n.caloriesKcalValue(weeklyDeficit);
-  }
-
-  List<_DisplayedDailyDeficit?>? _dailyDeficitDisplayValues(List<_DayMetricTotals> dailyTotals) {
-    final resolvedDeficits = _resolvedDailyDeficits(dailyTotals);
-    if (resolvedDeficits == null) {
-      return null;
-    }
-    final result = <_DisplayedDailyDeficit?>[];
-    for (var i = 0; i < dailyTotals.length; i++) {
-      final day = dailyTotals[i];
-      if (_isFutureDay(day.date)) {
-        result.add(null);
-        continue;
-      }
-      if (_isToday(day.date)) {
-        if (day.itemCount > 0 && day.targets != null) {
-          result.add(
-            _DisplayedDailyDeficit(
-              value: day.targets!.calories - day.calories,
-              estimated: false,
-            ),
-          );
-        } else {
-          result.add(null);
-        }
-        continue;
-      }
-      if (day.itemCount > 0 && day.targets != null) {
-        result.add(
-          _DisplayedDailyDeficit(
-            value: day.targets!.calories - day.calories,
-            estimated: false,
-          ),
-        );
-      } else {
-        result.add(
-          _DisplayedDailyDeficit(
-            value: resolvedDeficits[i]!,
-            estimated: true,
-          ),
-        );
-      }
-    }
-    return result;
+    final weeklyDeficit =
+        nonNull.fold<int>(0, (sum, deficit) => sum + deficit.value);
+    final display = l10n.caloriesKcalValue(weeklyDeficit);
+    return nonNull.any((deficit) => deficit.estimated) ? '$display*' : display;
   }
 
   @override
@@ -272,179 +221,219 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
               });
             },
             itemBuilder: (context, page) {
-            final weekStart = _weekStartForPage(page);
-            final weekEnd = AppDateUtils.addCalendarDays(weekStart, 6);
+              final weekStart = _weekStartForPage(page);
+              final weekEnd = AppDateUtils.addCalendarDays(weekStart, 6);
 
-            return RefreshIndicator(
-              color: AppColors.text,
-              onRefresh: () => _reloadWeek(weekStart),
-              child: FutureBuilder<List<_DayMetricTotals>>(
-                future: _totalsForWeek(weekStart),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return ListView(
+              return RefreshIndicator(
+                color: AppColors.text,
+                onRefresh: () => _reloadWeek(weekStart),
+                child: FutureBuilder<List<_DayMetricTotals>>(
+                  future: _totalsForWeek(weekStart),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting &&
+                        !snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(UiConstants.pagePadding),
+                        children: [
+                          Text(
+                            l10n.failedToLoadEntries,
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.error),
+                          ),
+                        ],
+                      );
+                    }
+
+                    final dailyTotals =
+                        snapshot.data ?? const <_DayMetricTotals>[];
+                    final hasAnyTargets =
+                        dailyTotals.any((day) => day.targets != null);
+                    final displayDailyDeficits =
+                        _resolvedDailyDeficits(dailyTotals);
+                    final hasEstimatedDeficits = displayDailyDeficits?.any(
+                          (deficit) => deficit?.estimated ?? false,
+                        ) ??
+                        false;
+
+                    final specs = <_WeeklyMetricSpec>[
+                      _WeeklyMetricSpec(
+                        color: MetricType.calories.color,
+                        goalForDay: (day) =>
+                            day.targets?.calories.toDouble() ?? 0,
+                        valueForDay: (day) =>
+                            MetricType.calories.valueFromTotals(
+                          calories: day.calories,
+                          fat: day.fat,
+                          protein: day.protein,
+                          carbs: day.carbs,
+                        ),
+                      ),
+                      _WeeklyMetricSpec(
+                        color: MetricType.fat.color,
+                        goalForDay: (day) => day.targets?.fat.toDouble() ?? 0,
+                        valueForDay: (day) => MetricType.fat.valueFromTotals(
+                          calories: day.calories,
+                          fat: day.fat,
+                          protein: day.protein,
+                          carbs: day.carbs,
+                        ),
+                      ),
+                      _WeeklyMetricSpec(
+                        color: MetricType.protein.color,
+                        goalForDay: (day) =>
+                            day.targets?.protein.toDouble() ?? 0,
+                        valueForDay: (day) =>
+                            MetricType.protein.valueFromTotals(
+                          calories: day.calories,
+                          fat: day.fat,
+                          protein: day.protein,
+                          carbs: day.carbs,
+                        ),
+                      ),
+                      _WeeklyMetricSpec(
+                        color: MetricType.carbs.color,
+                        goalForDay: (day) => day.targets?.carbs.toDouble() ?? 0,
+                        valueForDay: (day) => MetricType.carbs.valueFromTotals(
+                          calories: day.calories,
+                          fat: day.fat,
+                          protein: day.protein,
+                          carbs: day.carbs,
+                        ),
+                      ),
+                    ];
+
+                    return CustomScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(UiConstants.pagePadding),
-                      children: [
-                        Text(
-                          l10n.failedToLoadEntries,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      slivers: [
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: UiConstants.mediumSpacing),
                         ),
-                      ],
-                    );
-                  }
-
-                  final dailyTotals = snapshot.data ?? const <_DayMetricTotals>[];
-                  final hasAnyTargets = dailyTotals.any((day) => day.targets != null);
-                  final displayDailyDeficits = _dailyDeficitDisplayValues(dailyTotals);
-
-                  final specs = <_WeeklyMetricSpec>[
-                    _WeeklyMetricSpec(
-                      color: MetricType.calories.color,
-                      goalForDay: (day) => day.targets?.calories.toDouble() ?? 0,
-                      valueForDay: (day) => MetricType.calories.valueFromTotals(
-                        calories: day.calories,
-                        fat: day.fat,
-                        protein: day.protein,
-                        carbs: day.carbs,
-                      ),
-                    ),
-                    _WeeklyMetricSpec(
-                      color: MetricType.fat.color,
-                      goalForDay: (day) => day.targets?.fat.toDouble() ?? 0,
-                      valueForDay: (day) => MetricType.fat.valueFromTotals(
-                        calories: day.calories,
-                        fat: day.fat,
-                        protein: day.protein,
-                        carbs: day.carbs,
-                      ),
-                    ),
-                    _WeeklyMetricSpec(
-                      color: MetricType.protein.color,
-                      goalForDay: (day) => day.targets?.protein.toDouble() ?? 0,
-                      valueForDay: (day) => MetricType.protein.valueFromTotals(
-                        calories: day.calories,
-                        fat: day.fat,
-                        protein: day.protein,
-                        carbs: day.carbs,
-                      ),
-                    ),
-                    _WeeklyMetricSpec(
-                      color: MetricType.carbs.color,
-                      goalForDay: (day) => day.targets?.carbs.toDouble() ?? 0,
-                      valueForDay: (day) => MetricType.carbs.valueFromTotals(
-                        calories: day.calories,
-                        fat: day.fat,
-                        protein: day.protein,
-                        carbs: day.carbs,
-                      ),
-                    ),
-                  ];
-
-                  return CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: UiConstants.mediumSpacing),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: UiConstants.pagePadding,
-                          ),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: UiConstants.smallSpacing,
-                                vertical: UiConstants.xxSmallSpacing,
-                              ),
-                              child: Text(
-                                _formatWeekRange(languageCode, weekStart, weekEnd),
-                                style: Theme.of(context).textTheme.headlineSmall,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: UiConstants.largeSpacing),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: UiConstants.pagePadding),
-                          child: LabeledGroupBox(
-                            label: l10n.weeklyDeficitTitle,
-                            value: '',
-                            borderColor: AppColors.deficit,
-                            textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.deficit,
-                                ),
-                            contentHeight: UiConstants.progressBarHeight,
-                            contentPadding: EdgeInsets.zero,
-                            backgroundColor: Colors.transparent,
-                            child: Center(
-                              child: Text(
-                                _weeklyDeficitDisplay(dailyTotals, l10n),
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.deficit,
-                                    ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: UiConstants.largeSpacing),
-                      ),
-                      if (!hasAnyTargets)
                         SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: UiConstants.pagePadding,
                             ),
-                            child: Text(l10n.setMetabolicProfileHint),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: UiConstants.smallSpacing,
+                                  vertical: UiConstants.xxSmallSpacing,
+                                ),
+                                child: Text(
+                                  _formatWeekRange(
+                                      languageCode, weekStart, weekEnd),
+                                  style:
+                                      Theme.of(context).textTheme.headlineSmall,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      if (dailyTotals.every((day) => day.itemCount == 0))
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: UiConstants.largeSpacing),
+                        ),
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: UiConstants.largeSpacing,
-                              left: UiConstants.pagePadding,
-                              right: UiConstants.pagePadding,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: UiConstants.pagePadding),
+                            child: LabeledGroupBox(
+                              label: l10n.weeklyDeficitTitle,
+                              value: '',
+                              borderColor: AppColors.deficit,
+                              textStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: AppColors.deficit,
+                                  ),
+                              contentHeight: UiConstants.progressBarHeight,
+                              contentPadding: EdgeInsets.zero,
+                              backgroundColor: Colors.transparent,
+                              child: Center(
+                                child: Text(
+                                  _weeklyDeficitDisplay(
+                                    dailyTotals,
+                                    displayDailyDeficits,
+                                    l10n,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: AppColors.deficit,
+                                      ),
+                                ),
+                              ),
                             ),
-                            child: Text(l10n.noEntriesForWeek),
                           ),
                         ),
-                      if (hasAnyTargets)
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              left: UiConstants.pagePadding,
-                              right: UiConstants.pagePadding,
-                              bottom: UiConstants.pagePadding,
-                            ),
-                            child: _CombinedMetricWeekChart(
-                              specs: specs,
-                              days: dailyTotals,
-                              languageCode: languageCode,
-                              dailyDeficits: displayDailyDeficits,
-                              onDayTap: _openDay,
+                        if (hasEstimatedDeficits)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                top: UiConstants.smallSpacing,
+                                left: UiConstants.pagePadding,
+                                right: UiConstants.pagePadding,
+                              ),
+                              child: Text(
+                                l10n.weeklyDeficitEstimateHint,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
                             ),
                           ),
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: UiConstants.largeSpacing),
                         ),
-                    ],
-                  );
-                },
-              ),
-            );
+                        if (!hasAnyTargets)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: UiConstants.pagePadding,
+                              ),
+                              child: Text(l10n.setMetabolicProfileHint),
+                            ),
+                          ),
+                        if (dailyTotals.every((day) => day.itemCount == 0))
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                top: UiConstants.largeSpacing,
+                                left: UiConstants.pagePadding,
+                                right: UiConstants.pagePadding,
+                              ),
+                              child: Text(l10n.noEntriesForWeek),
+                            ),
+                          ),
+                        if (hasAnyTargets)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: UiConstants.pagePadding,
+                                right: UiConstants.pagePadding,
+                                bottom: UiConstants.pagePadding,
+                              ),
+                              child: _CombinedMetricWeekChart(
+                                specs: specs,
+                                days: dailyTotals,
+                                languageCode: languageCode,
+                                dailyDeficits: displayDailyDeficits,
+                                onDayTap: _openDay,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              );
             },
           ),
         ),
@@ -452,7 +441,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     );
   }
 
-  String _formatWeekRange(String languageCode, DateTime weekStart, DateTime weekEnd) {
+  String _formatWeekRange(
+      String languageCode, DateTime weekStart, DateTime weekEnd) {
     final formatter = DateFormat.MMMMd(languageCode);
     return '${formatter.format(weekStart)} - ${formatter.format(weekEnd)}';
   }
@@ -481,22 +471,26 @@ class _CombinedMetricWeekChart extends StatelessWidget {
   final List<_WeeklyMetricSpec> specs;
   final List<_DayMetricTotals> days;
   final String languageCode;
-  final List<_DisplayedDailyDeficit?>? dailyDeficits;
+  final List<ResolvedDailyDeficit?>? dailyDeficits;
   final ValueChanged<DateTime> onDayTap;
 
   String _formatDailyDeficit(int dayIndex) {
-    if (dailyDeficits == null || dayIndex < 0 || dayIndex >= dailyDeficits!.length) {
+    if (dailyDeficits == null ||
+        dayIndex < 0 ||
+        dayIndex >= dailyDeficits!.length) {
       return '-';
     }
     final deficit = dailyDeficits![dayIndex];
     if (deficit == null) {
       return '-';
     }
-    return '${deficit.value} kcal';
+    return '${deficit.value} kcal${deficit.estimated ? '*' : ''}';
   }
 
   bool _isEstimatedDailyDeficit(int dayIndex) {
-    if (dailyDeficits == null || dayIndex < 0 || dayIndex >= dailyDeficits!.length) {
+    if (dailyDeficits == null ||
+        dayIndex < 0 ||
+        dayIndex >= dailyDeficits!.length) {
       return false;
     }
     final deficit = dailyDeficits![dayIndex];
@@ -547,12 +541,13 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                           const SizedBox(height: UiConstants.xxSmallSpacing),
                           Text(
                             _formatDailyDeficit(i),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.deficit,
-                                  fontStyle: _isEstimatedDailyDeficit(i)
-                                      ? FontStyle.italic
-                                      : FontStyle.normal,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.deficit,
+                                      fontStyle: _isEstimatedDailyDeficit(i)
+                                          ? FontStyle.italic
+                                          : FontStyle.normal,
+                                    ),
                           ),
                         ],
                       ),
@@ -564,15 +559,18 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                           final value = spec.valueForDay(days[i]);
                           final goal = spec.goalForDay(days[i]);
                           final isOverGoal = goal > 0 && value > goal;
-                          final stripedFillColor =
-                              spec.color.withValues(alpha: AppColors.weeklyChartStripeAlpha);
-                          final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
+                          final stripedFillColor = spec.color.withValues(
+                              alpha: AppColors.weeklyChartStripeAlpha);
+                          final fillColor = isOverGoal
+                              ? Colors.transparent
+                              : stripedFillColor;
                           final max = goal > 0 ? goal : 1.0;
 
                           return Expanded(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                vertical: UiConstants.weeklyChartBarVerticalPadding,
+                                vertical:
+                                    UiConstants.weeklyChartBarVerticalPadding,
                               ),
                               child: Align(
                                 alignment: Alignment.centerLeft,
@@ -589,9 +587,11 @@ class _CombinedMetricWeekChart extends StatelessWidget {
                                         DecoratedBox(
                                           decoration: BoxDecoration(
                                             color: fillColor,
-                                            border: Border.all(color: spec.color),
+                                            border:
+                                                Border.all(color: spec.color),
                                             borderRadius: BorderRadius.circular(
-                                              UiConstants.weeklyChartBarCornerRadius,
+                                              UiConstants
+                                                  .weeklyChartBarCornerRadius,
                                             ),
                                           ),
                                         ),
@@ -617,7 +617,8 @@ class _CombinedMetricWeekChart extends StatelessWidget {
             ),
             if (i < days.length - 1)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
+                padding:
+                    EdgeInsets.symmetric(vertical: UiConstants.smallSpacing),
                 child: Divider(
                   color: AppColors.subtleBorder,
                   thickness: UiConstants.borderWidth,
@@ -629,16 +630,6 @@ class _CombinedMetricWeekChart extends StatelessWidget {
       ),
     );
   }
-}
-
-class _DisplayedDailyDeficit {
-  const _DisplayedDailyDeficit({
-    required this.value,
-    required this.estimated,
-  });
-
-  final int value;
-  final bool estimated;
 }
 
 class _WeeklyMetricSpec {
