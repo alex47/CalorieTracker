@@ -7,11 +7,13 @@ import 'database_service.dart';
 
 class MetabolicProfileHistoryEntry {
   const MetabolicProfileHistoryEntry({
+    required this.id,
     required this.profileDate,
     required this.profile,
     required this.createdAtIso,
   });
 
+  final int id;
   final DateTime profileDate;
   final MetabolicProfile profile;
   final String createdAtIso;
@@ -20,7 +22,8 @@ class MetabolicProfileHistoryEntry {
 class MetabolicProfileHistoryService {
   MetabolicProfileHistoryService._();
 
-  static final MetabolicProfileHistoryService instance = MetabolicProfileHistoryService._();
+  static final MetabolicProfileHistoryService instance =
+      MetabolicProfileHistoryService._();
 
   String _dayKey(DateTime date) {
     final d = DateTime(date.year, date.month, date.day);
@@ -29,33 +32,82 @@ class MetabolicProfileHistoryService {
     return '${d.year}-$month-$day';
   }
 
-  Future<void> upsertProfileForDate({
+  Map<String, Object?> _profileValues({
     required DateTime date,
     required MetabolicProfile profile,
-  }) async {
-    final db = await DatabaseService.instance.database;
+  }) {
     final macroPresetKey = MacroRatioPresetCatalog.keyForRatios(
       fatPercent: profile.fatRatioPercent,
       proteinPercent: profile.proteinRatioPercent,
       carbsPercent: profile.carbsRatioPercent,
     );
-    await db.insert(
+    return {
+      'profile_date': _dayKey(date),
+      'age': profile.age,
+      'sex': profile.sex,
+      'height_cm': profile.heightCm,
+      'weight_kg': profile.weightKg,
+      'activity_level': profile.activityLevel,
+      'macro_preset_key': macroPresetKey,
+      'fat_ratio_percent': profile.fatRatioPercent,
+      'protein_ratio_percent': profile.proteinRatioPercent,
+      'carbs_ratio_percent': profile.carbsRatioPercent,
+    };
+  }
+
+  Future<int> createProfileForDate({
+    required DateTime date,
+    required MetabolicProfile profile,
+  }) async {
+    final db = await DatabaseService.instance.database;
+    return createProfileInDatabase(db, date: date, profile: profile);
+  }
+
+  Future<int> createProfileInDatabase(
+    DatabaseExecutor db, {
+    required DateTime date,
+    required MetabolicProfile profile,
+  }) {
+    return db.insert(
       'metabolic_profile_history',
       {
-        'profile_date': _dayKey(date),
-        'age': profile.age,
-        'sex': profile.sex,
-        'height_cm': profile.heightCm,
-        'weight_kg': profile.weightKg,
-        'activity_level': profile.activityLevel,
-        'macro_preset_key': macroPresetKey,
-        'fat_ratio_percent': profile.fatRatioPercent,
-        'protein_ratio_percent': profile.proteinRatioPercent,
-        'carbs_ratio_percent': profile.carbsRatioPercent,
+        ..._profileValues(date: date, profile: profile),
         'created_at': DateTime.now().toIso8601String(),
       },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
+  }
+
+  Future<void> updateProfile({
+    required int profileId,
+    required DateTime date,
+    required MetabolicProfile profile,
+  }) async {
+    final db = await DatabaseService.instance.database;
+    await updateProfileInDatabase(
+      db,
+      profileId: profileId,
+      date: date,
+      profile: profile,
+    );
+  }
+
+  Future<void> updateProfileInDatabase(
+    DatabaseExecutor db, {
+    required int profileId,
+    required DateTime date,
+    required MetabolicProfile profile,
+  }) async {
+    final updated = await db.update(
+      'metabolic_profile_history',
+      _profileValues(date: date, profile: profile),
+      where: 'id = ?',
+      whereArgs: [profileId],
+      conflictAlgorithm: ConflictAlgorithm.abort,
+    );
+    if (updated != 1) {
+      throw StateError('Metabolic profile not found: $profileId');
+    }
   }
 
   Future<MetabolicProfile?> getEffectiveProfileForDate({
@@ -101,13 +153,16 @@ class MetabolicProfileHistoryService {
       orderBy: 'profile_date ASC',
       limit: 1,
     );
-    final fallbackProfile = earliestRows.isNotEmpty ? _profileFromRow(earliestRows.first) : null;
+    final fallbackProfile =
+        earliestRows.isNotEmpty ? _profileFromRow(earliestRows.first) : null;
 
     final result = <String, MetabolicProfile?>{};
     var cursor = 0;
     MetabolicProfile? active = fallbackProfile;
 
-    for (var date = start; !date.isAfter(end); date = AppDateUtils.addCalendarDays(date, 1)) {
+    for (var date = start;
+        !date.isAfter(end);
+        date = AppDateUtils.addCalendarDays(date, 1)) {
       final dateKey = _dayKey(date);
       while (cursor < rows.length) {
         final row = rows[cursor];
@@ -129,7 +184,8 @@ class MetabolicProfileHistoryService {
     final preset = MacroRatioPresetCatalog.presetForKey(presetKey);
 
     final fatRatio = ((row['fat_ratio_percent'] as num?)?.round()) ?? 30;
-    final proteinRatio = ((row['protein_ratio_percent'] as num?)?.round()) ?? 30;
+    final proteinRatio =
+        ((row['protein_ratio_percent'] as num?)?.round()) ?? 30;
     final carbsRatio = ((row['carbs_ratio_percent'] as num?)?.round()) ?? 40;
     final validRatios = fatRatio >= 0 &&
         fatRatio <= 100 &&
@@ -172,8 +228,10 @@ class MetabolicProfileHistoryService {
     return rows.map((row) {
       final rawDate = (row['profile_date'] as String?) ?? '';
       final parsedDate = DateTime.tryParse(rawDate) ?? DateTime.now();
-      final dayDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+      final dayDate =
+          DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
       return MetabolicProfileHistoryEntry(
+        id: (row['id'] as num).toInt(),
         profileDate: dayDate,
         profile: _profileFromRow(row),
         createdAtIso: (row['created_at'] as String?) ?? '',
@@ -181,12 +239,22 @@ class MetabolicProfileHistoryService {
     }).toList(growable: false);
   }
 
-  Future<void> deleteProfileForDate(DateTime date) async {
+  Future<void> deleteProfile(int profileId) async {
     final db = await DatabaseService.instance.database;
-    await db.delete(
+    await deleteProfileInDatabase(db, profileId);
+  }
+
+  Future<void> deleteProfileInDatabase(
+    DatabaseExecutor db,
+    int profileId,
+  ) async {
+    final deleted = await db.delete(
       'metabolic_profile_history',
-      where: 'profile_date = ?',
-      whereArgs: [_dayKey(date)],
+      where: 'id = ?',
+      whereArgs: [profileId],
     );
+    if (deleted != 1) {
+      throw StateError('Metabolic profile not found: $profileId');
+    }
   }
 }

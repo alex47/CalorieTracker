@@ -133,12 +133,12 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
         presetLabel: _presetLabel,
       ),
     );
-    await _applyDialogResult(result, originalDate: _dayOnly(entry.profileDate));
+    await _applyDialogResult(result, profileId: entry.id);
   }
 
   Future<void> _applyDialogResult(
     _MetabolicProfileEditorResult? result, {
-    DateTime? originalDate,
+    int? profileId,
   }) async {
     if (result == null) {
       return;
@@ -146,21 +146,31 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       if (result.delete) {
-        final deleteDate = result.profileDate;
-        await MetabolicProfileHistoryService.instance
-            .deleteProfileForDate(deleteDate);
+        if (profileId == null) {
+          throw StateError('Cannot delete an unsaved metabolic profile.');
+        }
+        await MetabolicProfileHistoryService.instance.deleteProfile(profileId);
+        if (!mounted) {
+          return;
+        }
         _reloadHistory();
         return;
       }
 
-      await MetabolicProfileHistoryService.instance.upsertProfileForDate(
-        date: result.profileDate,
-        profile: result.profile!,
-      );
-      if (originalDate != null &&
-          _dayOnly(originalDate) != _dayOnly(result.profileDate)) {
-        await MetabolicProfileHistoryService.instance
-            .deleteProfileForDate(originalDate);
+      if (profileId == null) {
+        await MetabolicProfileHistoryService.instance.createProfileForDate(
+          date: result.profileDate!,
+          profile: result.profile!,
+        );
+      } else {
+        await MetabolicProfileHistoryService.instance.updateProfile(
+          profileId: profileId,
+          date: result.profileDate!,
+          profile: result.profile!,
+        );
+      }
+      if (!mounted) {
+        return;
       }
       _reloadHistory();
     } catch (e) {
@@ -404,7 +414,22 @@ class _MetabolicProfileEditorDialogState
     );
   }
 
+  bool get _selectedDateIsOccupied {
+    final selectedDateKey = widget.formatDateKey(_selectedDate);
+    if (!widget.existingDateKeys.contains(selectedDateKey)) {
+      return false;
+    }
+    return !widget.isEditing ||
+        selectedDateKey != widget.formatDateKey(widget.initialDate);
+  }
+
   void _save(AppLocalizations l10n) {
+    if (_selectedDateIsOccupied) {
+      setState(() {
+        _validationMessage = l10n.metabolicProfileDateAlreadyExists;
+      });
+      return;
+    }
     final profile = _buildProfile();
     if (profile == null) {
       setState(() {
@@ -428,7 +453,7 @@ class _MetabolicProfileEditorDialogState
             title: Text(l10n.deleteProfileEntryTitle),
             content: Text(
               l10n.deleteProfileEntryConfirmMessage(
-                widget.formatDateKey(_selectedDate),
+                widget.formatDateKey(widget.initialDate),
               ),
             ),
             actionItems: [
@@ -456,7 +481,7 @@ class _MetabolicProfileEditorDialogState
     }
 
     Navigator.of(context).pop(
-      _MetabolicProfileEditorResult.delete(profileDate: _selectedDate),
+      _MetabolicProfileEditorResult.delete(),
     );
   }
 
@@ -652,17 +677,15 @@ class _MetabolicProfileEditorResult {
     );
   }
 
-  factory _MetabolicProfileEditorResult.delete({
-    required DateTime profileDate,
-  }) {
+  factory _MetabolicProfileEditorResult.delete() {
     return _MetabolicProfileEditorResult._(
-      profileDate: profileDate,
+      profileDate: null,
       profile: null,
       delete: true,
     );
   }
 
-  final DateTime profileDate;
+  final DateTime? profileDate;
   final MetabolicProfile? profile;
   final bool delete;
 }

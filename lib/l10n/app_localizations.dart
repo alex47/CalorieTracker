@@ -590,6 +590,12 @@ abstract class AppLocalizations {
   /// **'Please enter valid profile values.'**
   String get invalidMetabolicProfileInput;
 
+  /// No description provided for @metabolicProfileDateAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'A profile already exists for this date.'**
+  String get metabolicProfileDateAlreadyExists;
+
   /// No description provided for @metabolicProfileDateMustBeTodayOrExisting.
   ///
   /// In en, this message translates to:

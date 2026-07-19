@@ -128,6 +128,7 @@
   },
   "noMetabolicProfileHistory": "Még nincs profil előzmény bejegyzés.",
   "invalidMetabolicProfileInput": "Kérlek, adj meg érvényes profil adatokat.",
+  "metabolicProfileDateAlreadyExists": "Ehhez a dátumhoz már tartozik profil.",
   "metabolicProfileDateMustBeTodayOrExisting": "A dátum csak mai vagy meglévő profil dátum lehet.",
   "ageLabel": "Életkor",
   "sexLabel": "Nem",

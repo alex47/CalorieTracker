@@ -18,6 +18,15 @@ class FoodLibraryService {
 
   static final FoodLibraryService instance = FoodLibraryService._();
 
+  static double? defaultQuantityConversionFactor({
+    required String sourceUnit,
+    required String targetUnit,
+  }) {
+    final normalizedSourceUnit = sourceUnit.trim().toLowerCase();
+    final normalizedTargetUnit = targetUnit.trim().toLowerCase();
+    return normalizedSourceUnit == normalizedTargetUnit ? 1.0 : null;
+  }
+
   String _signature({
     required String name,
     required String standardUnit,
@@ -55,7 +64,8 @@ class FoodLibraryService {
       whereParts.add('LOWER(foods.name) LIKE ?');
       whereArgs.add('%$trimmedSearch%');
     }
-    final whereClause = whereParts.isEmpty ? '' : 'WHERE ${whereParts.join(' AND ')}';
+    final whereClause =
+        whereParts.isEmpty ? '' : 'WHERE ${whereParts.join(' AND ')}';
     final rows = await db.rawQuery(
       '''
       SELECT
@@ -309,6 +319,18 @@ class FoodLibraryService {
     required List<FoodMergeSource> sources,
   }) async {
     final db = await DatabaseService.instance.database;
+    await mergeFoodsInDatabase(
+      db,
+      targetFoodId: targetFoodId,
+      sources: sources,
+    );
+  }
+
+  Future<void> mergeFoodsInDatabase(
+    Database db, {
+    required int targetFoodId,
+    required List<FoodMergeSource> sources,
+  }) async {
     final normalizedSources = <int, double>{};
     for (final source in sources) {
       if (source.sourceFoodId == targetFoodId) {
@@ -355,6 +377,8 @@ class FoodLibraryService {
   Future<List<Map<String, dynamic>>> exportFoodRows() async {
     final db = await DatabaseService.instance.database;
     final rows = await db.query('foods');
-    return rows.map((row) => Map<String, dynamic>.from(row)).toList(growable: false);
+    return rows
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList(growable: false);
   }
 }

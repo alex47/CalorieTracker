@@ -95,15 +95,10 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
     required FoodDefinition target,
     required FoodDefinition source,
   }) {
-    if (target.standardUnit.trim().toLowerCase() !=
-        source.standardUnit.trim().toLowerCase()) {
-      return null;
-    }
-    final sourceAmount =
-        source.standardUnitAmount > 0 ? source.standardUnitAmount : 1.0;
-    final targetAmount =
-        target.standardUnitAmount > 0 ? target.standardUnitAmount : 1.0;
-    return targetAmount / sourceAmount;
+    return FoodLibraryService.defaultQuantityConversionFactor(
+      sourceUnit: source.standardUnit,
+      targetUnit: target.standardUnit,
+    );
   }
 
   double? _parseFactor(int foodId) {

@@ -281,6 +281,10 @@ class AppLocalizationsHu extends AppLocalizations {
       'Kérlek, adj meg érvényes profil adatokat.';
 
   @override
+  String get metabolicProfileDateAlreadyExists =>
+      'Ehhez a dátumhoz már tartozik profil.';
+
+  @override
   String get metabolicProfileDateMustBeTodayOrExisting =>
       'A dátum csak mai vagy meglévő profil dátum lehet.';
 

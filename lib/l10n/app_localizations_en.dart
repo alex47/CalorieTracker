@@ -278,6 +278,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please enter valid profile values.';
 
   @override
+  String get metabolicProfileDateAlreadyExists =>
+      'A profile already exists for this date.';
+
+  @override
   String get metabolicProfileDateMustBeTodayOrExisting =>
       'Date must be today or an existing profile date.';
 
