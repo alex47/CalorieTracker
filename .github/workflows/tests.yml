@@ -37,10 +37,10 @@ jobs:
         run: dart run tool/check_coverage.dart
 
       - name: Install Linux integration-test dependencies
-        run: sudo apt-get update && sudo apt-get install --yes clang lld cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev
+        run: sudo apt-get update && sudo apt-get install --yes clang lld cmake ninja-build pkg-config libgtk-3-dev libsecret-1-dev xvfb
 
       - name: Run offline integration tests
         env:
           GITHUB_TOKEN: ""
           OPENAI_API_KEY: ""
-        run: flutter test integration_test/offline_app_test.dart
+        run: xvfb-run --auto-servernum flutter test integration_test/offline_app_test.dart
