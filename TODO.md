@@ -63,14 +63,15 @@ verify each item independently.
   - Done when generated coaching evaluates intake against the user's actual
     objective rather than treating maintenance as the objective in all cases.
 
-- [ ] Make multi-item copy and delete atomic.
+- [x] Make multi-item copy and delete atomic.
   - Execute each bulk operation in one database transaction.
   - Roll back the entire operation if any selected item fails.
   - Prevent retries from duplicating a partially completed copy.
   - Add tests for success and an injected mid-operation failure.
   - Relevant code:
     [home_screen.dart](lib/screens/home_screen.dart#L244),
-    [home_screen.dart](lib/screens/home_screen.dart#L285)
+    [entries_repository.dart](lib/services/entries_repository.dart),
+    [entries_repository_test.dart](test/services/entries_repository_test.dart)
   - Done when a bulk action either applies to every selected item or changes
     nothing.
 

@@ -251,12 +251,10 @@ class _HomeScreenState extends State<HomeScreen>
     var copied = false;
     try {
       final today = DateTime.now();
-      for (final item in selectedItems) {
-        await EntriesRepository.instance.copyItemToDate(
-          item: item,
-          date: today,
-        );
-      }
+      await EntriesRepository.instance.copyItemsToDate(
+        items: selectedItems,
+        date: today,
+      );
       copied = true;
       if (!mounted) {
         return;
@@ -322,9 +320,9 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() => _bulkDeleting = true);
     var deleted = false;
     try {
-      for (final item in selectedItems) {
-        await EntriesRepository.instance.deleteEntryItem(item.id);
-      }
+      await EntriesRepository.instance.deleteEntryItems(
+        itemIds: selectedItems.map((item) => item.id),
+      );
       deleted = true;
       if (!mounted) {
         return;

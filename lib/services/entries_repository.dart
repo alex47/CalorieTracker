@@ -24,12 +24,12 @@ class EntriesRepository {
     return fallback;
   }
 
-  Future<int> _createEntryRow({
+  Future<int> _createEntryRow(
+    DatabaseExecutor db, {
     required DateTime date,
     required String prompt,
     required String response,
   }) async {
-    final db = await DatabaseService.instance.database;
     return db.insert('entries', {
       'entry_date': AppDateUtils.dayOnly(date).toIso8601String(),
       'created_at': DateTime.now().toIso8601String(),
@@ -38,10 +38,10 @@ class EntriesRepository {
     });
   }
 
-  Future<int> _findOrCreateLibraryEntryRow({
+  Future<int> _findOrCreateLibraryEntryRow(
+    DatabaseExecutor db, {
     required DateTime date,
   }) async {
-    final db = await DatabaseService.instance.database;
     final day = AppDateUtils.dayOnly(date).toIso8601String();
     final existingRows = await db.query(
       'entries',
@@ -55,10 +55,43 @@ class EntriesRepository {
       return (existingRows.first['id'] as num).toInt();
     }
     return _createEntryRow(
+      db,
       date: date,
       prompt: 'Food library add',
       response: '',
     );
+  }
+
+  Future<void> _addFoodReferencesToDate(
+    DatabaseExecutor db, {
+    required DateTime date,
+    required List<({int foodId, double multiplier})> foods,
+  }) async {
+    if (foods.isEmpty) {
+      return;
+    }
+    final entryId = await _findOrCreateLibraryEntryRow(db, date: date);
+    for (final food in foods) {
+      await db.insert('entry_items', {
+        'entry_id': entryId,
+        'food_id': food.foodId,
+        'name': '',
+        'amount': '',
+        'calories': 0,
+        'fat': 0,
+        'protein': 0,
+        'carbs': 0,
+        'standard_amount': '',
+        'standard_unit': '',
+        'standard_unit_amount': 1.0,
+        'multiplier': food.multiplier > 0 ? food.multiplier : 1.0,
+        'standard_calories': 0,
+        'standard_fat': 0,
+        'standard_protein': 0,
+        'standard_carbs': 0,
+        'notes': '',
+      });
+    }
   }
 
   Future<int> _resolveFoodIdFromItem(
@@ -77,12 +110,14 @@ class EntriesRepository {
         item['standard_unit'],
         fallback: _asString(item['standard_amount']),
       ).trim(),
-      standardUnitAmount: _asDouble(item['standard_unit_amount'], fallback: 1.0),
+      standardUnitAmount:
+          _asDouble(item['standard_unit_amount'], fallback: 1.0),
       standardCalories: _asDouble(
         item['standard_calories'],
         fallback: _asDouble(item['calories']),
       ),
-      standardFat: _asDouble(item['standard_fat'], fallback: _asDouble(item['fat'])),
+      standardFat:
+          _asDouble(item['standard_fat'], fallback: _asDouble(item['fat'])),
       standardProtein: _asDouble(
         item['standard_protein'],
         fallback: _asDouble(item['protein']),
@@ -135,7 +170,8 @@ class EntriesRepository {
           'carbs': _asDouble(item['carbs']),
           'standard_amount': _asString(item['standard_amount']),
           'standard_unit': _asString(item['standard_unit']),
-          'standard_unit_amount': _asDouble(item['standard_unit_amount'], fallback: 1.0),
+          'standard_unit_amount':
+              _asDouble(item['standard_unit_amount'], fallback: 1.0),
           'multiplier': multiplier > 0 ? multiplier : 1.0,
           'standard_calories': _asDouble(item['standard_calories']),
           'standard_fat': _asDouble(item['standard_fat']),
@@ -155,25 +191,12 @@ class EntriesRepository {
     required double multiplier,
   }) async {
     final db = await DatabaseService.instance.database;
-    final entryId = await _findOrCreateLibraryEntryRow(date: date);
-    await db.insert('entry_items', {
-      'entry_id': entryId,
-      'food_id': foodId,
-      'name': '',
-      'amount': '',
-      'calories': 0,
-      'fat': 0,
-      'protein': 0,
-      'carbs': 0,
-      'standard_amount': '',
-      'standard_unit': '',
-      'standard_unit_amount': 1.0,
-      'multiplier': multiplier > 0 ? multiplier : 1.0,
-      'standard_calories': 0,
-      'standard_fat': 0,
-      'standard_protein': 0,
-      'standard_carbs': 0,
-      'notes': '',
+    await db.transaction((txn) {
+      return _addFoodReferencesToDate(
+        txn,
+        date: date,
+        foods: [(foodId: foodId, multiplier: multiplier)],
+      );
     });
   }
 
@@ -207,7 +230,8 @@ class EntriesRepository {
     );
 
     return rows.map((row) {
-      final standardUnitAmount = _asDouble(row['standard_unit_amount'], fallback: 1.0);
+      final standardUnitAmount =
+          _asDouble(row['standard_unit_amount'], fallback: 1.0);
       final multiplier = _asDouble(row['multiplier'], fallback: 1.0);
       final standardCalories = _asDouble(row['standard_calories']);
       final standardFat = _asDouble(row['standard_fat']);
@@ -268,23 +292,86 @@ class EntriesRepository {
   }
 
   Future<void> deleteEntryItem(int itemId) async {
+    await deleteEntryItems(itemIds: [itemId]);
+  }
+
+  Future<void> deleteEntryItems({
+    required Iterable<int> itemIds,
+  }) async {
     final db = await DatabaseService.instance.database;
-    await db.delete(
-      'entry_items',
-      where: 'id = ?',
-      whereArgs: [itemId],
+    await deleteEntryItemsInDatabase(
+      db,
+      itemIds: itemIds,
     );
+  }
+
+  Future<void> deleteEntryItemsInDatabase(
+    Database db, {
+    required Iterable<int> itemIds,
+  }) async {
+    final ids = itemIds.toSet().toList(growable: false);
+    if (ids.isEmpty) {
+      return;
+    }
+    await db.transaction((txn) async {
+      for (final itemId in ids) {
+        final deleted = await txn.delete(
+          'entry_items',
+          where: 'id = ?',
+          whereArgs: [itemId],
+        );
+        if (deleted != 1) {
+          throw StateError('Entry item $itemId does not exist.');
+        }
+      }
+    });
   }
 
   Future<void> copyItemToDate({
     required FoodItem item,
     required DateTime date,
   }) async {
-    await addFoodToDate(
+    await copyItemsToDate(
+      items: [item],
       date: date,
-      foodId: item.foodId,
-      multiplier: item.multiplier,
     );
+  }
+
+  Future<void> copyItemsToDate({
+    required Iterable<FoodItem> items,
+    required DateTime date,
+  }) async {
+    final db = await DatabaseService.instance.database;
+    await copyItemsToDateInDatabase(
+      db,
+      items: items,
+      date: date,
+    );
+  }
+
+  Future<void> copyItemsToDateInDatabase(
+    Database db, {
+    required Iterable<FoodItem> items,
+    required DateTime date,
+  }) async {
+    final foods = items
+        .map(
+          (item) => (
+            foodId: item.foodId,
+            multiplier: item.multiplier,
+          ),
+        )
+        .toList(growable: false);
+    if (foods.isEmpty) {
+      return;
+    }
+    await db.transaction((txn) {
+      return _addFoodReferencesToDate(
+        txn,
+        date: date,
+        foods: foods,
+      );
+    });
   }
 
   Future<List<Map<String, dynamic>>> exportEntriesRows() async {
