@@ -422,7 +422,8 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _jumpToDate(DateTime date) async {
     final today = _dayOnly(DateTime.now());
     final target = _dayOnly(date).isAfter(today) ? today : _dayOnly(date);
-    final rawPage = _initialPage + target.difference(_baseDate).inDays;
+    final rawPage =
+        _initialPage + AppDateUtils.calendarDaysBetween(_baseDate, target);
     final targetPage = rawPage.clamp(0, _initialPage).toInt();
     if (_pageController.hasClients) {
       await _pageController.animateToPage(

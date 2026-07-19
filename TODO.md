@@ -88,13 +88,14 @@ verify each item independently.
   - Done when leaving a screen during an operation cannot trigger
     `setState()` after disposal or an invalid navigation action.
 
-- [ ] Make home-screen date jumps calendar-based and DST-safe.
+- [x] Make home-screen date jumps calendar-based and DST-safe.
   - Replace elapsed-duration day calculations with local calendar-day
     calculations.
   - Test forward and backward jumps across both DST transitions in
     `Europe/Budapest`.
   - Relevant code:
-    [home_screen.dart](lib/screens/home_screen.dart#L424)
+    [home_screen.dart](lib/screens/home_screen.dart#L424),
+    [app_date_utils_test.dart](test/utils/app_date_utils_test.dart)
   - Done when every selected calendar date maps to the correct page regardless
     of whether the interval contains a 23-hour or 25-hour day.
 
