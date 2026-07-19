@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/day_summary.dart';
-import '../models/daily_targets.dart';
 import '../models/food_item.dart';
-import '../models/metabolic_profile.dart';
 import '../services/day_summary_service.dart';
+import '../services/day_summary_snapshot_builder.dart';
 import '../services/entries_repository.dart';
-import '../services/macro_ratio_preset_catalog.dart';
 import '../services/metabolic_profile_history_service.dart';
 import '../services/nutrition_target_service.dart';
 import '../services/openai_service.dart';
@@ -67,11 +65,11 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
       final targets = profile == null
           ? null
           : NutritionTargetService.targetsFromProfile(profile);
-      final snapshot = _buildSummarySnapshot(
+      final snapshot = DaySummarySnapshotBuilder.build(
         date: date,
         items: items,
         profile: profile,
-        targets: targets,
+        maintenanceBaseline: targets,
         languageCode: settings.languageCode,
       );
       final sourceHash = DaySummaryService.instance.computeSourceHash(snapshot);
@@ -205,181 +203,6 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
         ],
       ),
     );
-  }
-
-  Map<String, dynamic> _buildSummarySnapshot({
-    required DateTime date,
-    required List<FoodItem> items,
-    required MetabolicProfile? profile,
-    required DailyTargets? targets,
-    required String languageCode,
-  }) {
-    final sortedItems = [...items]..sort((a, b) => a.id.compareTo(b.id));
-    final calories =
-        sortedItems.fold<int>(0, (sum, item) => sum + item.calories);
-    final fat = sortedItems.fold<double>(0, (sum, item) => sum + item.fat);
-    final protein =
-        sortedItems.fold<double>(0, (sum, item) => sum + item.protein);
-    final carbs = sortedItems.fold<double>(0, (sum, item) => sum + item.carbs);
-    final summaryDateKey = DaySummaryService.instance.dayKey(date);
-    final macroPresetKey = profile == null
-        ? null
-        : MacroRatioPresetCatalog.keyForRatios(
-            fatPercent: profile.fatRatioPercent,
-            proteinPercent: profile.proteinRatioPercent,
-            carbsPercent: profile.carbsRatioPercent,
-          );
-    final macroGoalNameEnglish = macroPresetKey == null
-        ? null
-        : MacroRatioPresetCatalog.localizedLabelForLanguageCode(
-            languageCode: 'en',
-            key: macroPresetKey,
-          );
-    final macroGoalNameLocalized = macroPresetKey == null
-        ? null
-        : MacroRatioPresetCatalog.localizedLabelForLanguageCode(
-            languageCode: languageCode,
-            key: macroPresetKey,
-          );
-    final macroGoalName = macroPresetKey == null
-        ? null
-        : (languageCode == 'en' ||
-                macroGoalNameLocalized == null ||
-                macroGoalNameLocalized.isEmpty ||
-                macroGoalNameLocalized == macroGoalNameEnglish)
-            ? macroGoalNameEnglish
-            : '$macroGoalNameLocalized ($macroGoalNameEnglish)';
-    String adherenceStatus({
-      required num actual,
-      required num target,
-      double tolerancePercent = 10.0,
-    }) {
-      if (target <= 0) {
-        return 'no_target';
-      }
-      final delta = actual - target;
-      final deviationPercent = (delta.abs() / target) * 100.0;
-      if (deviationPercent <= tolerancePercent) {
-        return 'on_target';
-      }
-      return delta > 0 ? 'over' : 'under';
-    }
-
-    double percentOfTarget({
-      required num actual,
-      required num target,
-    }) {
-      if (target <= 0) {
-        return 0;
-      }
-      return (actual / target) * 100.0;
-    }
-
-    Map<String, dynamic>? goalAdherence;
-    if (targets != null) {
-      final caloriesStatus =
-          adherenceStatus(actual: calories, target: targets.calories);
-      final fatStatus = adherenceStatus(actual: fat, target: targets.fat);
-      final proteinStatus =
-          adherenceStatus(actual: protein, target: targets.protein);
-      final carbsStatus = adherenceStatus(actual: carbs, target: targets.carbs);
-      final hasGoalGap = caloriesStatus != 'on_target' ||
-          fatStatus != 'on_target' ||
-          proteinStatus != 'on_target' ||
-          carbsStatus != 'on_target';
-
-      goalAdherence = {
-        'has_goal_gap': hasGoalGap,
-        'calories': {
-          'actual': calories,
-          'target': targets.calories,
-          'delta': calories - targets.calories,
-          'percent_of_target': percentOfTarget(
-            actual: calories,
-            target: targets.calories,
-          ),
-          'status': caloriesStatus,
-        },
-        'fat': {
-          'actual': fat,
-          'target': targets.fat,
-          'delta': fat - targets.fat,
-          'percent_of_target': percentOfTarget(
-            actual: fat,
-            target: targets.fat,
-          ),
-          'status': fatStatus,
-        },
-        'protein': {
-          'actual': protein,
-          'target': targets.protein,
-          'delta': protein - targets.protein,
-          'percent_of_target': percentOfTarget(
-            actual: protein,
-            target: targets.protein,
-          ),
-          'status': proteinStatus,
-        },
-        'carbs': {
-          'actual': carbs,
-          'target': targets.carbs,
-          'delta': carbs - targets.carbs,
-          'percent_of_target': percentOfTarget(
-            actual: carbs,
-            target: targets.carbs,
-          ),
-          'status': carbsStatus,
-        },
-      };
-    }
-
-    return {
-      'date': summaryDateKey,
-      'language_code': languageCode,
-      'entries': sortedItems
-          .map(
-            (item) => {
-              'id': item.id,
-              'name': item.name,
-              'amount': item.calculatedAmountText,
-              'calories': item.calories,
-              'fat': item.fat,
-              'protein': item.protein,
-              'carbs': item.carbs,
-              'notes': item.notes,
-            },
-          )
-          .toList(growable: false),
-      'totals': {
-        'calories': calories,
-        'fat': fat,
-        'protein': protein,
-        'carbs': carbs,
-      },
-      'metabolic_profile': profile == null
-          ? null
-          : {
-              'macro_goal_key': macroPresetKey,
-              'age': profile.age,
-              'sex': profile.sex,
-              'height_cm': profile.heightCm,
-              'weight_kg': profile.weightKg,
-              'activity_level': profile.activityLevel,
-              'macro_goal_name': macroGoalName,
-              'fat_ratio_percent': profile.fatRatioPercent,
-              'protein_ratio_percent': profile.proteinRatioPercent,
-              'carbs_ratio_percent': profile.carbsRatioPercent,
-            },
-      'targets': targets == null
-          ? null
-          : {
-              'calories': targets.calories,
-              'fat': targets.fat,
-              'protein': targets.protein,
-              'carbs': targets.carbs,
-            },
-      'goal_adherence': goalAdherence,
-    };
   }
 
   @override

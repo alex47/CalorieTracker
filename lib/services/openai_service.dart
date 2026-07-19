@@ -30,7 +30,8 @@ class OpenAIService {
 
   static const int maxAttempts = AppDefaults.openAiMaxAttempts;
   static const int defaultEstimateMaxOutputTokens = AppDefaults.maxOutputTokens;
-  static const List<String> reasoningEffortOptions = AppDefaults.reasoningEffortOptions;
+  static const List<String> reasoningEffortOptions =
+      AppDefaults.reasoningEffortOptions;
 
   final String apiKey;
   final Duration requestTimeout;
@@ -130,64 +131,71 @@ Rules:
 You are a concise nutrition coach summarizing one day of food intake.
 Rules:
 - Use only the provided JSON data.
-- The only "goal" concept is `metabolic_profile.macro_goal_name` (if present).
-- Treat `target`/`targets` values as estimated maintenance intake for the current body weight (reference baseline), not as goals that must be met.
-- The actual diet objective is `metabolic_profile.macro_goal_name` (when present).
-- Evaluate how well the day supports that diet objective, using maintenance baseline values only as context.
+- Treat `maintenance_baseline` as estimated maintenance intake for the current body weight, not automatically as the diet objective.
+- Use `nutrition_objective` as the configured calorie objective and macro strategy when it is present.
+- For a `below_maintenance` calorie objective, any calorie total strictly below the maintenance baseline satisfies the calorie-direction criterion for weight loss. A total at or above maintenance does not.
+- Satisfying the weight-loss calorie-direction criterion does not by itself establish that the intake is nutritionally adequate.
+- For a `maintenance` calorie objective, use the provided tolerance and precomputed status in `objective_adherence`.
+- Evaluate macro strategy adherence from `objective_adherence.macro_distribution`, which compares calorie-share percentages. Do not call the macro distribution incorrect merely because gram totals are below maintenance-based gram values.
+- Evaluate nutritional adequacy separately using the food list, total intake, and absolute macro amounts. An on-target macro distribution does not prove that absolute intake is adequate.
+- Follow the precomputed objective status in `objective_adherence`; do not reinterpret a weight-loss deficit as an objective failure.
+- If `objective_adherence.has_objective_gap` is true, include at least one objective-related `issues` item and one practical `suggestions` item.
+- If no nutrition objective is present, do not infer a calorie or macro goal.
 - Identify likely strengths and likely gaps in overall dietary quality and completeness.
 - Assess overall nutritional completeness broadly; mention only the most relevant factors for this specific day.
 - Do not force specific nutrients or example categories if the provided data does not support them.
 - If likely incompleteness is detected, include at least one related `issues` item and one practical `suggestions` item.
 - When noting likely daily nutrition gaps, include a practical food-based adjustment and briefly state which gap it addresses and why (for example: vitamins, essential fats, fiber, etc.), without restricting the assessment to these examples.
+- Do not state an unmeasured nutrient deficiency as fact. Describe micronutrient, fiber, and essential-fat coverage only as a cautious inference from the listed foods.
 - If relevant, mention concrete examples briefly, but keep the assessment high-level and practical.
 - Keep output practical and brief.
-- Write all output as user-facing coaching text. Do not reference JSON field names, keys, or schema terms (for example: `entries`, `targets`, `goal_adherence`, `metabolic_profile`).
+- Write all output as user-facing coaching text. Do not reference JSON field names, keys, or schema terms.
 - Return strict JSON only.
 - "summary": 1-2 short sentences.
 - "highlights": provide 1-5 short bullets with concrete positives (what went well nutritionally today).
-- "issues": provide 1-5 short bullets.
-- "suggestions": provide 1-5 short action-oriented bullets.
+- "issues": provide 0-5 short bullets. Return an empty array when no issue is supported by the data.
+- "suggestions": provide 0-5 short action-oriented bullets. Return an empty array when no suggestion is warranted.
 - Do not include medical advice or diagnosis.
 ''';
 
   Future<void> testConnection({required String model}) async {
     final response = await http
         .post(
-          Uri.parse('https://api.openai.com/v1/responses'),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode({
-            'model': model,
-            'input': 'Reply with OK.',
-            'store': false,
-            'max_output_tokens': AppDefaults.minOutputTokens,
-          }),
-        )
+      Uri.parse('https://api.openai.com/v1/responses'),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'model': model,
+        'input': 'Reply with OK.',
+        'store': false,
+        'max_output_tokens': AppDefaults.minOutputTokens,
+      }),
+    )
         .timeout(requestTimeout, onTimeout: () {
-          throw StateError('OpenAI request timed out.');
-        });
+      throw StateError('OpenAI request timed out.');
+    });
 
     if (response.statusCode >= 400) {
-      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+      throw StateError(
+          'OpenAI request failed: ${response.statusCode} ${response.body}');
     }
   }
 
   Future<List<String>> fetchAvailableModels() async {
-    final response = await http
-        .get(
-          Uri.parse('https://api.openai.com/v1/models'),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-          },
-        )
-        .timeout(requestTimeout, onTimeout: () {
-          throw StateError('OpenAI request timed out.');
-        });
+    final response = await http.get(
+      Uri.parse('https://api.openai.com/v1/models'),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+      },
+    ).timeout(requestTimeout, onTimeout: () {
+      throw StateError('OpenAI request timed out.');
+    });
 
     if (response.statusCode >= 400) {
-      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+      throw StateError(
+          'OpenAI request failed: ${response.statusCode} ${response.body}');
     }
 
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
@@ -206,10 +214,7 @@ Rules:
       final idB = b['id'] as String;
       return idA.compareTo(idB);
     });
-    final ids = models
-        .map((item) => item['id'] as String)
-        .toSet()
-        .toList();
+    final ids = models.map((item) => item['id'] as String).toSet().toList();
 
     if (ids.isEmpty) {
       throw StateError('No models were returned for this API key.');
@@ -257,7 +262,8 @@ Rules:
     if (lastParseError != null) {
       throw AiParseException(
         'Failed to parse AI response after $maxAttempts attempts: ${lastParseError.message}',
-        rawResponseText: lastParseError.rawResponseText ?? lastError?.toString(),
+        rawResponseText:
+            lastParseError.rawResponseText ?? lastError?.toString(),
       );
     }
 
@@ -265,6 +271,41 @@ Rules:
       'Failed to parse AI response after $maxAttempts attempts: $lastError',
       rawResponseText: lastError?.toString(),
     );
+  }
+
+  String buildDaySummaryPrompt({
+    required String languageCode,
+    required Map<String, dynamic> daySnapshot,
+  }) {
+    final nutritionObjective =
+        daySnapshot['nutrition_objective'] as Map<String, dynamic>?;
+    final objectiveAdherence =
+        daySnapshot['objective_adherence'] as Map<String, dynamic>?;
+    final macroStrategyName =
+        (nutritionObjective?['macro_strategy_name'] as String?)?.trim();
+    final calorieObjective =
+        (nutritionObjective?['calorie_objective'] as String?)?.trim();
+    final hasObjectiveGap =
+        objectiveAdherence?['has_objective_gap'] as bool? ?? false;
+    final languageName = _languageNameEnglish(languageCode);
+    final strategyLine = macroStrategyName == null || macroStrategyName.isEmpty
+        ? ''
+        : '\n- Selected macro strategy: $macroStrategyName.';
+    final objectiveLine = switch (calorieObjective) {
+      'below_maintenance' =>
+        '\nContext:$strategyLine\n- Calorie objective: consume below the estimated maintenance baseline. Every total strictly below maintenance satisfies this objective\'s calorie-direction criterion.',
+      'maintenance' =>
+        '\nContext:$strategyLine\n- Calorie objective: remain near the estimated maintenance baseline, using the tolerance in the provided adherence data.',
+      _ =>
+        '\nContext:\n- No calorie or macro objective is configured. Assess dietary quality without inferring one.',
+    };
+    final objectiveGapLine = objectiveAdherence == null
+        ? ''
+        : hasObjectiveGap
+            ? '\n- An objective gap is present in the provided adherence data. Address the relevant calorie or macro mismatch in both issues and suggestions.'
+            : '\n- The provided adherence data has no objective gap. Do not invent an objective failure, but still assess nutritional completeness.';
+
+    return '$daySummarySystemPrompt$objectiveLine$objectiveGapLine\n- Always output all text fields in $languageName.';
   }
 
   Future<DaySummary> summarizeDay({
@@ -280,57 +321,48 @@ Rules:
     final outputTokens = maxOutputTokens < AppDefaults.minOutputTokens
         ? defaultEstimateMaxOutputTokens
         : maxOutputTokens;
-    final languageName = _languageNameEnglish(languageCode);
-    final macroGoalName =
-        ((daySnapshot['metabolic_profile'] as Map<String, dynamic>?)?['macro_goal_name'] as String?)
-            ?.trim();
-    final hasGoalGap = ((daySnapshot['goal_adherence'] as Map<String, dynamic>?)?['has_goal_gap'] as bool?) ??
-        false;
-    final goalContextLine = (macroGoalName != null && macroGoalName.isNotEmpty)
-        ? '\nContext:\n- Daily maintenance baseline for this day: $macroGoalName.\n- Evaluate the day against this maintenance baseline when writing summary, issues, and suggestions.'
-        : '\nContext:\n- Evaluate the day against the provided maintenance baseline targets.';
-    final goalGapLine = hasGoalGap
-        ? '\n- Baseline gap detected in `goal_adherence`: include explicit gap-focused points in both `issues` and `suggestions`.'
-        : '';
-    final localizedSystemPrompt =
-        '$daySummarySystemPrompt$goalContextLine$goalGapLine\n- Always output all text fields in $languageName.';
+    final localizedSystemPrompt = buildDaySummaryPrompt(
+      languageCode: languageCode,
+      daySnapshot: daySnapshot,
+    );
     final compactSnapshot = jsonEncode(daySnapshot);
     final response = await http
         .post(
-          Uri.parse('https://api.openai.com/v1/responses'),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
+      Uri.parse('https://api.openai.com/v1/responses'),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'model': model,
+        'input': [
+          {'role': 'system', 'content': localizedSystemPrompt},
+          {
+            'role': 'user',
+            'content':
+                'Summarize this day using the required JSON schema.\n\nDay data JSON:\n$compactSnapshot',
           },
-          body: jsonEncode({
-            'model': model,
-            'input': [
-              {'role': 'system', 'content': localizedSystemPrompt},
-              {
-                'role': 'user',
-                'content':
-                    'Summarize this day using the required JSON schema.\n\nDay data JSON:\n$compactSnapshot',
-              },
-            ],
-            'store': false,
-            'max_output_tokens': outputTokens,
-            'reasoning': {'effort': effort},
-            'text': {
-              'format': {
-                'type': 'json_schema',
-                'name': 'day_summary',
-                'strict': true,
-                'schema': daySummarySchema,
-              },
-            },
-          }),
-        )
+        ],
+        'store': false,
+        'max_output_tokens': outputTokens,
+        'reasoning': {'effort': effort},
+        'text': {
+          'format': {
+            'type': 'json_schema',
+            'name': 'day_summary',
+            'strict': true,
+            'schema': daySummarySchema,
+          },
+        },
+      }),
+    )
         .timeout(requestTimeout, onTimeout: () {
-          throw StateError('OpenAI request timed out.');
-        });
+      throw StateError('OpenAI request timed out.');
+    });
 
     if (response.statusCode >= 400) {
-      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+      throw StateError(
+          'OpenAI request failed: ${response.statusCode} ${response.body}');
     }
 
     final decodedBody = response.body;
@@ -418,33 +450,34 @@ Rules:
 
     final response = await http
         .post(
-          Uri.parse('https://api.openai.com/v1/responses'),
-          headers: {
-            'Authorization': 'Bearer $apiKey',
-            'Content-Type': 'application/json',
+      Uri.parse('https://api.openai.com/v1/responses'),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'model': model,
+        'input': messages,
+        'store': false,
+        'max_output_tokens': outputTokens,
+        'reasoning': {'effort': effort},
+        'text': {
+          'format': {
+            'type': 'json_schema',
+            'name': 'calorie_estimate',
+            'strict': true,
+            'schema': estimateSchema,
           },
-          body: jsonEncode({
-            'model': model,
-            'input': messages,
-            'store': false,
-            'max_output_tokens': outputTokens,
-            'reasoning': {'effort': effort},
-            'text': {
-              'format': {
-                'type': 'json_schema',
-                'name': 'calorie_estimate',
-                'strict': true,
-                'schema': estimateSchema,
-              },
-            },
-          }),
-        )
+        },
+      }),
+    )
         .timeout(requestTimeout, onTimeout: () {
-          throw StateError('OpenAI request timed out.');
-        });
+      throw StateError('OpenAI request timed out.');
+    });
 
     if (response.statusCode >= 400) {
-      throw StateError('OpenAI request failed: ${response.statusCode} ${response.body}');
+      throw StateError(
+          'OpenAI request failed: ${response.statusCode} ${response.body}');
     }
 
     try {

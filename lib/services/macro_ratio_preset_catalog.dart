@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:calorie_tracker/l10n/app_localizations.dart';
 
+enum CalorieObjective {
+  maintenance('maintenance'),
+  belowMaintenance('below_maintenance');
+
+  const CalorieObjective(this.key);
+
+  final String key;
+}
+
 class MacroRatioPreset {
   const MacroRatioPreset({
     required this.key,
+    required this.calorieObjective,
     required this.fatPercent,
     required this.proteinPercent,
     required this.carbsPercent,
   });
 
   final String key;
+  final CalorieObjective calorieObjective;
   final int fatPercent;
   final int proteinPercent;
   final int carbsPercent;
@@ -18,44 +29,52 @@ class MacroRatioPreset {
 class MacroRatioPresetCatalog {
   static const String balancedDefaultKey = 'balanced_default';
   static const String fatLossHigherProteinKey = 'fat_loss_higher_protein';
-  static const String bodyRecompositionTrainingKey = 'body_recomposition_training';
+  static const String bodyRecompositionTrainingKey =
+      'body_recomposition_training';
   static const String enduranceHighActivityKey = 'endurance_high_activity';
-  static const String lowerCarbAppetiteControlKey = 'lower_carb_appetite_control';
+  static const String lowerCarbAppetiteControlKey =
+      'lower_carb_appetite_control';
   static const String highCarbPerformanceKey = 'high_carb_performance';
 
   static const List<MacroRatioPreset> presets = [
     MacroRatioPreset(
       key: balancedDefaultKey,
+      calorieObjective: CalorieObjective.maintenance,
       fatPercent: 30,
       proteinPercent: 20,
       carbsPercent: 50,
     ),
     MacroRatioPreset(
       key: fatLossHigherProteinKey,
+      calorieObjective: CalorieObjective.belowMaintenance,
       fatPercent: 30,
       proteinPercent: 30,
       carbsPercent: 40,
     ),
     MacroRatioPreset(
       key: bodyRecompositionTrainingKey,
+      calorieObjective: CalorieObjective.maintenance,
       fatPercent: 30,
       proteinPercent: 35,
       carbsPercent: 35,
     ),
     MacroRatioPreset(
       key: enduranceHighActivityKey,
+      calorieObjective: CalorieObjective.maintenance,
       fatPercent: 30,
       proteinPercent: 15,
       carbsPercent: 55,
     ),
     MacroRatioPreset(
       key: lowerCarbAppetiteControlKey,
+      calorieObjective: CalorieObjective.maintenance,
       fatPercent: 40,
       proteinPercent: 35,
       carbsPercent: 25,
     ),
     MacroRatioPreset(
       key: highCarbPerformanceKey,
+      calorieObjective: CalorieObjective.maintenance,
       fatPercent: 20,
       proteinPercent: 20,
       carbsPercent: 60,

@@ -48,13 +48,16 @@ verify each item independently.
 
 ## P2 - Behavior And Reliability
 
-- [ ] Align daily-summary prompts with the selected nutrition objective.
+- [x] Align daily-summary prompts with the selected nutrition objective.
   - Remove the contradiction between maintenance targets and the active macro
     preset.
-  - Define when `has_goal_gap` should flag under- or over-target intake for
-    maintenance, fat-loss, and gain objectives.
+  - Treat weight loss as any intake below maintenance; treat all other current
+    presets as maintenance-oriented.
+  - Compare macro calorie-share percentages with the selected preset instead
+    of maintenance-based gram totals.
   - Add prompt/service tests for each objective.
   - Relevant code:
+    [day_summary_snapshot_builder.dart](lib/services/day_summary_snapshot_builder.dart),
     [openai_service.dart](lib/services/openai_service.dart#L129),
     [openai_service.dart](lib/services/openai_service.dart#L283)
   - Done when generated coaching evaluates intake against the user's actual
