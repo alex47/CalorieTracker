@@ -1,13 +1,14 @@
 import 'package:calorie_tracker/models/food_item.dart';
 import 'package:calorie_tracker/services/database_service.dart';
 import 'package:calorie_tracker/services/entries_repository.dart';
+import 'package:calorie_tracker/services/food_library_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   sqfliteFfiInit();
 
-  group('EntriesRepository bulk actions', () {
+  group('EntriesRepository database behavior', () {
     late Database db;
 
     setUp(() async {
@@ -126,6 +127,43 @@ void main() {
       );
 
       expect(await _sourceItemIds(db), [10, 11, 12]);
+    });
+
+    test('food definition edits recalculate linked historical entries',
+        () async {
+      final before = await EntriesRepository.instance
+          .fetchItemsForDateInDatabase(db, DateTime(2026, 1, 1));
+      final original = before.singleWhere((item) => item.foodId == 1);
+      expect(original.name, 'Food 1');
+      expect(original.calories, 150);
+      expect(original.fat, 1.5);
+      expect(original.protein, 3);
+      expect(original.carbs, 4.5);
+
+      await FoodLibraryService.instance.updateFoodInDatabase(
+        db,
+        foodId: 1,
+        name: 'Updated Food 1',
+        standardUnit: 'g',
+        standardUnitAmount: 100,
+        standardCalories: 200,
+        standardFat: 4,
+        standardProtein: 8,
+        standardCarbs: 12,
+        notes: 'Updated definition',
+        isVisibleInLibrary: true,
+      );
+
+      final after = await EntriesRepository.instance
+          .fetchItemsForDateInDatabase(db, DateTime(2026, 1, 1));
+      final updated = after.singleWhere((item) => item.foodId == 1);
+      expect(updated.name, 'Updated Food 1');
+      expect(updated.multiplier, 150);
+      expect(updated.calories, 300);
+      expect(updated.fat, 6);
+      expect(updated.protein, 12);
+      expect(updated.carbs, 18);
+      expect(updated.notes, 'Updated definition');
     });
   });
 }

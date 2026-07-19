@@ -202,8 +202,16 @@ class EntriesRepository {
 
   Future<List<FoodItem>> fetchItemsForDate(DateTime date) async {
     final db = await DatabaseService.instance.database;
+    return fetchItemsForDateInDatabase(db, date);
+  }
+
+  Future<List<FoodItem>> fetchItemsForDateInDatabase(
+    DatabaseExecutor db,
+    DateTime date,
+  ) async {
     final start = AppDateUtils.dayOnly(date);
     final end = AppDateUtils.addCalendarDays(start, 1);
+    // Food definitions are intentionally live across all linked entries.
     final rows = await db.rawQuery(
       '''
       SELECT

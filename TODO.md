@@ -158,15 +158,14 @@ verify each item independently.
 
 ## Product Decisions
 
-- [ ] Decide whether editing a food definition should rewrite history.
-  - Current behavior recalculates all historical entries that reference the
-    edited definition.
-  - If history should be immutable, store or retain the nutrition snapshot used
-    when each entry was created.
+- [x] Keep food definition edits live across history.
+  - Food definitions are the source of truth for all linked entries.
+  - Editing a definition recalculates historical nutrition while preserving
+    each entry's logged quantity.
   - Relevant code:
-    [entries_repository.dart](lib/services/entries_repository.dart#L184)
-  - Done when the intended historical-data policy is documented and enforced
-    consistently.
+    [entries_repository.dart](lib/services/entries_repository.dart),
+    [entries_repository_test.dart](test/services/entries_repository_test.dart),
+    [README.md](README.md)
 
 - [ ] Decide how completed weeks with missing logged days affect deficit.
   - Current behavior fills missing past days using the average of logged days.

@@ -22,6 +22,8 @@ The home screen shows the selected day, daily calorie progress, macro progress, 
 
 Adding food starts from the saved food library. New foods can be created manually or estimated with OpenAI from free-form text, then adjusted before saving.
 
+Food definitions are the live source of truth for linked logs. Editing a food updates the name, nutrition, unit, and notes shown for its past and future entries while preserving each entry's logged quantity.
+
 The metabolic profile screen stores dated profile changes. Daily targets are calculated from the effective profile for each day.
 
 The weekly summary shows daily calorie and macro bars plus weekly deficit. The daily summary screen can generate and cache an AI-written nutrition summary for a logged day.
