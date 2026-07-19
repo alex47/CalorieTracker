@@ -121,15 +121,17 @@ verify each item independently.
     [openai_request_history_test.dart](test/services/openai_request_history_test.dart)
   - Done when captured request payloads contain one copy of each user turn.
 
-- [ ] Make releases reproducible and add an automated regression gate.
+- [x] Make releases reproducible and add an automated regression gate.
   - Track `pubspec.lock` for this application.
   - Pin the Flutter version used by CI instead of following latest stable.
   - Add automated tests for repositories, migrations, date calculations, and
     the highest-risk workflows listed in this file.
   - Validate that the release tag and `pubspec.yaml` version match.
   - Relevant code:
-    [.gitignore](.gitignore#L8),
-    [android-release.yml](.github/workflows/android-release.yml#L20)
+    [pubspec.lock](pubspec.lock),
+    [tests.yml](.github/workflows/tests.yml),
+    [android-release.yml](.github/workflows/android-release.yml),
+    [database_service_test.dart](test/services/database_service_test.dart)
   - Done when the same revision resolves the same dependencies and CI blocks
     releases on test failures or version/tag mismatches.
 

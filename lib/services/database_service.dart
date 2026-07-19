@@ -7,6 +7,7 @@ class DatabaseService {
   DatabaseService._();
 
   static final DatabaseService instance = DatabaseService._();
+  static const int schemaVersion = 11;
 
   static Future<void> configureDatabase(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
@@ -22,11 +23,16 @@ class DatabaseService {
 
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
-      version: 11,
+      version: schemaVersion,
       onConfigure: configureDatabase,
-      onCreate: (db, version) async {
-        await db.execute(
-          '''
+      onCreate: createSchema,
+      onUpgrade: upgradeSchema,
+    );
+  }
+
+  static Future<void> createSchema(Database db, int version) async {
+    await db.execute(
+      '''
           CREATE TABLE foods (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -42,9 +48,9 @@ class DatabaseService {
             is_visible_in_library INTEGER NOT NULL DEFAULT 1
           )
           ''',
-        );
-        await db.execute(
-          '''
+    );
+    await db.execute(
+      '''
           CREATE TABLE entries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             entry_date TEXT NOT NULL,
@@ -53,9 +59,9 @@ class DatabaseService {
             response TEXT NOT NULL
           )
           ''',
-        );
-        await db.execute(
-          '''
+    );
+    await db.execute(
+      '''
           CREATE TABLE entry_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             entry_id INTEGER NOT NULL,
@@ -79,20 +85,20 @@ class DatabaseService {
             FOREIGN KEY(food_id) REFERENCES foods(id)
           )
           ''',
-        );
-        await db.execute(
-          'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
-        );
-        await db.execute(
-          '''
+    );
+    await db.execute(
+      'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
+    );
+    await db.execute(
+      '''
           CREATE TABLE settings (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
           )
           ''',
-        );
-        await db.execute(
-          '''
+    );
+    await db.execute(
+      '''
           CREATE TABLE metabolic_profile_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             profile_date TEXT NOT NULL UNIQUE,
@@ -108,9 +114,9 @@ class DatabaseService {
             created_at TEXT NOT NULL
           )
           ''',
-        );
-        await db.execute(
-          '''
+    );
+    await db.execute(
+      '''
           CREATE TABLE day_summary (
             summary_date TEXT PRIMARY KEY,
             language_code TEXT NOT NULL,
@@ -121,23 +127,28 @@ class DatabaseService {
             updated_at TEXT NOT NULL
           )
           ''',
-        );
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN fat REAL NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN protein REAL NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN carbs REAL NOT NULL DEFAULT 0',
-          );
-        }
-        if (oldVersion < 4) {
-          await db.execute(
-            '''
+    );
+  }
+
+  static Future<void> upgradeSchema(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN fat REAL NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN protein REAL NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN carbs REAL NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 4) {
+      await db.execute(
+        '''
             CREATE TABLE metabolic_profile_history (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               profile_date TEXT NOT NULL UNIQUE,
@@ -149,25 +160,25 @@ class DatabaseService {
               created_at TEXT NOT NULL
             )
             ''',
-          );
-        }
-        if (oldVersion < 5) {
-          await db.execute('DROP TABLE IF EXISTS goal_history');
-        }
-        if (oldVersion < 6) {
-          await db.execute(
-            'ALTER TABLE metabolic_profile_history ADD COLUMN fat_ratio_percent INTEGER NOT NULL DEFAULT 30',
-          );
-          await db.execute(
-            'ALTER TABLE metabolic_profile_history ADD COLUMN protein_ratio_percent INTEGER NOT NULL DEFAULT 30',
-          );
-          await db.execute(
-            'ALTER TABLE metabolic_profile_history ADD COLUMN carbs_ratio_percent INTEGER NOT NULL DEFAULT 40',
-          );
-        }
-        if (oldVersion < 7) {
-          await db.execute(
-            '''
+      );
+    }
+    if (oldVersion < 5) {
+      await db.execute('DROP TABLE IF EXISTS goal_history');
+    }
+    if (oldVersion < 6) {
+      await db.execute(
+        'ALTER TABLE metabolic_profile_history ADD COLUMN fat_ratio_percent INTEGER NOT NULL DEFAULT 30',
+      );
+      await db.execute(
+        'ALTER TABLE metabolic_profile_history ADD COLUMN protein_ratio_percent INTEGER NOT NULL DEFAULT 30',
+      );
+      await db.execute(
+        'ALTER TABLE metabolic_profile_history ADD COLUMN carbs_ratio_percent INTEGER NOT NULL DEFAULT 40',
+      );
+    }
+    if (oldVersion < 7) {
+      await db.execute(
+        '''
             CREATE TABLE day_summary (
               summary_date TEXT PRIMARY KEY,
               language_code TEXT NOT NULL,
@@ -178,14 +189,14 @@ class DatabaseService {
               updated_at TEXT NOT NULL
             )
             ''',
-          );
-        }
-        if (oldVersion < 8) {
-          await db.execute(
-            "ALTER TABLE metabolic_profile_history ADD COLUMN macro_preset_key TEXT NOT NULL DEFAULT 'balanced_default'",
-          );
-          await db.execute(
-            '''
+      );
+    }
+    if (oldVersion < 8) {
+      await db.execute(
+        "ALTER TABLE metabolic_profile_history ADD COLUMN macro_preset_key TEXT NOT NULL DEFAULT 'balanced_default'",
+      );
+      await db.execute(
+        '''
             UPDATE metabolic_profile_history
             SET macro_preset_key = CASE
               WHEN fat_ratio_percent = 30 AND protein_ratio_percent = 20 AND carbs_ratio_percent = 50 THEN 'balanced_default'
@@ -197,29 +208,29 @@ class DatabaseService {
               ELSE 'balanced_default'
             END
             ''',
-          );
-        }
-        if (oldVersion < 9) {
-          await db.execute(
-            "ALTER TABLE entry_items ADD COLUMN standard_amount TEXT NOT NULL DEFAULT ''",
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN multiplier REAL NOT NULL DEFAULT 1.0',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN standard_calories REAL NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN standard_fat REAL NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN standard_protein REAL NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN standard_carbs REAL NOT NULL DEFAULT 0',
-          );
-          await db.execute(
-            '''
+      );
+    }
+    if (oldVersion < 9) {
+      await db.execute(
+        "ALTER TABLE entry_items ADD COLUMN standard_amount TEXT NOT NULL DEFAULT ''",
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN multiplier REAL NOT NULL DEFAULT 1.0',
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN standard_calories REAL NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN standard_fat REAL NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN standard_protein REAL NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN standard_carbs REAL NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        '''
             UPDATE entry_items
             SET
               standard_amount = CASE
@@ -247,17 +258,17 @@ class DatabaseService {
                 ELSE standard_carbs
               END
             ''',
-          );
-        }
-        if (oldVersion < 10) {
-          await db.execute(
-            "ALTER TABLE entry_items ADD COLUMN standard_unit TEXT NOT NULL DEFAULT ''",
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN standard_unit_amount REAL NOT NULL DEFAULT 1.0',
-          );
-          await db.execute(
-            '''
+      );
+    }
+    if (oldVersion < 10) {
+      await db.execute(
+        "ALTER TABLE entry_items ADD COLUMN standard_unit TEXT NOT NULL DEFAULT ''",
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN standard_unit_amount REAL NOT NULL DEFAULT 1.0',
+      );
+      await db.execute(
+        '''
             UPDATE entry_items
             SET
               standard_unit = CASE
@@ -266,11 +277,11 @@ class DatabaseService {
               END,
               standard_unit_amount = 1.0
             ''',
-          );
-        }
-        if (oldVersion < 11) {
-          await db.execute(
-            '''
+      );
+    }
+    if (oldVersion < 11) {
+      await db.execute(
+        '''
             CREATE TABLE foods (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name TEXT NOT NULL,
@@ -286,20 +297,18 @@ class DatabaseService {
               is_visible_in_library INTEGER NOT NULL DEFAULT 1
             )
             ''',
-          );
-          await db.execute(
-            'ALTER TABLE entry_items ADD COLUMN food_id INTEGER',
-          );
-          await db.execute(
-            'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
-          );
-          await _migrateEntryItemsToFoods(db);
-        }
-      },
-    );
+      );
+      await db.execute(
+        'ALTER TABLE entry_items ADD COLUMN food_id INTEGER',
+      );
+      await db.execute(
+        'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
+      );
+      await _migrateEntryItemsToFoods(db);
+    }
   }
 
-  Future<void> _migrateEntryItemsToFoods(Database db) async {
+  static Future<void> _migrateEntryItemsToFoods(Database db) async {
     final nowIso = DateTime.now().toIso8601String();
     final rows = await db.query(
       'entry_items',

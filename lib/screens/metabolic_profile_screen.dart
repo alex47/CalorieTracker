@@ -678,7 +678,7 @@ class _MetabolicProfileEditorResult {
   }
 
   factory _MetabolicProfileEditorResult.delete() {
-    return _MetabolicProfileEditorResult._(
+    return const _MetabolicProfileEditorResult._(
       profileDate: null,
       profile: null,
       delete: true,

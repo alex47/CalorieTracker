@@ -21,9 +21,29 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          flutter-version: "3.38.9"
 
-      - name: Flutter pub get
-        run: flutter pub get
+      - name: Install locked dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Validate release version
+        id: version
+        shell: bash
+        run: |
+          PUBSPEC_VERSION="$(awk '/^version:/{print $2; exit}' pubspec.yaml)"
+          if [ -z "$PUBSPEC_VERSION" ]; then
+            echo "pubspec.yaml does not contain a version."
+            exit 1
+          fi
+
+          EXPECTED_TAG="v${PUBSPEC_VERSION}"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "$EXPECTED_TAG" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match pubspec.yaml version $PUBSPEC_VERSION. Expected $EXPECTED_TAG."
+            exit 1
+          fi
+
+          echo "build_name=${PUBSPEC_VERSION%%+*}" >> "$GITHUB_OUTPUT"
+          echo "release_label=$EXPECTED_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Verify Android project exists
         run: |
@@ -31,6 +51,9 @@ jobs:
             echo "Missing android/ directory. Run: flutter create --platforms android ."
             exit 1
           fi
+
+      - name: Run tests
+        run: flutter test
 
       - name: Prepare Android signing files
         env:
@@ -55,15 +78,13 @@ jobs:
 
       - name: Build release APK
         run: |
-          TAG="${GITHUB_REF_NAME:-v0.0.0}"
-          VERSION_NAME="${TAG#v}"
           # Build number must be an integer for Android.
           VERSION_CODE="${GITHUB_RUN_NUMBER}"
-          flutter build apk --release --build-name="${VERSION_NAME}" --build-number="${VERSION_CODE}"
+          flutter build apk --release --build-name="${{ steps.version.outputs.build_name }}" --build-number="${VERSION_CODE}"
 
       - name: Rename APK with version tag
         run: |
-          VERSION="${GITHUB_REF_NAME:-manual}"
+          VERSION="${{ steps.version.outputs.release_label }}"
           cp build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/CalorieTracker-${VERSION}.apk"
 
       - name: Upload workflow artifact
@@ -74,6 +95,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release asset
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/CalorieTracker-*.apk
