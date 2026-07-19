@@ -24,30 +24,52 @@ class UpdateCheckResult {
 }
 
 class UpdateService {
+  UpdateService({
+    http.Client? client,
+    Uri? endpoint,
+    Duration? timeout,
+  })  : _client = client,
+        endpoint = endpoint ?? Uri.parse(_latestReleaseUrl),
+        requestTimeout = timeout ?? AppDefaults.updateRequestTimeout;
+
   static const String _latestReleaseUrl =
       'https://api.github.com/repos/alex47/CalorieTracker/releases/latest';
-  static const Duration requestTimeout = AppDefaults.updateRequestTimeout;
+
+  final http.Client? _client;
+  final Uri endpoint;
+  final Duration requestTimeout;
+
+  Future<http.Response> _get(
+    Uri url, {
+    Map<String, String>? headers,
+  }) {
+    return _client?.get(url, headers: headers) ??
+        http.get(url, headers: headers);
+  }
 
   Future<UpdateCheckResult> checkForUpdate({
     required String currentVersion,
   }) async {
-    final response = await http
-        .get(
-          Uri.parse(_latestReleaseUrl),
-          headers: const {
-            'Accept': 'application/vnd.github+json',
-            'User-Agent': 'CalorieTracker-App',
-          },
-        )
-        .timeout(requestTimeout, onTimeout: () {
-          throw StateError('Update check timed out.');
-        });
+    final response = await _get(
+      endpoint,
+      headers: const {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'CalorieTracker-App',
+      },
+    ).timeout(requestTimeout, onTimeout: () {
+      throw StateError('Update check timed out.');
+    });
 
     if (response.statusCode >= 400) {
-      throw StateError('Update check failed: ${response.statusCode} ${response.body}');
+      throw StateError(
+          'Update check failed: ${response.statusCode} ${response.body}');
     }
 
-    final payload = jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw const FormatException('Latest release response must be an object.');
+    }
+    final payload = decoded;
     final latestTag = (payload['tag_name'] as String? ?? '').trim();
     if (latestTag.isEmpty) {
       throw const FormatException('Latest release tag is missing.');
@@ -60,13 +82,26 @@ class UpdateService {
       latest: latestVersion,
     );
 
-    final assets = payload['assets'] as List<dynamic>? ?? const [];
+    final rawAssets = payload['assets'];
+    if (rawAssets != null && rawAssets is! List) {
+      throw const FormatException('Latest release assets must be a list.');
+    }
+    final assets = rawAssets as List<dynamic>? ?? const [];
     String? apkUrl;
     for (final asset in assets) {
-      final map = asset as Map<String, dynamic>;
+      if (asset is! Map<String, dynamic>) {
+        throw const FormatException('Latest release asset must be an object.');
+      }
+      final map = asset;
       final name = (map['name'] as String? ?? '').toLowerCase();
       if (name.endsWith('.apk')) {
-        apkUrl = map['browser_download_url'] as String?;
+        final rawUrl = map['browser_download_url'];
+        if (rawUrl != null && rawUrl is! String) {
+          throw const FormatException(
+            'APK browser download URL must be a string.',
+          );
+        }
+        apkUrl = rawUrl as String?;
         break;
       }
     }
@@ -113,7 +148,8 @@ class UpdateService {
   }
 
   List<int> _toNumericParts(String version) {
-    return version.split('.').map((part) {
+    final numericCore = version.split(RegExp(r'[-+]')).first;
+    return numericCore.split('.').map((part) {
       final digits = RegExp(r'^\d+').stringMatch(part);
       return int.tryParse(digits ?? '0') ?? 0;
     }).toList();

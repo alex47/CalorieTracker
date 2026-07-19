@@ -27,7 +27,7 @@ class OpenAIService {
     this.apiKey, {
     Duration? requestTimeout,
     http.Client? client,
-  }) : requestTimeout = requestTimeout ?? AppDefaults.openAiRequestTimeout,
+  })  : requestTimeout = requestTimeout ?? AppDefaults.openAiRequestTimeout,
         _client = client;
 
   static const int maxAttempts = AppDefaults.openAiMaxAttempts;
@@ -635,19 +635,37 @@ Rules:
   }
 
   String? _extractResponseText(Map<String, dynamic> response) {
+    final topLevelText = response['output_text'];
+    if (topLevelText is String && topLevelText.trim().isNotEmpty) {
+      return topLevelText.trim();
+    }
+
     final output = response['output'] as List<dynamic>?;
     if (output == null || output.isEmpty) {
       return null;
     }
 
     for (final item in output) {
-      final map = item as Map<String, dynamic>;
+      if (item is! Map<String, dynamic>) {
+        continue;
+      }
+      final map = item;
+      final directText = map['text'];
+      if (directText is String && directText.trim().isNotEmpty) {
+        return directText.trim();
+      }
       final content = map['content'] as List<dynamic>?;
       if (content == null) {
         continue;
       }
       for (final part in content) {
-        final contentPart = part as Map<String, dynamic>;
+        if (part is String && part.trim().isNotEmpty) {
+          return part.trim();
+        }
+        if (part is! Map<String, dynamic>) {
+          continue;
+        }
+        final contentPart = part;
         final text = contentPart['text'] as String?;
         if (text != null && text.trim().isNotEmpty) {
           return text.trim();

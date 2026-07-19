@@ -1,0 +1,13 @@
+{
+  "output": [
+    {
+      "type": "message",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "{\"items\":[{\"name\":\"Apple\",\"amount\":\"200 g\",\"standard_unit\":\"g\",\"standard_unit_amount\":100,\"multiplier\":200,\"standard_calories\":52,\"standard_fat\":0.2,\"standard_protein\":0.3,\"standard_carbs\":14,\"notes\":\"\"}],\"error\":\"\"}"
+        }
+      ]
+    }
+  ]
+}

@@ -8,10 +8,24 @@ import '../widgets/food_library_browser.dart';
 import 'food_definition_screen.dart';
 import 'merge_foods_screen.dart';
 
+typedef FoodEditorOperation = Future<bool?> Function(FoodDefinition? food);
+typedef FoodMergeNavigationOperation = Future<bool?> Function(
+  List<FoodDefinition> foods,
+);
+
 class FoodsScreen extends StatefulWidget {
-  const FoodsScreen({super.key});
+  const FoodsScreen({
+    super.key,
+    this.loadFoods,
+    this.openFoodEditor,
+    this.openMerge,
+  });
 
   static const routeName = '/foods';
+
+  final FoodLibraryLoadOperation? loadFoods;
+  final FoodEditorOperation? openFoodEditor;
+  final FoodMergeNavigationOperation? openMerge;
 
   @override
   State<FoodsScreen> createState() => _FoodsScreenState();
@@ -34,12 +48,13 @@ class _FoodsScreenState extends State<FoodsScreen> {
   }
 
   Future<void> _openFoodEditor({FoodDefinition? food}) async {
-    final changed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FoodDefinitionScreen(food: food),
-      ),
-    );
+    final changed = await (widget.openFoodEditor?.call(food) ??
+        Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FoodDefinitionScreen(food: food),
+          ),
+        ));
     if (changed == true) {
       setState(() {
         _reloadToken++;
@@ -52,12 +67,13 @@ class _FoodsScreenState extends State<FoodsScreen> {
     if (selectedFoods.length < 2) {
       return;
     }
-    final merged = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MergeFoodsScreen(foods: selectedFoods),
-          ),
-        ) ??
+    final merged = await (widget.openMerge?.call(selectedFoods) ??
+            Navigator.push<bool>(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MergeFoodsScreen(foods: selectedFoods),
+              ),
+            )) ??
         false;
     if (!merged) {
       return;
@@ -101,6 +117,7 @@ class _FoodsScreenState extends State<FoodsScreen> {
           padding: const EdgeInsets.all(UiConstants.pagePadding),
           children: [
             FoodLibraryBrowser(
+              loadFoods: widget.loadFoods,
               selectedIds: _selectedFoods.keys.toSet(),
               reloadToken: _reloadToken,
               onFoodTap: (food) async {

@@ -12,13 +12,20 @@ import '../widgets/merge_candidate_card.dart';
 import '../widgets/selected_surface.dart';
 import '../widgets/wizard_step_bar.dart';
 
+typedef MergeFoodsOperation = Future<void> Function({
+  required int targetFoodId,
+  required List<FoodMergeSource> sources,
+});
+
 class MergeFoodsScreen extends StatefulWidget {
   const MergeFoodsScreen({
     super.key,
     required this.foods,
+    this.mergeFoods,
   });
 
   final List<FoodDefinition> foods;
+  final MergeFoodsOperation? mergeFoods;
 
   @override
   State<MergeFoodsScreen> createState() => _MergeFoodsScreenState();
@@ -128,21 +135,34 @@ class _MergeFoodsScreenState extends State<MergeFoodsScreen> {
     }
     setState(() => _merging = true);
     try {
-      await FoodLibraryService.instance.mergeFoods(
-        targetFoodId: _selectedTargetId,
-        sources: _sourceFoods
-            .map(
-              (food) => FoodMergeSource(
-                sourceFoodId: food.id,
-                conversionFactor: _parseFactor(food.id)!,
-              ),
-            )
-            .toList(growable: false),
-      );
+      final sources = _sourceFoods
+          .map(
+            (food) => FoodMergeSource(
+              sourceFoodId: food.id,
+              conversionFactor: _parseFactor(food.id)!,
+            ),
+          )
+          .toList(growable: false);
+      await (widget.mergeFoods?.call(
+            targetFoodId: _selectedTargetId,
+            sources: sources,
+          ) ??
+          FoodLibraryService.instance.mergeFoods(
+            targetFoodId: _selectedTargetId,
+            sources: sources,
+          ));
       if (!mounted) {
         return;
       }
       Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.mergeFoodsFailed(error.toString()))),
+      );
     } finally {
       if (mounted) {
         setState(() => _merging = false);

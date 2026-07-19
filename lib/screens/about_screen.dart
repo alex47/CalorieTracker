@@ -15,15 +15,27 @@ import '../theme/ui_constants.dart';
 import '../utils/error_localizer.dart';
 import '../widgets/app_button.dart';
 
+typedef PackageInfoLoadOperation = Future<PackageInfo> Function();
+typedef AboutUpdateCheckOperation = Future<UpdateCheckResult> Function(
+  String currentVersion,
+);
+typedef ExternalUrlOpenOperation = Future<bool> Function(Uri uri);
+
 class AboutScreen extends StatefulWidget {
   const AboutScreen({
     super.key,
     this.initialUpdateResult,
+    this.loadPackageInfo,
+    this.checkForUpdates,
+    this.openExternalUrl,
   });
 
   static const routeName = '/about';
   static const _repoUrl = 'https://github.com/alex47/CalorieTracker';
   final UpdateCheckResult? initialUpdateResult;
+  final PackageInfoLoadOperation? loadPackageInfo;
+  final AboutUpdateCheckOperation? checkForUpdates;
+  final ExternalUrlOpenOperation? openExternalUrl;
 
   @override
   State<AboutScreen> createState() => _AboutScreenState();
@@ -47,7 +59,8 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   void initState() {
     super.initState();
-    _packageInfoFuture = PackageInfo.fromPlatform();
+    _packageInfoFuture =
+        widget.loadPackageInfo?.call() ?? PackageInfo.fromPlatform();
     _updateResult =
         widget.initialUpdateResult ?? UpdateCoordinator.instance.latestResult;
   }
@@ -55,7 +68,8 @@ class _AboutScreenState extends State<AboutScreen> {
   Future<void> _openRepo(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
     final uri = Uri.parse(AboutScreen._repoUrl);
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final launched = await (widget.openExternalUrl?.call(uri) ??
+        launchUrl(uri, mode: LaunchMode.externalApplication));
     if (!launched && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.couldNotOpenGithubLink)),
@@ -67,11 +81,12 @@ class _AboutScreenState extends State<AboutScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _checkingUpdates = true);
     try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final result = await UpdateCoordinator.instance.checkForUpdates(
-        currentVersion: packageInfo.version,
-        forceRefresh: true,
-      );
+      final packageInfo = await _packageInfoFuture;
+      final result = await (widget.checkForUpdates?.call(packageInfo.version) ??
+          UpdateCoordinator.instance.checkForUpdates(
+            currentVersion: packageInfo.version,
+            forceRefresh: true,
+          ));
       if (mounted) {
         setState(() => _updateResult = result);
       }
@@ -102,8 +117,8 @@ class _AboutScreenState extends State<AboutScreen> {
 
     if (!Platform.isAndroid) {
       final uri = Uri.parse(url);
-      final launched =
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final launched = await (widget.openExternalUrl?.call(uri) ??
+          launchUrl(uri, mode: LaunchMode.externalApplication));
       if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.couldNotOpenUpdateUrl)),

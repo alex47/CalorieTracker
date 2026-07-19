@@ -38,13 +38,15 @@ class LabeledGroupBox extends StatelessWidget {
     const gapStart = UiConstants.groupBoxHeaderGapStart;
     const gapHorizontalPadding = UiConstants.groupBoxHeaderGapHorizontalPadding;
     final effectiveLabelColor = labelColor ?? borderColor;
-    final labelStyle = textTheme.bodySmall?.copyWith(color: effectiveLabelColor);
+    final labelStyle =
+        textTheme.bodySmall?.copyWith(color: effectiveLabelColor);
     final labelPainter = TextPainter(
       text: TextSpan(text: hasLabel ? label : '', style: labelStyle),
       textDirection: Directionality.of(context),
       maxLines: 1,
     )..layout();
-    final labelGapWidth = hasLabel ? labelPainter.width + (gapHorizontalPadding * 2) : 0.0;
+    final labelGapWidth =
+        hasLabel ? labelPainter.width + (gapHorizontalPadding * 2) : 0.0;
     final topInset = hasLabel ? UiConstants.groupBoxHeaderTopInset : 0.0;
 
     return Stack(
@@ -52,7 +54,8 @@ class LabeledGroupBox extends StatelessWidget {
       children: [
         Container(
           margin: EdgeInsets.only(top: topInset),
-          constraints: minWidth == null ? null : BoxConstraints(minWidth: minWidth!),
+          constraints:
+              minWidth == null ? null : BoxConstraints(minWidth: minWidth!),
           height: contentHeight,
           padding: contentPadding,
           decoration: BoxDecoration(
@@ -63,7 +66,8 @@ class LabeledGroupBox extends StatelessWidget {
               ? Text(value, style: textStyle)
               : (clipChild
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                      borderRadius:
+                          BorderRadius.circular(UiConstants.cornerRadius),
                       child: child,
                     )
                   : child!),
@@ -86,7 +90,8 @@ class LabeledGroupBox extends StatelessWidget {
             left: gapStart,
             top: 0,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: gapHorizontalPadding),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: gapHorizontalPadding),
               child: Text(
                 label,
                 style: labelStyle,
@@ -120,14 +125,16 @@ class MetricGroupBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: color);
+    final valueStyle =
+        Theme.of(context).textTheme.bodyMedium?.copyWith(color: color);
     return LabeledGroupBox(
       label: label,
       value: '',
       borderColor: color,
       textStyle: valueStyle,
       contentHeight: contentHeight,
-      contentPadding: const EdgeInsets.symmetric(horizontal: UiConstants.tableRowHorizontalPadding),
+      contentPadding: const EdgeInsets.symmetric(
+          horizontal: UiConstants.tableRowHorizontalPadding),
       minWidth: minWidth,
       backgroundColor: Colors.transparent,
       labelColor: color,

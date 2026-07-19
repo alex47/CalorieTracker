@@ -9,6 +9,12 @@ import 'package:sqflite/sqflite.dart';
 import 'database_service.dart';
 import 'macro_ratio_preset_catalog.dart';
 
+typedef ExportFileWriteOperation = Future<String?> Function({
+  required String suggestedName,
+  required List<int> bytes,
+});
+typedef ImportFileReadOperation = Future<List<int>?> Function();
+
 class ImportSummary {
   const ImportSummary({
     required this.entriesCount,
@@ -56,39 +62,17 @@ class DataTransferService {
     String? apiKey,
   }) async {
     final db = await DatabaseService.instance.database;
-    final foods = await db.query('foods');
-    final entries = await db.query('entries');
-    final entryItems = await db.query('entry_items');
-    final settingsRows = await db.query('settings');
-    final metabolicProfileHistory = await db.query('metabolic_profile_history');
-    final daySummaries = await db.query('day_summary');
-    final settings = {
-      for (final row in settingsRows)
-        row['key'] as String: row['value'] as String,
-    };
-
-    final payload = {
-      'format_version': _formatVersion,
-      'exported_at': DateTime.now().toIso8601String(),
-      'settings': settings,
-      'foods': foods,
-      'metabolic_profile_history': metabolicProfileHistory,
-      'day_summary': daySummaries,
-      'entries': entries,
-      'entry_items': entryItems,
-      if (includeApiKey && apiKey != null && apiKey.trim().isNotEmpty)
-        'secure': {
-          'openai_api_key': apiKey.trim(),
-        },
-    };
-
+    final payload = await createExportPayloadInDatabase(
+      db,
+      includeApiKey: includeApiKey,
+      apiKey: apiKey,
+    );
     final fileName = _exportFileName();
     const jsonTypeGroup = XTypeGroup(
       label: 'JSON',
       extensions: ['json'],
     );
-    final encoded = const JsonEncoder.withIndent('  ').convert(payload);
-    final encodedBytes = utf8.encode(encoded);
+    final encodedBytes = utf8.encode(encodeExportPayload(payload));
     if (Platform.isAndroid || Platform.isIOS) {
       return _exportWithAndroidSaveDialog(
         fileName: fileName,
@@ -109,6 +93,74 @@ class DataTransferService {
     return targetPath;
   }
 
+  Future<Map<String, dynamic>> createExportPayloadInDatabase(
+    DatabaseExecutor db, {
+    required bool includeApiKey,
+    String? apiKey,
+    DateTime? exportedAt,
+  }) async {
+    final foods = await db.query('foods');
+    final entries = await db.query('entries');
+    final entryItems = await db.query('entry_items');
+    final settingsRows = await db.query('settings');
+    final metabolicProfileHistory = await db.query('metabolic_profile_history');
+    final daySummaries = await db.query('day_summary');
+    final settings = {
+      for (final row in settingsRows)
+        row['key'] as String: row['value'] as String,
+    };
+
+    final payload = {
+      'format_version': _formatVersion,
+      'exported_at': (exportedAt ?? DateTime.now()).toIso8601String(),
+      'settings': settings,
+      'foods': foods,
+      'metabolic_profile_history': metabolicProfileHistory,
+      'day_summary': daySummaries,
+      'entries': entries,
+      'entry_items': entryItems,
+      if (includeApiKey && apiKey != null && apiKey.trim().isNotEmpty)
+        'secure': {
+          'openai_api_key': apiKey.trim(),
+        },
+    };
+    return Map<String, dynamic>.from(payload);
+  }
+
+  String encodeExportPayload(Map<String, dynamic> payload) {
+    return const JsonEncoder.withIndent('  ').convert(payload);
+  }
+
+  Future<String?> exportDataInDatabase(
+    DatabaseExecutor db, {
+    required bool includeApiKey,
+    String? apiKey,
+    DateTime? exportedAt,
+    required ExportFileWriteOperation writeFile,
+  }) async {
+    final payload = await createExportPayloadInDatabase(
+      db,
+      includeApiKey: includeApiKey,
+      apiKey: apiKey,
+      exportedAt: exportedAt,
+    );
+    final timestamp = exportedAt ?? DateTime.now();
+    return writeFile(
+      suggestedName: _exportFileName(timestamp),
+      bytes: utf8.encode(encodeExportPayload(payload)),
+    );
+  }
+
+  Future<ImportPayload?> pickImportDataWithReader(
+    ImportFileReadOperation readFile,
+  ) async {
+    final rawBytes = await readFile();
+    if (rawBytes == null) {
+      return null;
+    }
+    return decodeImportJson(utf8.decode(rawBytes));
+  }
+
   Future<ImportPayload?> pickImportData() async {
     const jsonTypeGroup = XTypeGroup(
       label: 'JSON',
@@ -122,6 +174,10 @@ class DataTransferService {
 
     final rawBytes = await file.readAsBytes();
     final rawJson = utf8.decode(rawBytes);
+    return decodeImportJson(rawJson);
+  }
+
+  ImportPayload decodeImportJson(String rawJson) {
     final decoded = jsonDecode(rawJson);
     if (decoded is! Map<String, dynamic>) {
       throw const FormatException('Invalid backup format.');
@@ -552,8 +608,9 @@ class DataTransferService {
     return trimmed;
   }
 
-  String _exportFileName() {
-    return 'calorie_tracker_export_${DateTime.now().toIso8601String().replaceAll(':', '-')}.json';
+  String _exportFileName([DateTime? exportedAt]) {
+    final timestamp = exportedAt ?? DateTime.now();
+    return 'calorie_tracker_export_${timestamp.toIso8601String().replaceAll(':', '-')}.json';
   }
 
   Future<String?> _exportWithAndroidSaveDialog({

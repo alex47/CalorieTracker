@@ -29,10 +29,59 @@ import 'metabolic_profile_screen.dart';
 import 'settings_screen.dart';
 import 'weekly_summary_screen.dart';
 
+typedef HomeItemsLoadOperation = Future<List<FoodItem>> Function(DateTime date);
+typedef HomeProfileLoadOperation = Future<MetabolicProfile?> Function(
+  DateTime date,
+);
+typedef HomeCopyItemsOperation = Future<void> Function({
+  required Iterable<FoodItem> items,
+  required DateTime date,
+});
+typedef HomeDeleteItemsOperation = Future<void> Function({
+  required Iterable<int> itemIds,
+});
+typedef HomeFoodDetailsOperation = Future<dynamic> Function(
+  FoodItem item,
+  DateTime date,
+);
+typedef HomeDateNavigationOperation = Future<void> Function(DateTime date);
+typedef HomeMetricNavigationOperation = Future<void> Function(
+  DateTime date,
+  MetricType metricType,
+);
+typedef HomeWeeklyNavigationOperation = Future<DateTime?> Function(
+  DateTime anchorDate,
+);
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({
+    super.key,
+    this.now,
+    this.languageCode,
+    this.loadItems,
+    this.loadProfile,
+    this.copyItems,
+    this.deleteItems,
+    this.openFoodDetails,
+    this.openAdd,
+    this.openMetricDetails,
+    this.openWeeklySummary,
+    this.openDaySummary,
+  });
 
   static const routeName = '/';
+
+  final DateTime Function()? now;
+  final String? languageCode;
+  final HomeItemsLoadOperation? loadItems;
+  final HomeProfileLoadOperation? loadProfile;
+  final HomeCopyItemsOperation? copyItems;
+  final HomeDeleteItemsOperation? deleteItems;
+  final HomeFoodDetailsOperation? openFoodDetails;
+  final HomeDateNavigationOperation? openAdd;
+  final HomeMetricNavigationOperation? openMetricDetails;
+  final HomeWeeklyNavigationOperation? openWeeklySummary;
+  final HomeDateNavigationOperation? openDaySummary;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -59,12 +108,13 @@ class _HomeScreenState extends State<HomeScreen>
 
   bool get _selectionMode => _selectedItems.isNotEmpty;
   bool get _bulkActionBusy => _bulkCopying || _bulkDeleting;
+  DateTime _now() => widget.now?.call() ?? DateTime.now();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _baseDate = DateTime.now();
+    _baseDate = _now();
     _pageController = PageController(initialPage: _initialPage);
     _selectedDate = _dateForPage(_initialPage);
   }
@@ -122,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _syncToTodayIfNeeded() {
-    final today = _dayOnly(DateTime.now());
+    final today = _dayOnly(_now());
     final anchorDay = _dayOnly(_baseDate);
     if (!today.isAfter(anchorDay)) {
       return;
@@ -145,7 +195,9 @@ class _HomeScreenState extends State<HomeScreen>
     final key = _dateKey(date);
     return _dayFutures.putIfAbsent(
       key,
-      () => EntriesRepository.instance.fetchItemsForDate(date),
+      () =>
+          widget.loadItems?.call(date) ??
+          EntriesRepository.instance.fetchItemsForDate(date),
     );
   }
 
@@ -167,8 +219,10 @@ class _HomeScreenState extends State<HomeScreen>
     final key = _dateKey(date);
     return _profileFutures.putIfAbsent(
       key,
-      () => MetabolicProfileHistoryService.instance
-          .getEffectiveProfileForDate(date: date),
+      () =>
+          widget.loadProfile?.call(date) ??
+          MetabolicProfileHistoryService.instance
+              .getEffectiveProfileForDate(date: date),
     );
   }
 
@@ -250,11 +304,12 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() => _bulkCopying = true);
     var copied = false;
     try {
-      final today = DateTime.now();
-      await EntriesRepository.instance.copyItemsToDate(
-        items: selectedItems,
-        date: today,
-      );
+      final today = _now();
+      await (widget.copyItems?.call(items: selectedItems, date: today) ??
+          EntriesRepository.instance.copyItemsToDate(
+            items: selectedItems,
+            date: today,
+          ));
       copied = true;
       if (!mounted) {
         return;
@@ -320,9 +375,12 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() => _bulkDeleting = true);
     var deleted = false;
     try {
-      await EntriesRepository.instance.deleteEntryItems(
-        itemIds: selectedItems.map((item) => item.id),
-      );
+      await (widget.deleteItems?.call(
+            itemIds: selectedItems.map((item) => item.id),
+          ) ??
+          EntriesRepository.instance.deleteEntryItems(
+            itemIds: selectedItems.map((item) => item.id),
+          ));
       deleted = true;
       if (!mounted) {
         return;
@@ -353,12 +411,16 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _openFoodItemDetails(FoodItem item, DateTime pageDate) async {
-    final result = await Navigator.push<dynamic>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FoodItemDetailScreen(item: item, itemDate: pageDate),
-      ),
-    );
+    final result = await (widget.openFoodDetails?.call(item, pageDate) ??
+        Navigator.push<dynamic>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => FoodItemDetailScreen(
+              item: item,
+              itemDate: pageDate,
+            ),
+          ),
+        ));
     if (!mounted) {
       return;
     }
@@ -367,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen>
       return;
     }
     if (result is Map && result['reloadToday'] == true) {
-      await _reloadDate(DateTime.now());
+      await _reloadDate(_now());
       if (!_isTodaySelected()) {
         await _pageController.animateToPage(
           _initialPage,
@@ -379,6 +441,11 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _navigateToAdd() async {
+    if (widget.openAdd != null) {
+      await widget.openAdd!(_selectedDate);
+      await _reloadDate(_selectedDate);
+      return;
+    }
     await Navigator.pushNamed(
       context,
       AddEntryScreen.routeName,
@@ -391,6 +458,10 @@ class _HomeScreenState extends State<HomeScreen>
     DateTime date,
     MetricType metricType,
   ) async {
+    if (widget.openMetricDetails != null) {
+      await widget.openMetricDetails!(date, metricType);
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -403,12 +474,13 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _openWeeklySummary() async {
-    final selectedDate = await Navigator.push<DateTime>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => WeeklySummaryScreen(anchorDate: _selectedDate),
-      ),
-    );
+    final selectedDate = await (widget.openWeeklySummary?.call(_selectedDate) ??
+        Navigator.push<DateTime>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => WeeklySummaryScreen(anchorDate: _selectedDate),
+          ),
+        ));
     if (!mounted) {
       return;
     }
@@ -420,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _jumpToDate(DateTime date) async {
-    final today = _dayOnly(DateTime.now());
+    final today = _dayOnly(_now());
     final target = _dayOnly(date).isAfter(today) ? today : _dayOnly(date);
     final rawPage =
         _initialPage + AppDateUtils.calendarDaysBetween(_baseDate, target);
@@ -442,6 +514,10 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Future<void> _openDaySummaryScreen(DateTime date) async {
+    if (widget.openDaySummary != null) {
+      await widget.openDaySummary!(date);
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -451,7 +527,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   bool _isTodaySelected() {
-    final today = _dayOnly(DateTime.now());
+    final today = _dayOnly(_now());
     return _selectedDate == today;
   }
 
@@ -526,7 +602,8 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final settings = SettingsService.instance.settings;
+    final languageCode =
+        widget.languageCode ?? SettingsService.instance.settings.languageCode;
     return PopScope(
       canPop: !_selectionMode && !_bulkActionBusy && _isTodaySelected(),
       onPopInvokedWithResult: (didPop, _) {
@@ -713,7 +790,7 @@ class _HomeScreenState extends State<HomeScreen>
                               child: Text(
                                 formatDate(
                                   pageDate,
-                                  languageCode: settings.languageCode,
+                                  languageCode: languageCode,
                                 ),
                                 style:
                                     Theme.of(context).textTheme.headlineSmall,

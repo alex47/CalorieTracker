@@ -8,9 +8,9 @@ class WizardStepBar extends StatelessWidget {
     super.key,
     required this.currentStep,
     required this.totalSteps,
-  }) : assert(totalSteps > 0),
-       assert(currentStep >= 0),
-       assert(currentStep < totalSteps);
+  })  : assert(totalSteps > 0),
+        assert(currentStep >= 0),
+        assert(currentStep < totalSteps);
 
   final int currentStep;
   final int totalSteps;
@@ -28,7 +28,9 @@ class WizardStepBar extends StatelessWidget {
             child: Container(
               height: 6,
               decoration: BoxDecoration(
-                color: isActive ? AppColors.selectionBorder : AppColors.subtleBorder,
+                color: isActive
+                    ? AppColors.selectionBorder
+                    : AppColors.subtleBorder,
                 borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
               ),
             ),

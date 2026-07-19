@@ -9,12 +9,28 @@ import '../widgets/app_button.dart';
 import '../widgets/food_library_browser.dart';
 import 'add_new_food_screen.dart';
 
+typedef AddExistingFoodOperation = Future<void> Function({
+  required DateTime date,
+  required int foodId,
+  required double multiplier,
+});
+typedef AddNewFoodNavigationOperation = Future<bool?> Function(DateTime date);
+
 class AddEntryScreen extends StatefulWidget {
-  const AddEntryScreen({super.key, this.date});
+  const AddEntryScreen({
+    super.key,
+    this.date,
+    this.loadFoods,
+    this.addExistingFood,
+    this.openAddNew,
+  });
 
   static const routeName = '/add-entry';
 
   final DateTime? date;
+  final FoodLibraryLoadOperation? loadFoods;
+  final AddExistingFoodOperation? addExistingFood;
+  final AddNewFoodNavigationOperation? openAddNew;
 
   @override
   State<AddEntryScreen> createState() => _AddEntryScreenState();
@@ -48,11 +64,18 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   Future<void> _openExistingFood(FoodDefinition food) async {
     try {
-      await EntriesRepository.instance.addFoodToDate(
-        date: _entryDate,
-        foodId: food.id,
-        multiplier: food.standardUnitAmount > 0 ? food.standardUnitAmount : 1.0,
-      );
+      final multiplier =
+          food.standardUnitAmount > 0 ? food.standardUnitAmount : 1.0;
+      await (widget.addExistingFood?.call(
+            date: _entryDate,
+            foodId: food.id,
+            multiplier: multiplier,
+          ) ??
+          EntriesRepository.instance.addFoodToDate(
+            date: _entryDate,
+            foodId: food.id,
+            multiplier: multiplier,
+          ));
       if (!mounted) {
         return;
       }
@@ -70,11 +93,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   Future<void> _openAddNew() async {
-    final result = await Navigator.pushNamed(
-      context,
-      AddNewFoodScreen.routeName,
-      arguments: _entryDate,
-    );
+    final result = await (widget.openAddNew?.call(_entryDate) ??
+        Navigator.pushNamed(
+          context,
+          AddNewFoodScreen.routeName,
+          arguments: _entryDate,
+        ));
     if (!mounted || result != true) {
       return;
     }
@@ -91,6 +115,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         padding: const EdgeInsets.all(UiConstants.pagePadding),
         children: [
           FoodLibraryBrowser(
+            loadFoods: widget.loadFoods,
             reloadToken: _libraryReloadToken,
             onFoodTap: _openExistingFood,
           ),

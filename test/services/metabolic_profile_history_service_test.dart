@@ -128,6 +128,114 @@ void main() {
       expect(rows.single['weight_kg'], 80);
     });
   });
+
+  group('MetabolicProfileHistoryService effective profiles', () {
+    late Database db;
+
+    setUp(() async {
+      db = await _openProfileDatabase();
+      await MetabolicProfileHistoryService.instance.createProfileInDatabase(
+        db,
+        date: DateTime(2026, 1, 10),
+        profile: _profile(weightKg: 70),
+      );
+      await MetabolicProfileHistoryService.instance.createProfileInDatabase(
+        db,
+        date: DateTime(2026, 1, 15),
+        profile: _profile(weightKg: 75),
+      );
+      await MetabolicProfileHistoryService.instance.createProfileInDatabase(
+        db,
+        date: DateTime(2026, 1, 20),
+        profile: _profile(weightKg: 80),
+      );
+    });
+
+    tearDown(() => db.close());
+
+    test('uses the earliest profile before history begins', () async {
+      final profile = await MetabolicProfileHistoryService.instance
+          .getEffectiveProfileForDateInDatabase(
+        db,
+        date: DateTime(2026, 1, 1),
+      );
+
+      expect(profile?.weightKg, 70);
+    });
+
+    test('uses profile changes on their date and until the next change',
+        () async {
+      final service = MetabolicProfileHistoryService.instance;
+
+      expect(
+        (await service.getEffectiveProfileForDateInDatabase(
+          db,
+          date: DateTime(2026, 1, 10, 23),
+        ))
+            ?.weightKg,
+        70,
+      );
+      expect(
+        (await service.getEffectiveProfileForDateInDatabase(
+          db,
+          date: DateTime(2026, 1, 19),
+        ))
+            ?.weightKg,
+        75,
+      );
+      expect(
+        (await service.getEffectiveProfileForDateInDatabase(
+          db,
+          date: DateTime(2026, 2, 1),
+        ))
+            ?.weightKg,
+        80,
+      );
+    });
+
+    test('resolves every day across multiple profile changes', () async {
+      final profiles = await MetabolicProfileHistoryService.instance
+          .getEffectiveProfileForDateRangeInDatabase(
+        db,
+        startDate: DateTime(2026, 1, 8, 12),
+        endDate: DateTime(2026, 1, 21, 23),
+      );
+
+      expect(profiles, hasLength(14));
+      expect(profiles['2026-01-08']?.weightKg, 70);
+      expect(profiles['2026-01-09']?.weightKg, 70);
+      expect(profiles['2026-01-10']?.weightKg, 70);
+      expect(profiles['2026-01-14']?.weightKg, 70);
+      expect(profiles['2026-01-15']?.weightKg, 75);
+      expect(profiles['2026-01-19']?.weightKg, 75);
+      expect(profiles['2026-01-20']?.weightKg, 80);
+      expect(profiles['2026-01-21']?.weightKg, 80);
+    });
+
+    test('returns null values when no profile exists', () async {
+      await db.delete('metabolic_profile_history');
+      final service = MetabolicProfileHistoryService.instance;
+
+      expect(
+        await service.getEffectiveProfileForDateInDatabase(
+          db,
+          date: DateTime(2026, 1, 1),
+        ),
+        isNull,
+      );
+      expect(
+        await service.getEffectiveProfileForDateRangeInDatabase(
+          db,
+          startDate: DateTime(2026, 1, 1),
+          endDate: DateTime(2026, 1, 2),
+        ),
+        {
+          '2026-01-01': null,
+          '2026-01-02': null,
+        },
+      );
+    });
+  });
 }
 
 MetabolicProfile _profile({required double weightKg}) {

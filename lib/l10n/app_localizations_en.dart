@@ -112,6 +112,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mergeFoodsButton => 'Merge foods';
 
   @override
+  String mergeFoodsFailed(String error) {
+    return 'Failed to merge foods. $error';
+  }
+
+  @override
   String get chooseMergeTargetTitle => 'Choose food to keep';
 
   @override

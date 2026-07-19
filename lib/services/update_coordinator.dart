@@ -1,14 +1,17 @@
 import 'update_service.dart';
 
 class UpdateCoordinator {
-  UpdateCoordinator._();
+  UpdateCoordinator({
+    UpdateService? service,
+  }) : _service = service ?? UpdateService();
 
-  static final UpdateCoordinator instance = UpdateCoordinator._();
+  static final UpdateCoordinator instance = UpdateCoordinator();
 
-  final UpdateService _service = UpdateService();
+  final UpdateService _service;
 
   UpdateCheckResult? _latestResult;
-  Future<UpdateCheckResult>? _inFlight;
+  String? _latestRequestedVersion;
+  final Map<String, Future<UpdateCheckResult>> _inFlightByVersion = {};
 
   UpdateCheckResult? get latestResult => _latestResult;
 
@@ -18,24 +21,27 @@ class UpdateCoordinator {
   }) async {
     if (!forceRefresh) {
       final result = _latestResult;
-      if (result != null && result.currentVersion == currentVersion) {
+      if (result != null && _latestRequestedVersion == currentVersion) {
         return result;
       }
     }
 
-    final inFlight = _inFlight;
+    final inFlight = _inFlightByVersion[currentVersion];
     if (inFlight != null) {
       return inFlight;
     }
 
     final request = _service.checkForUpdate(currentVersion: currentVersion);
-    _inFlight = request;
+    _inFlightByVersion[currentVersion] = request;
     try {
       final result = await request;
       _latestResult = result;
+      _latestRequestedVersion = currentVersion;
       return result;
     } finally {
-      _inFlight = null;
+      if (identical(_inFlightByVersion[currentVersion], request)) {
+        _inFlightByVersion.remove(currentVersion);
+      }
     }
   }
 }

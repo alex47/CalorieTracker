@@ -1,0 +1,10 @@
+{
+  "data": [
+    {"id": "older-model", "created": 10},
+    {"id": "newer-model", "created": 30},
+    {"id": "same-date-b", "created": 20},
+    {"id": "same-date-a", "created": 20},
+    {"id": "newer-model", "created": 5},
+    {"created": 100}
+  ]
+}

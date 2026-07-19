@@ -1,9 +1,10 @@
 import 'package:calorie_tracker/models/food_item.dart';
-import 'package:calorie_tracker/services/database_service.dart';
 import 'package:calorie_tracker/services/entries_repository.dart';
 import 'package:calorie_tracker/services/food_library_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import '../support/database_test_helper.dart';
 
 void main() {
   sqfliteFfiInit();
@@ -12,9 +13,7 @@ void main() {
     late Database db;
 
     setUp(() async {
-      db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
-      await DatabaseService.configureDatabase(db);
-      await _createSchema(db);
+      db = await openTestDatabase();
       await _seedData(db);
     });
 
@@ -165,6 +164,154 @@ void main() {
       expect(updated.carbs, 18);
       expect(updated.notes, 'Updated definition');
     });
+
+    test('single adds reuse one library entry and normalize multipliers',
+        () async {
+      final repository = EntriesRepository.instance;
+      final targetDate = DateTime(2026, 2, 2, 23);
+
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: targetDate,
+        foodId: 1,
+        multiplier: 200,
+      );
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: targetDate,
+        foodId: 2,
+        multiplier: 0,
+      );
+
+      final targetEntries = await db.query(
+        'entries',
+        where: 'entry_date = ?',
+        whereArgs: ['2026-02-02T00:00:00.000'],
+      );
+      expect(targetEntries, hasLength(1));
+      expect(targetEntries.single['prompt'], 'Food library add');
+
+      final items = await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 2, 2),
+      );
+      expect(items.map((item) => item.foodId), [2, 1]);
+      expect(items.map((item) => item.multiplier), [1, 200]);
+    });
+
+    test('fetches only the requested date in newest-first order', () async {
+      final repository = EntriesRepository.instance;
+      final sourceItems = await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 1, 1, 23, 59),
+      );
+      expect(sourceItems.map((item) => item.id), [12, 11, 10]);
+
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: DateTime(2026, 1, 2),
+        foodId: 1,
+        multiplier: 50,
+      );
+      final nextDay = await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 1, 2),
+      );
+      expect(nextDay, hasLength(1));
+      expect(nextDay.single.foodId, 1);
+      expect(nextDay.single.calories, 50);
+
+      expect(
+        await repository.fetchItemsForDateInDatabase(
+          db,
+          DateTime(2025, 12, 31),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('updates one multiplier and rejects an unknown item', () async {
+      final repository = EntriesRepository.instance;
+
+      await repository.updateEntryItemMultiplierInDatabase(
+        db,
+        itemId: 10,
+        multiplier: 250,
+      );
+      var item = (await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 1, 1),
+      ))
+          .singleWhere((candidate) => candidate.id == 10);
+      expect(item.multiplier, 250);
+      expect(item.calories, 250);
+
+      await repository.updateEntryItemMultiplierInDatabase(
+        db,
+        itemId: 10,
+        multiplier: -5,
+      );
+      item = (await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 1, 1),
+      ))
+          .singleWhere((candidate) => candidate.id == 10);
+      expect(item.multiplier, 1);
+
+      await expectLater(
+        repository.updateEntryItemMultiplierInDatabase(
+          db,
+          itemId: 999,
+          multiplier: 1,
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('single delete removes exactly one item and rejects a repeat',
+        () async {
+      final repository = EntriesRepository.instance;
+
+      await repository.deleteEntryItemInDatabase(db, 11);
+      expect(await _sourceItemIds(db), [10, 12]);
+
+      await expectLater(
+        repository.deleteEntryItemInDatabase(db, 11),
+        throwsA(isA<StateError>()),
+      );
+      expect(await _sourceItemIds(db), [10, 12]);
+    });
+
+    test('single copy retains the food and multiplier and reuses target entry',
+        () async {
+      final repository = EntriesRepository.instance;
+      final source = _item(id: 10, foodId: 1);
+
+      await repository.copyItemToDateInDatabase(
+        db,
+        item: source,
+        date: DateTime(2026, 2, 2),
+      );
+      await repository.copyItemToDateInDatabase(
+        db,
+        item: _item(id: 11, foodId: 2),
+        date: DateTime(2026, 2, 2),
+      );
+
+      final entries = await db.query(
+        'entries',
+        where: 'entry_date = ?',
+        whereArgs: ['2026-02-02T00:00:00.000'],
+      );
+      expect(entries, hasLength(1));
+      final copied = await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 2, 2),
+      );
+      expect(copied.map((item) => item.foodId), [2, 1]);
+      expect(copied.map((item) => item.multiplier), [150, 150]);
+      expect(await _sourceItemIds(db), [10, 11, 12]);
+    });
   });
 }
 
@@ -260,62 +407,4 @@ Future<void> _seedData(Database db) async {
       'notes': '',
     });
   }
-}
-
-Future<void> _createSchema(Database db) async {
-  await db.execute(
-    '''
-    CREATE TABLE foods (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      standard_unit TEXT NOT NULL,
-      standard_unit_amount REAL NOT NULL,
-      standard_calories REAL NOT NULL,
-      standard_fat REAL NOT NULL,
-      standard_protein REAL NOT NULL,
-      standard_carbs REAL NOT NULL,
-      notes TEXT,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      is_visible_in_library INTEGER NOT NULL
-    )
-    ''',
-  );
-  await db.execute(
-    '''
-    CREATE TABLE entries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      entry_date TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      prompt TEXT NOT NULL,
-      response TEXT NOT NULL
-    )
-    ''',
-  );
-  await db.execute(
-    '''
-    CREATE TABLE entry_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      entry_id INTEGER NOT NULL,
-      food_id INTEGER NOT NULL,
-      name TEXT NOT NULL,
-      amount TEXT NOT NULL,
-      calories INTEGER NOT NULL,
-      fat REAL NOT NULL,
-      protein REAL NOT NULL,
-      carbs REAL NOT NULL,
-      standard_amount TEXT NOT NULL,
-      standard_unit TEXT NOT NULL,
-      standard_unit_amount REAL NOT NULL,
-      multiplier REAL NOT NULL,
-      standard_calories REAL NOT NULL,
-      standard_fat REAL NOT NULL,
-      standard_protein REAL NOT NULL,
-      standard_carbs REAL NOT NULL,
-      notes TEXT,
-      FOREIGN KEY(entry_id) REFERENCES entries(id),
-      FOREIGN KEY(food_id) REFERENCES foods(id)
-    )
-    ''',
-  );
 }

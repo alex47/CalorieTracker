@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../models/daily_targets.dart';
 import '../models/food_item.dart';
+import '../models/metabolic_profile.dart';
 import '../models/metric_type.dart';
 import '../services/entries_repository.dart';
 import '../services/metabolic_profile_history_service.dart';
@@ -16,15 +17,34 @@ import '../theme/ui_constants.dart';
 import '../utils/app_date_utils.dart';
 import '../widgets/labeled_group_box.dart';
 
+typedef WeeklyItemsLoadOperation = Future<List<FoodItem>> Function(
+  DateTime date,
+);
+typedef WeeklyProfilesLoadOperation = Future<Map<String, MetabolicProfile?>>
+    Function({
+  required DateTime startDate,
+  required DateTime endDate,
+});
+
 class WeeklySummaryScreen extends StatefulWidget {
   const WeeklySummaryScreen({
     super.key,
     required this.anchorDate,
+    this.now,
+    this.languageCode,
+    this.loadItems,
+    this.loadProfiles,
+    this.onDaySelected,
   });
 
   static const routeName = '/weekly-summary';
 
   final DateTime anchorDate;
+  final DateTime Function()? now;
+  final String? languageCode;
+  final WeeklyItemsLoadOperation? loadItems;
+  final WeeklyProfilesLoadOperation? loadProfiles;
+  final ValueChanged<DateTime>? onDaySelected;
 
   @override
   State<WeeklySummaryScreen> createState() => _WeeklySummaryScreenState();
@@ -38,12 +58,13 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   late int _selectedPage;
   late final int _maxPage;
   final Map<String, Future<List<_DayMetricTotals>>> _weekFutures = {};
+  DateTime _now() => widget.now?.call() ?? DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _baseWeekStart = _startOfWeek(widget.anchorDate);
-    final currentWeekStart = _startOfWeek(DateTime.now());
+    final currentWeekStart = _startOfWeek(_now());
     final weeksUntilCurrent = AppDateUtils.calendarWeeksBetween(
       _baseWeekStart,
       currentWeekStart,
@@ -66,17 +87,22 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   Future<List<_DayMetricTotals>> _loadWeekTotals(DateTime weekStart) async {
     final futures = List<Future<List<FoodItem>>>.generate(
       7,
-      (index) => EntriesRepository.instance.fetchItemsForDate(
-        AppDateUtils.addCalendarDays(weekStart, index),
-      ),
+      (index) {
+        final date = AppDateUtils.addCalendarDays(weekStart, index);
+        return widget.loadItems?.call(date) ??
+            EntriesRepository.instance.fetchItemsForDate(date);
+      },
     );
     final dailyItems = await Future.wait(futures);
     final weekEnd = AppDateUtils.addCalendarDays(weekStart, 6);
-    final profilesByDate = await MetabolicProfileHistoryService.instance
-        .getEffectiveProfileForDateRange(
-      startDate: weekStart,
-      endDate: weekEnd,
-    );
+    final profilesByDate = await (widget.loadProfiles?.call(
+          startDate: weekStart,
+          endDate: weekEnd,
+        ) ??
+        MetabolicProfileHistoryService.instance.getEffectiveProfileForDateRange(
+          startDate: weekStart,
+          endDate: weekEnd,
+        ));
     return List<_DayMetricTotals>.generate(
       7,
       (index) {
@@ -123,7 +149,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   bool _isCurrentWeekSelected() => _selectedPage == _maxPage;
 
   DateTime _todayDayOnly() {
-    final now = DateTime.now();
+    final now = _now();
     return DateTime(now.year, now.month, now.day);
   }
 
@@ -137,6 +163,10 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
 
   void _openDay(DateTime date) {
     if (_isFutureDay(date)) {
+      return;
+    }
+    if (widget.onDaySelected != null) {
+      widget.onDaySelected!(DateTime(date.year, date.month, date.day));
       return;
     }
     Navigator.of(context).pop(DateTime(date.year, date.month, date.day));
@@ -186,7 +216,8 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final languageCode = SettingsService.instance.settings.languageCode;
+    final languageCode =
+        widget.languageCode ?? SettingsService.instance.settings.languageCode;
 
     return PopScope(
       canPop: _isCurrentWeekSelected(),

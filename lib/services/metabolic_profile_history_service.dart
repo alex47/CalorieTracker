@@ -114,6 +114,13 @@ class MetabolicProfileHistoryService {
     required DateTime date,
   }) async {
     final db = await DatabaseService.instance.database;
+    return getEffectiveProfileForDateInDatabase(db, date: date);
+  }
+
+  Future<MetabolicProfile?> getEffectiveProfileForDateInDatabase(
+    DatabaseExecutor db, {
+    required DateTime date,
+  }) async {
     final rows = await db.query(
       'metabolic_profile_history',
       where: 'profile_date <= ?',
@@ -139,9 +146,22 @@ class MetabolicProfileHistoryService {
     required DateTime startDate,
     required DateTime endDate,
   }) async {
+    final db = await DatabaseService.instance.database;
+    return getEffectiveProfileForDateRangeInDatabase(
+      db,
+      startDate: startDate,
+      endDate: endDate,
+    );
+  }
+
+  Future<Map<String, MetabolicProfile?>>
+      getEffectiveProfileForDateRangeInDatabase(
+    DatabaseExecutor db, {
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
     final start = AppDateUtils.dayOnly(startDate);
     final end = AppDateUtils.dayOnly(endDate);
-    final db = await DatabaseService.instance.database;
     final rows = await db.query(
       'metabolic_profile_history',
       where: 'profile_date <= ?',

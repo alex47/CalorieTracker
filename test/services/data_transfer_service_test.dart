@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:calorie_tracker/services/data_transfer_service.dart';
 import 'package:calorie_tracker/services/database_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+import '../support/database_test_helper.dart';
 
 void main() {
   sqfliteFfiInit();
@@ -16,7 +20,11 @@ void main() {
       await _seedExistingData(db);
     });
 
-    tearDown(() => db.close());
+    tearDown(() async {
+      if (db.isOpen) {
+        await db.close();
+      }
+    });
 
     test('valid payload replaces data with intact relationships', () async {
       final summary = await DataTransferService.instance
@@ -40,6 +48,272 @@ void main() {
       );
       expect(await db.rawQuery('PRAGMA foreign_key_check'), isEmpty);
     });
+
+    test('exports, encodes, decodes, and imports a complete round trip',
+        () async {
+      await db.insert('metabolic_profile_history', {
+        'id': 2,
+        'profile_date': '2025-01-01',
+        'age': 30,
+        'sex': 'male',
+        'height_cm': 180.0,
+        'weight_kg': 75.0,
+        'activity_level': 'moderate',
+        'macro_preset_key': 'balanced_default',
+        'fat_ratio_percent': 30,
+        'protein_ratio_percent': 20,
+        'carbs_ratio_percent': 50,
+        'created_at': '2025-01-01T00:00:00.000',
+      });
+      await db.insert('day_summary', {
+        'summary_date': '2025-01-01',
+        'language_code': 'en',
+        'model': 'test-model',
+        'source_hash': 'source-hash',
+        'summary_json':
+            '{"summary":"Stored","highlights":[],"issues":[],"suggestions":[]}',
+        'created_at': '2025-01-01T00:00:00.000',
+        'updated_at': '2025-01-01T00:00:00.000',
+      });
+      final service = DataTransferService.instance;
+      final exported = await service.createExportPayloadInDatabase(
+        db,
+        includeApiKey: true,
+        apiKey: '  test-secret  ',
+        exportedAt: DateTime(2026, 7, 19, 12),
+      );
+
+      expect(exported['format_version'], 2);
+      expect(exported['exported_at'], '2026-07-19T12:00:00.000');
+      expect(exported['secure'], {'openai_api_key': 'test-secret'});
+
+      final encoded = service.encodeExportPayload(exported);
+      final decoded = service.decodeImportJson(encoded);
+      expect(decoded.apiKeyFromBackup, 'test-secret');
+
+      final expectedRows = <String, List<Map<String, Object?>>>{};
+      for (final table in [
+        'foods',
+        'entries',
+        'entry_items',
+        'settings',
+        'metabolic_profile_history',
+        'day_summary',
+      ]) {
+        final orderBy = _exportTableOrder(table);
+        expectedRows[table] = await db.query(table, orderBy: orderBy);
+      }
+      await db.close();
+
+      final target = await openTestDatabase();
+      addTearDown(target.close);
+      final result = await service.applyImportDataInDatabase(target, decoded);
+
+      expect(result.entriesCount, 1);
+      expect(result.itemsCount, 1);
+      expect(result.apiKeyFromBackup, 'test-secret');
+      for (final table in [
+        'foods',
+        'entries',
+        'entry_items',
+        'settings',
+        'metabolic_profile_history',
+        'day_summary',
+      ]) {
+        expect(
+          await target.query(table, orderBy: _exportTableOrder(table)),
+          expectedRows[table],
+          reason: table,
+        );
+      }
+      expect(await target.rawQuery('PRAGMA foreign_key_check'), isEmpty);
+    });
+
+    test('includes a secure key only when explicitly requested and non-empty',
+        () async {
+      final service = DataTransferService.instance;
+
+      for (final scenario in [
+        (include: false, key: 'secret'),
+        (include: true, key: null),
+        (include: true, key: ''),
+        (include: true, key: '   '),
+      ]) {
+        final payload = await service.createExportPayloadInDatabase(
+          db,
+          includeApiKey: scenario.include,
+          apiKey: scenario.key,
+          exportedAt: DateTime(2026),
+        );
+        expect(payload, isNot(contains('secure')));
+      }
+
+      final included = await service.createExportPayloadInDatabase(
+        db,
+        includeApiKey: true,
+        apiKey: '  secret  ',
+        exportedAt: DateTime(2026),
+      );
+      expect(included['secure'], {'openai_api_key': 'secret'});
+    });
+
+    test('rejects malformed decoded backup structures', () {
+      final service = DataTransferService.instance;
+
+      expect(
+        () => service.decodeImportJson('[]'),
+        throwsA(isA<FormatException>()),
+      );
+      expect(
+        () => service.decodeImportJson('{"format_version":1}'),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('Unsupported backup format version'),
+          ),
+        ),
+      );
+      expect(
+        () => service.decodeImportJson(
+          jsonEncode({
+            'format_version': 2,
+            'settings': [],
+            'foods': [],
+            'metabolic_profile_history': [],
+            'day_summary': [],
+            'entries': [],
+            'entry_items': [],
+          }),
+        ),
+        throwsA(isA<FormatException>()),
+      );
+      expect(
+        () => service.decodeImportJson(
+          jsonEncode({
+            'format_version': 2,
+            'settings': <String, String>{},
+            'foods': ['not a row'],
+            'metabolic_profile_history': [],
+            'day_summary': [],
+            'entries': [],
+            'entry_items': [],
+          }),
+        ),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    for (final scenario in [
+      (
+        name: 'food field',
+        build: () {
+          final payload = _validPayload();
+          payload.foods.single['name'] = 42;
+          return payload;
+        },
+        field: 'foods.name',
+      ),
+      (
+        name: 'entry field',
+        build: () {
+          final payload = _validPayload();
+          payload.entries.single['prompt'] = false;
+          return payload;
+        },
+        field: 'entries.prompt',
+      ),
+      (
+        name: 'entry-item field',
+        build: () {
+          final payload = _validPayload();
+          payload.entryItems.single['calories'] = '400';
+          return payload;
+        },
+        field: 'entry_items.calories',
+      ),
+      (
+        name: 'profile field',
+        build: () {
+          final payload = _validPayload();
+          payload.metabolicProfileHistory.single['age'] = 30.5;
+          return payload;
+        },
+        field: 'metabolic_profile_history.age',
+      ),
+      (
+        name: 'day-summary field',
+        build: () {
+          final payload = _validPayload();
+          payload.daySummaries.single['summary_json'] = <String, dynamic>{};
+          return payload;
+        },
+        field: 'day_summary.summary_json',
+      ),
+    ]) {
+      test('rejects an invalid ${scenario.name} type without data loss',
+          () async {
+        await expectLater(
+          DataTransferService.instance.applyImportDataInDatabase(
+            db,
+            scenario.build(),
+          ),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains(scenario.field),
+            ),
+          ),
+        );
+        await _expectExistingData(db);
+      });
+    }
+
+    test('rejects unknown macro presets without changing existing data',
+        () async {
+      final payload = _validPayload();
+      payload.metabolicProfileHistory.single['macro_preset_key'] = 'unknown';
+
+      await expectLater(
+        DataTransferService.instance.applyImportDataInDatabase(db, payload),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            contains('Invalid macro preset key'),
+          ),
+        ),
+      );
+      await _expectExistingData(db);
+    });
+
+    for (final scenario in [
+      (fat: 30, protein: 30, carbs: 30, message: 'must sum to 100'),
+      (fat: -1, protein: 41, carbs: 60, message: 'Invalid macro ratio range'),
+    ]) {
+      test('rejects invalid custom macro ratios: ${scenario.message}',
+          () async {
+        final payload = _validPayload();
+        final profile = payload.metabolicProfileHistory.single;
+        profile['macro_preset_key'] = '';
+        profile['fat_ratio_percent'] = scenario.fat;
+        profile['protein_ratio_percent'] = scenario.protein;
+        profile['carbs_ratio_percent'] = scenario.carbs;
+
+        await expectLater(
+          DataTransferService.instance.applyImportDataInDatabase(db, payload),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains(scenario.message),
+            ),
+          ),
+        );
+        await _expectExistingData(db);
+      });
+    }
 
     test('missing entry reference is rejected without changing existing data',
         () async {
@@ -104,6 +378,50 @@ void main() {
         ),
       );
 
+      await _expectExistingData(db);
+    });
+
+    for (final table in [
+      'entries',
+      'entry_items',
+      'metabolic_profile_history',
+    ]) {
+      test('duplicate $table IDs are rejected without changing existing data',
+          () async {
+        final payload = _validPayload();
+        final rows = switch (table) {
+          'entries' => payload.entries,
+          'entry_items' => payload.entryItems,
+          _ => payload.metabolicProfileHistory,
+        };
+        rows.add(Map<String, dynamic>.from(rows.single));
+
+        await expectLater(
+          DataTransferService.instance.applyImportDataInDatabase(db, payload),
+          throwsA(
+            isA<FormatException>().having(
+              (error) => error.message,
+              'message',
+              contains('Duplicate "$table.id"'),
+            ),
+          ),
+        );
+        await _expectExistingData(db);
+      });
+    }
+
+    test('duplicate day-summary dates roll back the import transaction',
+        () async {
+      final payload = _validPayload();
+      payload.daySummaries.add(
+        Map<String, dynamic>.from(payload.daySummaries.single)
+          ..['source_hash'] = 'second',
+      );
+
+      await expectLater(
+        DataTransferService.instance.applyImportDataInDatabase(db, payload),
+        throwsA(isA<DatabaseException>()),
+      );
       await _expectExistingData(db);
     });
 
@@ -206,7 +524,7 @@ ImportPayload _validPayload({
         'created_at': '2026-01-01T00:00:00.000',
       },
     ],
-    daySummaries: const [
+    daySummaries: [
       {
         'summary_date': '2026-01-01',
         'language_code': 'en',
@@ -218,6 +536,15 @@ ImportPayload _validPayload({
       },
     ],
   );
+}
+
+String _exportTableOrder(String table) {
+  return switch (table) {
+    'settings' => 'key ASC',
+    'day_summary' => 'summary_date ASC',
+    'metabolic_profile_history' => 'profile_date ASC',
+    _ => 'id ASC',
+  };
 }
 
 Map<String, dynamic> _entryItemRow({

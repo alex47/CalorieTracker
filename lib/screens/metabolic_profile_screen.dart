@@ -14,10 +14,41 @@ import '../widgets/labeled_dropdown_box.dart';
 import '../widgets/labeled_group_box.dart';
 import '../widgets/labeled_input_box.dart';
 
+typedef ProfileHistoryLoadOperation = Future<List<MetabolicProfileHistoryEntry>>
+    Function();
+typedef EffectiveProfileLoadOperation = Future<MetabolicProfile?> Function(
+  DateTime date,
+);
+typedef ProfileCreateOperation = Future<void> Function({
+  required DateTime date,
+  required MetabolicProfile profile,
+});
+typedef ProfileUpdateOperation = Future<void> Function({
+  required int profileId,
+  required DateTime date,
+  required MetabolicProfile profile,
+});
+typedef ProfileDeleteOperation = Future<void> Function(int profileId);
+
 class MetabolicProfileScreen extends StatefulWidget {
-  const MetabolicProfileScreen({super.key});
+  const MetabolicProfileScreen({
+    super.key,
+    this.now,
+    this.loadHistory,
+    this.loadEffectiveProfile,
+    this.createProfile,
+    this.updateProfile,
+    this.deleteProfile,
+  });
 
   static const routeName = '/metabolic-profile';
+
+  final DateTime Function()? now;
+  final ProfileHistoryLoadOperation? loadHistory;
+  final EffectiveProfileLoadOperation? loadEffectiveProfile;
+  final ProfileCreateOperation? createProfile;
+  final ProfileUpdateOperation? updateProfile;
+  final ProfileDeleteOperation? deleteProfile;
 
   @override
   State<MetabolicProfileScreen> createState() => _MetabolicProfileScreenState();
@@ -25,11 +56,16 @@ class MetabolicProfileScreen extends StatefulWidget {
 
 class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   late Future<List<MetabolicProfileHistoryEntry>> _historyFuture;
+  DateTime _now() => widget.now?.call() ?? DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _historyFuture =
+    _historyFuture = _loadHistory();
+  }
+
+  Future<List<MetabolicProfileHistoryEntry>> _loadHistory() {
+    return widget.loadHistory?.call() ??
         MetabolicProfileHistoryService.instance.fetchProfileHistory();
   }
 
@@ -44,8 +80,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
 
   void _reloadHistory() {
     setState(() {
-      _historyFuture =
-          MetabolicProfileHistoryService.instance.fetchProfileHistory();
+      _historyFuture = _loadHistory();
     });
   }
 
@@ -66,10 +101,11 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
   }
 
   Future<MetabolicProfile> _defaultProfileForAdd() async {
-    final profile = await MetabolicProfileHistoryService.instance
-        .getEffectiveProfileForDate(
-      date: DateTime.now(),
-    );
+    final now = _now();
+    final profile = await (widget.loadEffectiveProfile?.call(now) ??
+        MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(
+          date: now,
+        ));
     if (profile != null) {
       return profile;
     }
@@ -95,7 +131,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
     final result = await showDialog<_MetabolicProfileEditorResult>(
       context: context,
       builder: (dialogContext) => _MetabolicProfileEditorDialog(
-        initialDate: _dayOnly(DateTime.now()),
+        initialDate: _dayOnly(_now()),
+        lastDate: _dayOnly(_now()),
         initialProfile: defaultProfile,
         initialPresetKey: _presetKeyForRatios(
           fatPercent: defaultProfile.fatRatioPercent,
@@ -120,6 +157,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
       context: context,
       builder: (dialogContext) => _MetabolicProfileEditorDialog(
         initialDate: _dayOnly(entry.profileDate),
+        lastDate: _dayOnly(_now()),
         initialProfile: entry.profile,
         initialPresetKey: _presetKeyForRatios(
           fatPercent: entry.profile.fatRatioPercent,
@@ -149,7 +187,8 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
         if (profileId == null) {
           throw StateError('Cannot delete an unsaved metabolic profile.');
         }
-        await MetabolicProfileHistoryService.instance.deleteProfile(profileId);
+        await (widget.deleteProfile?.call(profileId) ??
+            MetabolicProfileHistoryService.instance.deleteProfile(profileId));
         if (!mounted) {
           return;
         }
@@ -158,16 +197,25 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
       }
 
       if (profileId == null) {
-        await MetabolicProfileHistoryService.instance.createProfileForDate(
-          date: result.profileDate!,
-          profile: result.profile!,
-        );
+        await (widget.createProfile?.call(
+              date: result.profileDate!,
+              profile: result.profile!,
+            ) ??
+            MetabolicProfileHistoryService.instance.createProfileForDate(
+              date: result.profileDate!,
+              profile: result.profile!,
+            ));
       } else {
-        await MetabolicProfileHistoryService.instance.updateProfile(
-          profileId: profileId,
-          date: result.profileDate!,
-          profile: result.profile!,
-        );
+        await (widget.updateProfile?.call(
+              profileId: profileId,
+              date: result.profileDate!,
+              profile: result.profile!,
+            ) ??
+            MetabolicProfileHistoryService.instance.updateProfile(
+              profileId: profileId,
+              date: result.profileDate!,
+              profile: result.profile!,
+            ));
       }
       if (!mounted) {
         return;
@@ -193,7 +241,13 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
           children: [
             const Icon(Icons.monitor_weight_outlined),
             const SizedBox(width: UiConstants.appBarIconTextSpacing),
-            Text(l10n.metabolicProfileTitle),
+            Flexible(
+              child: Text(
+                l10n.metabolicProfileTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -283,6 +337,7 @@ class _MetabolicProfileScreenState extends State<MetabolicProfileScreen> {
 class _MetabolicProfileEditorDialog extends StatefulWidget {
   const _MetabolicProfileEditorDialog({
     required this.initialDate,
+    required this.lastDate,
     required this.initialProfile,
     required this.initialPresetKey,
     required this.isEditing,
@@ -293,6 +348,7 @@ class _MetabolicProfileEditorDialog extends StatefulWidget {
   });
 
   final DateTime initialDate;
+  final DateTime lastDate;
   final MetabolicProfile initialProfile;
   final String initialPresetKey;
   final bool isEditing;
@@ -357,7 +413,7 @@ class _MetabolicProfileEditorDialogState
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
+      lastDate: widget.lastDate,
       builder: (context, child) {
         final baseTheme = Theme.of(context);
         return Theme(
@@ -491,7 +547,10 @@ class _MetabolicProfileEditorDialogState
     final windowWidth = MediaQuery.of(context).size.width;
     const dialogHorizontalPadding = UiConstants.pagePadding;
     const dialogVerticalPadding = UiConstants.largeSpacing;
-    final maxDialogContentWidth = windowWidth - (dialogHorizontalPadding * 2);
+    const alertDialogContentHorizontalPadding = 24.0;
+    final maxDialogContentWidth = windowWidth -
+        (dialogHorizontalPadding * 2) -
+        (alertDialogContentHorizontalPadding * 2);
     final dialogContentWidth =
         maxDialogContentWidth.clamp(0.0, 560.0).toDouble();
 

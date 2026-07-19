@@ -54,6 +54,18 @@ class FoodLibraryService {
     bool visibleOnly = true,
   }) async {
     final db = await DatabaseService.instance.database;
+    return fetchFoodsInDatabase(
+      db,
+      searchQuery: searchQuery,
+      visibleOnly: visibleOnly,
+    );
+  }
+
+  Future<List<FoodDefinition>> fetchFoodsInDatabase(
+    DatabaseExecutor db, {
+    String searchQuery = '',
+    bool visibleOnly = true,
+  }) async {
     final trimmedSearch = searchQuery.trim().toLowerCase();
     final whereParts = <String>[];
     final whereArgs = <Object?>[];
@@ -84,6 +96,13 @@ class FoodLibraryService {
 
   Future<FoodDefinition?> fetchFoodById(int foodId) async {
     final db = await DatabaseService.instance.database;
+    return fetchFoodByIdInDatabase(db, foodId);
+  }
+
+  Future<FoodDefinition?> fetchFoodByIdInDatabase(
+    DatabaseExecutor db,
+    int foodId,
+  ) async {
     final rows = await db.rawQuery(
       '''
       SELECT

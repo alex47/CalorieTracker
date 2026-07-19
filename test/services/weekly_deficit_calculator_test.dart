@@ -76,12 +76,86 @@ void main() {
       expect(deficits?[2], isNull);
       expect(deficits?[3], isNull);
     });
+
+    test('preserves negative deficits and includes them in the average', () {
+      final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
+        days: [
+          _day(DateTime(2026, 7, 13), calories: 2200, itemCount: 1),
+          _day(DateTime(2026, 7, 14), calories: 1800, itemCount: 1),
+          _day(DateTime(2026, 7, 15)),
+        ],
+        today: DateTime(2026, 7, 20),
+      );
+
+      expect(deficits?[0]?.value, -200);
+      expect(deficits?[1]?.value, 200);
+      expect(deficits?[2]?.value, 0);
+      expect(deficits?[2]?.estimated, isTrue);
+    });
+
+    test('rounds a fractional observed average to the nearest integer', () {
+      final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
+        days: [
+          _day(
+            DateTime(2026, 7, 13),
+            calorieTarget: 2001,
+            calories: 2000,
+            itemCount: 1,
+          ),
+          _day(
+            DateTime(2026, 7, 14),
+            calorieTarget: 2002,
+            calories: 2000,
+            itemCount: 1,
+          ),
+          _day(DateTime(2026, 7, 15)),
+        ],
+        today: DateTime(2026, 7, 20),
+      );
+
+      expect(deficits?[2]?.value, 2);
+      expect(deficits?[2]?.estimated, isTrue);
+    });
+
+    test('estimates a past logged day when its target is missing', () {
+      final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
+        days: [
+          _day(DateTime(2026, 7, 13), calories: 1500, itemCount: 1),
+          _day(
+            DateTime(2026, 7, 14),
+            calorieTarget: null,
+            calories: 1800,
+            itemCount: 1,
+          ),
+        ],
+        today: DateTime(2026, 7, 20),
+      );
+
+      expect(deficits?[0]?.value, 500);
+      expect(deficits?[0]?.estimated, isFalse);
+      expect(deficits?[1]?.value, 500);
+      expect(deficits?[1]?.estimated, isTrue);
+    });
+
+    test('does not estimate the current Monday after a completed week', () {
+      final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
+        days: [
+          _day(DateTime(2026, 7, 19), calories: 1500, itemCount: 1),
+          _day(DateTime(2026, 7, 20)),
+        ],
+        today: DateTime(2026, 7, 20, 22),
+      );
+
+      expect(deficits?[0]?.value, 500);
+      expect(deficits?[0]?.estimated, isFalse);
+      expect(deficits?[1], isNull);
+    });
   });
 }
 
 WeeklyDeficitDay _day(
   DateTime date, {
-  int calorieTarget = 2000,
+  int? calorieTarget = 2000,
   int itemCount = 0,
   int calories = 0,
 }) {

@@ -191,6 +191,20 @@ class EntriesRepository {
     required double multiplier,
   }) async {
     final db = await DatabaseService.instance.database;
+    await addFoodToDateInDatabase(
+      db,
+      date: date,
+      foodId: foodId,
+      multiplier: multiplier,
+    );
+  }
+
+  Future<void> addFoodToDateInDatabase(
+    Database db, {
+    required DateTime date,
+    required int foodId,
+    required double multiplier,
+  }) async {
     await db.transaction((txn) {
       return _addFoodReferencesToDate(
         txn,
@@ -289,7 +303,19 @@ class EntriesRepository {
     required double multiplier,
   }) async {
     final db = await DatabaseService.instance.database;
-    await db.update(
+    await updateEntryItemMultiplierInDatabase(
+      db,
+      itemId: itemId,
+      multiplier: multiplier,
+    );
+  }
+
+  Future<void> updateEntryItemMultiplierInDatabase(
+    DatabaseExecutor db, {
+    required int itemId,
+    required double multiplier,
+  }) async {
+    final updated = await db.update(
       'entry_items',
       {
         'multiplier': multiplier > 0 ? multiplier : 1.0,
@@ -297,10 +323,21 @@ class EntriesRepository {
       where: 'id = ?',
       whereArgs: [itemId],
     );
+    if (updated != 1) {
+      throw StateError('Entry item $itemId does not exist.');
+    }
   }
 
   Future<void> deleteEntryItem(int itemId) async {
-    await deleteEntryItems(itemIds: [itemId]);
+    final db = await DatabaseService.instance.database;
+    await deleteEntryItemInDatabase(db, itemId);
+  }
+
+  Future<void> deleteEntryItemInDatabase(
+    Database db,
+    int itemId,
+  ) {
+    return deleteEntryItemsInDatabase(db, itemIds: [itemId]);
   }
 
   Future<void> deleteEntryItems({
@@ -339,7 +376,21 @@ class EntriesRepository {
     required FoodItem item,
     required DateTime date,
   }) async {
-    await copyItemsToDate(
+    final db = await DatabaseService.instance.database;
+    await copyItemToDateInDatabase(
+      db,
+      item: item,
+      date: date,
+    );
+  }
+
+  Future<void> copyItemToDateInDatabase(
+    Database db, {
+    required FoodItem item,
+    required DateTime date,
+  }) {
+    return copyItemsToDateInDatabase(
+      db,
       items: [item],
       date: date,
     );

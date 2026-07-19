@@ -112,6 +112,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get mergeFoodsButton => 'Ételek egyesítése';
 
   @override
+  String mergeFoodsFailed(String error) {
+    return 'Az ételek egyesítése sikertelen. $error';
+  }
+
+  @override
   String get chooseMergeTargetTitle => 'Válaszd ki a megtartandó ételt';
 
   @override

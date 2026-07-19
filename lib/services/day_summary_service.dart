@@ -39,6 +39,13 @@ class DaySummaryService {
 
   Future<StoredDaySummary?> fetchForDate(DateTime date) async {
     final db = await DatabaseService.instance.database;
+    return fetchForDateInDatabase(db, date);
+  }
+
+  Future<StoredDaySummary?> fetchForDateInDatabase(
+    DatabaseExecutor db,
+    DateTime date,
+  ) async {
     final rows = await db.query(
       'day_summary',
       where: 'summary_date = ?',
@@ -73,8 +80,26 @@ class DaySummaryService {
     required DaySummary summary,
   }) async {
     final db = await DatabaseService.instance.database;
+    await upsertInDatabase(
+      db,
+      date: date,
+      languageCode: languageCode,
+      model: model,
+      sourceHash: sourceHash,
+      summary: summary,
+    );
+  }
+
+  Future<void> upsertInDatabase(
+    DatabaseExecutor db, {
+    required DateTime date,
+    required String languageCode,
+    required String model,
+    required String sourceHash,
+    required DaySummary summary,
+  }) async {
     final nowIso = DateTime.now().toIso8601String();
-    final existing = await fetchForDate(date);
+    final existing = await fetchForDateInDatabase(db, date);
     await db.insert(
       'day_summary',
       {
@@ -83,7 +108,9 @@ class DaySummaryService {
         'model': model,
         'source_hash': sourceHash,
         'summary_json': jsonEncode(summary.toMap()),
-        'created_at': existing?.createdAtIso.isNotEmpty == true ? existing!.createdAtIso : nowIso,
+        'created_at': existing?.createdAtIso.isNotEmpty == true
+            ? existing!.createdAtIso
+            : nowIso,
         'updated_at': nowIso,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
@@ -92,6 +119,12 @@ class DaySummaryService {
 
   Future<List<Map<String, dynamic>>> exportSummaryRows() async {
     final db = await DatabaseService.instance.database;
+    return exportSummaryRowsInDatabase(db);
+  }
+
+  Future<List<Map<String, dynamic>>> exportSummaryRowsInDatabase(
+    DatabaseExecutor db,
+  ) async {
     final rows = await db.query('day_summary');
     return rows.map((row) => Map<String, dynamic>.from(row)).toList();
   }
@@ -99,11 +132,12 @@ class DaySummaryService {
   String computeSourceHash(Map<String, dynamic> payload) {
     final canonical = _canonicalJson(payload);
     // Deterministic FNV-1a 64-bit hash (hex).
-    var hash = 0xcbf29ce484222325;
-    const prime = 0x100000001b3;
+    var hash = BigInt.parse('cbf29ce484222325', radix: 16);
+    final prime = BigInt.parse('100000001b3', radix: 16);
+    final mask = BigInt.parse('ffffffffffffffff', radix: 16);
     for (final byte in utf8.encode(canonical)) {
-      hash ^= byte;
-      hash = (hash * prime) & 0xFFFFFFFFFFFFFFFF;
+      hash ^= BigInt.from(byte);
+      hash = (hash * prime) & mask;
     }
     return hash.toRadixString(16).padLeft(16, '0');
   }

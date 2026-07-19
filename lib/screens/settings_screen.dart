@@ -23,6 +23,14 @@ import '../widgets/labeled_input_box.dart';
 
 typedef SettingsSaveOperation = Future<void> Function(AppSettings settings);
 typedef SettingsImportPickOperation = Future<ImportPayload?> Function();
+typedef SettingsModelsLoadOperation = Future<List<String>> Function(
+  String apiKey,
+);
+typedef SettingsConnectionTestOperation = Future<void> Function({
+  required String apiKey,
+  required String model,
+});
+typedef SettingsApiKeySaveOperation = Future<void> Function(String apiKey);
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
@@ -30,6 +38,9 @@ class SettingsScreen extends StatefulWidget {
     this.loadApiKey,
     this.saveSettings,
     this.pickImportData,
+    this.loadModels,
+    this.testConnection,
+    this.saveApiKey,
     this.autosaveDebounce = AppDefaults.settingsAutosaveDebounce,
   });
 
@@ -38,6 +49,9 @@ class SettingsScreen extends StatefulWidget {
   final Future<String?> Function()? loadApiKey;
   final SettingsSaveOperation? saveSettings;
   final SettingsImportPickOperation? pickImportData;
+  final SettingsModelsLoadOperation? loadModels;
+  final SettingsConnectionTestOperation? testConnection;
+  final SettingsApiKeySaveOperation? saveApiKey;
   final Duration autosaveDebounce;
 
   @override
@@ -229,12 +243,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       {required bool showError}) async {
     setState(() => _loadingModels = true);
     try {
-      final service = OpenAIService(
-        apiKey,
-        requestTimeout: Duration(
-            seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
-      );
-      final models = await service.fetchAvailableModels();
+      final models = await (widget.loadModels?.call(apiKey) ??
+          OpenAIService(
+            apiKey,
+            requestTimeout: Duration(
+              seconds: SettingsService.instance.settings.openAiTimeoutSeconds,
+            ),
+          ).fetchAvailableModels());
       if (!mounted) {
         return;
       }
@@ -286,13 +301,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     setState(() => _testing = true);
     try {
-      final service = OpenAIService(
-        apiKey,
-        requestTimeout: Duration(
-            seconds: SettingsService.instance.settings.openAiTimeoutSeconds),
-      );
-      await service.testConnection(model: _selectedModel);
-      await SettingsService.instance.setApiKey(apiKey);
+      await (widget.testConnection?.call(
+            apiKey: apiKey,
+            model: _selectedModel,
+          ) ??
+          OpenAIService(
+            apiKey,
+            requestTimeout: Duration(
+              seconds: SettingsService.instance.settings.openAiTimeoutSeconds,
+            ),
+          ).testConnection(model: _selectedModel));
+      await (widget.saveApiKey?.call(apiKey) ??
+          SettingsService.instance.setApiKey(apiKey));
       await _loadModelsForApiKey(apiKey, showError: true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

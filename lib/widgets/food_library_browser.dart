@@ -9,6 +9,11 @@ import 'app_button.dart';
 import 'labeled_input_box.dart';
 import 'food_table_card.dart';
 
+typedef FoodLibraryLoadOperation = Future<List<FoodDefinition>> Function({
+  required String searchQuery,
+  required bool visibleOnly,
+});
+
 class FoodLibraryBrowser extends StatefulWidget {
   const FoodLibraryBrowser({
     super.key,
@@ -16,12 +21,14 @@ class FoodLibraryBrowser extends StatefulWidget {
     this.onFoodLongPress,
     this.selectedIds = const <int>{},
     this.reloadToken = 0,
+    this.loadFoods,
   });
 
   final ValueChanged<FoodDefinition> onFoodTap;
   final ValueChanged<FoodDefinition>? onFoodLongPress;
   final Set<int> selectedIds;
   final int reloadToken;
+  final FoodLibraryLoadOperation? loadFoods;
 
   @override
   State<FoodLibraryBrowser> createState() => _FoodLibraryBrowserState();
@@ -53,10 +60,14 @@ class _FoodLibraryBrowserState extends State<FoodLibraryBrowser> {
   }
 
   Future<List<FoodDefinition>> _loadFoods() {
-    return FoodLibraryService.instance.fetchFoods(
-      searchQuery: _searchQuery,
-      visibleOnly: true,
-    );
+    return widget.loadFoods?.call(
+          searchQuery: _searchQuery,
+          visibleOnly: true,
+        ) ??
+        FoodLibraryService.instance.fetchFoods(
+          searchQuery: _searchQuery,
+          visibleOnly: true,
+        );
   }
 
   void _refreshFoods() {

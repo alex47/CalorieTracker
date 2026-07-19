@@ -34,6 +34,14 @@
   "selectFoodsButton": "Select foods",
   "mergeTitle": "Merge",
   "mergeFoodsButton": "Merge foods",
+  "mergeFoodsFailed": "Failed to merge foods. {error}",
+  "@mergeFoodsFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "chooseMergeTargetTitle": "Choose food to keep",
   "nextButton": "Next",
   "mergeConfirmTitle": "Confirm merge",

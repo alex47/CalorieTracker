@@ -302,6 +302,12 @@ abstract class AppLocalizations {
   /// **'Merge foods'**
   String get mergeFoodsButton;
 
+  /// No description provided for @mergeFoodsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to merge foods. {error}'**
+  String mergeFoodsFailed(String error);
+
   /// No description provided for @chooseMergeTargetTitle.
   ///
   /// In en, this message translates to:

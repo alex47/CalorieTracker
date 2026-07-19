@@ -46,7 +46,8 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
       return;
     }
     final fieldBox = fieldContext.findRenderObject() as RenderBox?;
-    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (fieldBox == null || overlayBox == null) {
       return;
     }
@@ -57,7 +58,8 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
       ancestor: overlayBox,
     );
 
-    final popupItems = widget.items.where((item) => item.value != null).toList();
+    final popupItems =
+        widget.items.where((item) => item.value != null).toList();
     if (popupItems.isEmpty || !mounted) {
       return;
     }
@@ -65,20 +67,24 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
     const itemVerticalPadding = UiConstants.smallSpacing;
     const itemHeight = UiConstants.settingsFieldHeight;
     const maxMenuHeight = 280.0;
-    final desiredHeight = (popupItems.length * itemHeight).clamp(0.0, maxMenuHeight);
+    final desiredHeight =
+        (popupItems.length * itemHeight).clamp(0.0, maxMenuHeight);
     final spaceBelow = overlayBox.size.height - bottomRight.dy;
     final showBelow = spaceBelow >= desiredHeight || spaceBelow >= topLeft.dy;
     final top = showBelow
         ? bottomRight.dy
-        : (topLeft.dy - desiredHeight).clamp(0.0, overlayBox.size.height - desiredHeight);
-    final left = topLeft.dx.clamp(0.0, overlayBox.size.width - fieldBox.size.width);
+        : (topLeft.dy - desiredHeight)
+            .clamp(0.0, overlayBox.size.height - desiredHeight);
+    final left =
+        topLeft.dx.clamp(0.0, overlayBox.size.width - fieldBox.size.width);
 
     setState(() => _menuOpen = true);
     try {
       final selected = await showGeneralDialog<T>(
         context: context,
         barrierDismissible: true,
-        barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+        barrierLabel:
+            MaterialLocalizations.of(context).modalBarrierDismissLabel,
         barrierColor: Colors.transparent,
         pageBuilder: (dialogContext, _, __) {
           return Stack(
@@ -97,7 +103,8 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
                   color: AppColors.pageBackground,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(UiConstants.cornerRadius),
+                    borderRadius:
+                        BorderRadius.circular(UiConstants.cornerRadius),
                     side: BorderSide(color: popupBorderColor),
                   ),
                   clipBehavior: Clip.antiAlias,
@@ -113,18 +120,26 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
                         final isSelected = value == widget.value;
                         final enabled = item.enabled;
                         return InkWell(
-                          onTap: enabled ? () => Navigator.of(dialogContext).pop(value) : null,
+                          onTap: enabled
+                              ? () => Navigator.of(dialogContext).pop(value)
+                              : null,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: UiConstants.tableRowHorizontalPadding,
                               vertical: itemVerticalPadding,
                             ),
-                            color: isSelected ? AppColors.progressFillOverlay : Colors.transparent,
+                            color: isSelected
+                                ? AppColors.progressFillOverlay
+                                : Colors.transparent,
                             child: DefaultTextStyle.merge(
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
                                     color: enabled
                                         ? (widget.textColor ?? AppColors.text)
-                                        : AppColors.text.withValues(alpha: 0.45),
+                                        : AppColors.text
+                                            .withValues(alpha: 0.45),
                                   ),
                               child: item.child,
                             ),
@@ -172,14 +187,18 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
   @override
   Widget build(BuildContext context) {
     final resolvedTextColor = widget.textColor;
-    final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: resolvedTextColor);
+    final textStyle = Theme.of(context)
+        .textTheme
+        .bodyMedium
+        ?.copyWith(color: resolvedTextColor);
     final resolvedBorderColor = widget.borderColor ?? AppColors.subtleBorder;
     return LabeledGroupBox(
       label: widget.label,
       value: '',
       borderColor: resolvedBorderColor,
       textStyle: textStyle,
-      backgroundColor: _menuOpen ? AppColors.progressFillOverlay : Colors.transparent,
+      backgroundColor:
+          _menuOpen ? AppColors.progressFillOverlay : Colors.transparent,
       contentHeight: widget.contentHeight,
       contentPadding: EdgeInsets.zero,
       child: Row(
@@ -208,7 +227,8 @@ class _LabeledDropdownBoxState<T> extends State<LabeledDropdownBox<T>> {
                       ),
                       Icon(
                         Icons.arrow_drop_down,
-                        color: (textStyle?.color ?? Theme.of(context).textTheme.bodyMedium?.color)
+                        color: (textStyle?.color ??
+                                Theme.of(context).textTheme.bodyMedium?.color)
                             ?.withValues(alpha: widget.enabled ? 1 : 0.45),
                       ),
                     ],

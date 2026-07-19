@@ -1,10 +1,159 @@
 import 'package:calorie_tracker/models/food_item.dart';
+import 'package:calorie_tracker/services/entries_repository.dart';
 import 'package:calorie_tracker/services/food_library_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../support/database_test_helper.dart';
+
 void main() {
   sqfliteFfiInit();
+
+  group('FoodLibraryService CRUD and lookup', () {
+    late Database db;
+
+    setUp(() async {
+      db = await openTestDatabase();
+    });
+
+    tearDown(() => db.close());
+
+    test('creates, sorts, searches, and filters foods by visibility', () async {
+      final service = FoodLibraryService.instance;
+      final hiddenAppleId = await _createFullFood(
+        db,
+        name: 'Apple',
+        visible: false,
+      );
+      final bananaId = await _createFullFood(db, name: 'banana');
+      await _createFullFood(db, name: 'Apple pie');
+
+      final visible = await service.fetchFoodsInDatabase(db);
+      expect(visible.map((food) => food.name), ['Apple pie', 'banana']);
+
+      final all = await service.fetchFoodsInDatabase(db, visibleOnly: false);
+      expect(all.map((food) => food.name), ['Apple', 'Apple pie', 'banana']);
+
+      final search = await service.fetchFoodsInDatabase(
+        db,
+        searchQuery: ' APP ',
+        visibleOnly: false,
+      );
+      expect(search.map((food) => food.name), ['Apple', 'Apple pie']);
+
+      expect(
+        await service.fetchFoodsInDatabase(db, searchQuery: 'pear'),
+        isEmpty,
+      );
+      expect(
+        (await service.fetchFoodByIdInDatabase(db, hiddenAppleId))?.name,
+        'Apple',
+      );
+      expect(await service.fetchFoodByIdInDatabase(db, 9999), isNull);
+
+      await EntriesRepository.instance.addFoodToDateInDatabase(
+        db,
+        date: DateTime(2026, 7, 18),
+        foodId: bananaId,
+        multiplier: 100,
+      );
+      await EntriesRepository.instance.addFoodToDateInDatabase(
+        db,
+        date: DateTime(2026, 7, 19),
+        foodId: bananaId,
+        multiplier: 100,
+      );
+      expect(
+        (await service.fetchFoodByIdInDatabase(db, bananaId))?.usageCount,
+        2,
+      );
+    });
+
+    test('updates all editable fields while retaining food identity', () async {
+      final service = FoodLibraryService.instance;
+      final foodId = await _createFullFood(db, name: 'Original');
+
+      await service.updateFoodInDatabase(
+        db,
+        foodId: foodId,
+        name: 'Updated',
+        standardUnit: 'piece',
+        standardUnitAmount: 2,
+        standardCalories: 300,
+        standardFat: 4,
+        standardProtein: 5,
+        standardCarbs: 6,
+        notes: 'Changed',
+        isVisibleInLibrary: false,
+      );
+
+      final food = await service.fetchFoodByIdInDatabase(db, foodId);
+      expect(food, isNotNull);
+      expect(food!.id, foodId);
+      expect(food.name, 'Updated');
+      expect(food.standardUnit, 'piece');
+      expect(food.standardUnitAmount, 2);
+      expect(food.standardCalories, 300);
+      expect(food.standardFat, 4);
+      expect(food.standardProtein, 5);
+      expect(food.standardCarbs, 6);
+      expect(food.notes, 'Changed');
+      expect(food.isVisibleInLibrary, isFalse);
+      expect(food.createdAtIso, isNotEmpty);
+      expect(food.updatedAtIso, isNotEmpty);
+    });
+
+    test('deduplicates normalized definitions and restores visibility',
+        () async {
+      final service = FoodLibraryService.instance;
+      final originalId = await service.createFoodInDatabase(
+        db,
+        name: ' Apple ',
+        standardUnit: ' G ',
+        standardUnitAmount: 100,
+        standardCalories: 52,
+        standardFat: 0.2,
+        standardProtein: 0.3,
+        standardCarbs: 14,
+        notes: ' fresh ',
+        isVisibleInLibrary: false,
+      );
+
+      final ensuredId = await service.ensureFoodInDatabase(
+        db,
+        name: 'apple',
+        standardUnit: 'g',
+        standardUnitAmount: 100,
+        standardCalories: 52,
+        standardFat: 0.2,
+        standardProtein: 0.3,
+        standardCarbs: 14,
+        notes: 'fresh',
+      );
+
+      expect(ensuredId, originalId);
+      expect(await db.query('foods'), hasLength(1));
+      expect(
+        (await service.fetchFoodByIdInDatabase(db, originalId))
+            ?.isVisibleInLibrary,
+        isTrue,
+      );
+
+      final distinctId = await service.ensureFoodInDatabase(
+        db,
+        name: 'apple',
+        standardUnit: 'g',
+        standardUnitAmount: 100,
+        standardCalories: 53,
+        standardFat: 0.2,
+        standardProtein: 0.3,
+        standardCarbs: 14,
+        notes: 'fresh',
+      );
+      expect(distinctId, isNot(originalId));
+      expect(await db.query('foods'), hasLength(2));
+    });
+  });
 
   group('FoodLibraryService merge conversion', () {
     test('same units use factor 1 regardless of reference amounts', () {
@@ -194,6 +343,25 @@ void main() {
       });
     }
   });
+}
+
+Future<int> _createFullFood(
+  DatabaseExecutor db, {
+  required String name,
+  bool visible = true,
+}) {
+  return FoodLibraryService.instance.createFoodInDatabase(
+    db,
+    name: name,
+    standardUnit: 'g',
+    standardUnitAmount: 100,
+    standardCalories: 100,
+    standardFat: 1,
+    standardProtein: 2,
+    standardCarbs: 3,
+    notes: '',
+    isVisibleInLibrary: visible,
+  );
 }
 
 Future<Database> _openMergeDatabase() async {

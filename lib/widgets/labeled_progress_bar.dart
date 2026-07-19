@@ -36,7 +36,8 @@ class LabeledProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = goal > 0 ? (value / goal).clamp(0.0, 1.0) : 0.0;
     final isOverGoal = value > goal;
-    final stripedFillColor = color.withValues(alpha: AppColors.progressFillAlpha);
+    final stripedFillColor =
+        color.withValues(alpha: AppColors.progressFillAlpha);
     final fillColor = isOverGoal ? Colors.transparent : stripedFillColor;
     final borderColor = color;
 
@@ -45,7 +46,8 @@ class LabeledProgressBar extends StatelessWidget {
       value: '',
       borderColor: borderColor,
       labelColor: borderColor,
-      textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(color: borderColor),
+      textStyle:
+          Theme.of(context).textTheme.bodyMedium?.copyWith(color: borderColor),
       backgroundColor: Colors.transparent,
       contentPadding: EdgeInsets.zero,
       child: ClipRRect(
@@ -77,17 +79,20 @@ class LabeledProgressBar extends StatelessWidget {
                   ),
                 ),
               ),
-            SizedBox(
-              height: height,
-              child: Center(
-                child: Text(
-                  '${_format(value)}/${_format(goal)} $unit${inlineStatusText == null ? '' : ' - $inlineStatusText'}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: borderColor),
+              SizedBox(
+                height: height,
+                child: Center(
+                  child: Text(
+                    '${_format(value)}/${_format(goal)} $unit${inlineStatusText == null ? '' : ' - $inlineStatusText'}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: borderColor),
+                  ),
                 ),
               ),
-            ),
             ],
           ),
         ),

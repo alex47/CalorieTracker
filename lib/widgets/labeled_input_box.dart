@@ -47,7 +47,10 @@ class LabeledInputBox extends StatelessWidget {
       'Either controller or initialValue must be provided.',
     );
     final resolvedTextColor = textColor;
-    final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(color: resolvedTextColor);
+    final textStyle = Theme.of(context)
+        .textTheme
+        .bodyMedium
+        ?.copyWith(color: resolvedTextColor);
     final resolvedBorderColor = borderColor ?? AppColors.subtleBorder;
     return LabeledGroupBox(
       label: label,
@@ -72,7 +75,9 @@ class LabeledInputBox extends StatelessWidget {
                 onChanged: onChanged,
                 minLines: minLines,
                 maxLines: maxLines,
-                textAlignVertical: maxLines > 1 ? TextAlignVertical.top : TextAlignVertical.center,
+                textAlignVertical: maxLines > 1
+                    ? TextAlignVertical.top
+                    : TextAlignVertical.center,
                 style: textStyle,
                 decoration: InputDecoration(
                   isDense: true,

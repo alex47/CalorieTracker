@@ -1,0 +1,19 @@
+{
+  "tag_name": "v2.0.0",
+  "html_url": "https://example.test/releases/v2.0.0",
+  "body": "Synthetic release notes.",
+  "assets": [
+    {
+      "name": "checksums.txt",
+      "browser_download_url": "https://example.test/checksums.txt"
+    },
+    {
+      "name": "CalorieTracker-v2.0.0.apk",
+      "browser_download_url": "https://example.test/CalorieTracker-v2.0.0.apk"
+    },
+    {
+      "name": "fallback.apk",
+      "browser_download_url": "https://example.test/fallback.apk"
+    }
+  ]
+}
