@@ -108,6 +108,12 @@
   "reasoningEffortLabel": "Reasoning effort",
   "maxOutputTokensLabel": "Max output tokens",
   "openAiTimeoutSecondsLabel": "Timeout (seconds)",
+  "settingsSaveFailed": "Failed to save settings: {error}",
+  "@settingsSaveFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "metabolicProfileTitle": "Metabolic profile",
   "metabolicProfileHistoryTitle": "Profile history",
   "profileDateLabel": "Profile date",

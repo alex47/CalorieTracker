@@ -108,6 +108,12 @@
   "reasoningEffortLabel": "Következtetési szint",
   "maxOutputTokensLabel": "Maximális kimeneti tokenek",
   "openAiTimeoutSecondsLabel": "Időkorlát (másodperc)",
+  "settingsSaveFailed": "A beállítások mentése sikertelen: {error}",
+  "@settingsSaveFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "metabolicProfileTitle": "Anyagcsere profil",
   "metabolicProfileHistoryTitle": "Profil előzmények",
   "profileDateLabel": "Profil dátuma",

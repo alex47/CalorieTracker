@@ -245,6 +245,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get openAiTimeoutSecondsLabel => 'Időkorlát (másodperc)';
 
   @override
+  String settingsSaveFailed(Object error) {
+    return 'A beállítások mentése sikertelen: $error';
+  }
+
+  @override
   String get metabolicProfileTitle => 'Anyagcsere profil';
 
   @override

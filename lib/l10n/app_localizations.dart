@@ -530,6 +530,12 @@ abstract class AppLocalizations {
   /// **'Timeout (seconds)'**
   String get openAiTimeoutSecondsLabel;
 
+  /// No description provided for @settingsSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save settings: {error}'**
+  String settingsSaveFailed(Object error);
+
   /// No description provided for @metabolicProfileTitle.
   ///
   /// In en, this message translates to:

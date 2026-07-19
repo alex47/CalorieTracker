@@ -99,14 +99,15 @@ verify each item independently.
   - Done when every selected calendar date maps to the correct page regardless
     of whether the interval contains a 23-hour or 25-hour day.
 
-- [ ] Preserve pending debounced settings changes.
+- [x] Preserve pending debounced settings changes.
   - Flush pending changes before leaving Settings.
   - Cancel or flush pending saves before an import replaces settings.
   - Add tests for immediate navigation after editing and importing during the
     debounce window.
   - Relevant code:
     [settings_screen.dart](lib/screens/settings_screen.dart#L73),
-    [settings_screen.dart](lib/screens/settings_screen.dart#L107)
+    [settings_screen.dart](lib/screens/settings_screen.dart#L107),
+    [settings_autosave_test.dart](test/screens/settings_autosave_test.dart)
   - Done when a confirmed settings edit is never silently discarded or applied
     after an import unexpectedly.
 

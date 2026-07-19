@@ -21,10 +21,24 @@ import '../widgets/dialog_action_row.dart';
 import '../widgets/labeled_dropdown_box.dart';
 import '../widgets/labeled_input_box.dart';
 
+typedef SettingsSaveOperation = Future<void> Function(AppSettings settings);
+typedef SettingsImportPickOperation = Future<ImportPayload?> Function();
+
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({
+    super.key,
+    this.loadApiKey,
+    this.saveSettings,
+    this.pickImportData,
+    this.autosaveDebounce = AppDefaults.settingsAutosaveDebounce,
+  });
 
   static const routeName = '/settings';
+
+  final Future<String?> Function()? loadApiKey;
+  final SettingsSaveOperation? saveSettings;
+  final SettingsImportPickOperation? pickImportData;
+  final Duration autosaveDebounce;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -37,12 +51,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _openAiTimeoutController =
       TextEditingController();
   Timer? _autosaveTimer;
+  Future<void> _settingsSaveQueue = Future<void>.value();
+  AppSettings? _pendingSettings;
   late String _selectedLanguageCode;
   late String _selectedModel;
   late String _selectedReasoningEffort;
   bool _testing = false;
   bool _loadingModels = false;
   bool _dataTransferBusy = false;
+  bool _leaving = false;
+  bool _allowPop = false;
   List<String> _availableModels = [];
 
   @override
@@ -58,7 +76,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadApiKey() async {
-    final apiKey = await SettingsService.instance.getApiKey();
+    final apiKey = await (widget.loadApiKey?.call() ??
+        SettingsService.instance.getApiKey());
     if (!mounted) {
       return;
     }
@@ -73,13 +92,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _autosaveTimer?.cancel();
+    final pendingSettings = _pendingSettings;
+    _pendingSettings = null;
+    if (pendingSettings != null) {
+      unawaited(
+        _enqueueSettingsSave(pendingSettings).catchError(
+          (Object error, StackTrace stackTrace) {
+            debugPrint('Settings autosave failed during disposal: $error');
+            debugPrintStack(stackTrace: stackTrace);
+          },
+        ),
+      );
+    }
     _apiKeyController.dispose();
     _maxOutputTokensController.dispose();
     _openAiTimeoutController.dispose();
     super.dispose();
   }
 
-  Future<void> _saveNonSensitiveSettings() async {
+  AppSettings _settingsSnapshot() {
     final current = SettingsService.instance.settings;
     final shouldSaveSelectedModel = _availableModels.isNotEmpty &&
         _availableModels.contains(_selectedModel);
@@ -89,34 +120,109 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final openAiTimeoutSeconds =
         int.tryParse(_openAiTimeoutController.text.trim()) ??
             current.openAiTimeoutSeconds;
-    await SettingsService.instance.updateSettings(
-      AppSettings(
-        languageCode: _selectedLanguageCode,
-        model: shouldSaveSelectedModel ? _selectedModel : current.model,
-        reasoningEffort: _selectedReasoningEffort,
-        maxOutputTokens: maxOutputTokens < AppDefaults.minOutputTokens
-            ? current.maxOutputTokens
-            : maxOutputTokens,
-        openAiTimeoutSeconds: openAiTimeoutSeconds <= 0
-            ? current.openAiTimeoutSeconds
-            : openAiTimeoutSeconds,
+    return AppSettings(
+      languageCode: _selectedLanguageCode,
+      model: shouldSaveSelectedModel ? _selectedModel : current.model,
+      reasoningEffort: _selectedReasoningEffort,
+      maxOutputTokens: maxOutputTokens < AppDefaults.minOutputTokens
+          ? current.maxOutputTokens
+          : maxOutputTokens,
+      openAiTimeoutSeconds: openAiTimeoutSeconds <= 0
+          ? current.openAiTimeoutSeconds
+          : openAiTimeoutSeconds,
+    );
+  }
+
+  Future<void> _enqueueSettingsSave(AppSettings settings) {
+    final previousSave = _settingsSaveQueue;
+    final save = () async {
+      try {
+        await previousSave;
+      } catch (_) {
+        // A newer snapshot must still be allowed to retry after an older save.
+      }
+      final operation = widget.saveSettings;
+      if (operation == null) {
+        await SettingsService.instance.updateSettings(settings);
+      } else {
+        await operation(settings);
+      }
+    }();
+    _settingsSaveQueue = save;
+    return save;
+  }
+
+  Future<void> _savePendingSettings() async {
+    _autosaveTimer?.cancel();
+    _autosaveTimer = null;
+    final settings = _pendingSettings;
+    if (settings == null) {
+      await _settingsSaveQueue;
+      return;
+    }
+
+    _pendingSettings = null;
+    try {
+      await _enqueueSettingsSave(settings);
+    } catch (_) {
+      _pendingSettings ??= settings;
+      rethrow;
+    }
+  }
+
+  void _reportSettingsSaveFailure(Object error, StackTrace stackTrace) {
+    debugPrint('Settings autosave failed: $error');
+    debugPrintStack(stackTrace: stackTrace);
+    if (!mounted) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          l10n.settingsSaveFailed(localizeError(error, l10n)),
+        ),
       ),
     );
   }
 
   void _scheduleSettingsAutosave() {
     _autosaveTimer?.cancel();
+    _pendingSettings = _settingsSnapshot();
     _autosaveTimer = Timer(
-      AppDefaults.settingsAutosaveDebounce,
+      widget.autosaveDebounce,
       () async {
         try {
-          await _saveNonSensitiveSettings();
+          await _savePendingSettings();
         } catch (error, stackTrace) {
-          debugPrint('Settings autosave failed: $error');
-          debugPrintStack(stackTrace: stackTrace);
+          _reportSettingsSaveFailure(error, stackTrace);
         }
       },
     );
+  }
+
+  Future<void> _flushSettingsAndPop() async {
+    if (_leaving || _testing || _dataTransferBusy) {
+      return;
+    }
+    setState(() => _leaving = true);
+    try {
+      await _savePendingSettings();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _allowPop = true;
+        _leaving = false;
+      });
+      Navigator.pop(context);
+    } catch (error, stackTrace) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _leaving = false);
+      _reportSettingsSaveFailure(error, stackTrace);
+    }
   }
 
   Future<void> _loadModelsForApiKey(String apiKey,
@@ -252,7 +358,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _dataTransferBusy = true);
     try {
-      final payload = await DataTransferService.instance.pickImportData();
+      await _savePendingSettings();
+      if (!mounted) {
+        return;
+      }
+      final payload = await (widget.pickImportData?.call() ??
+          DataTransferService.instance.pickImportData());
       if (!mounted) {
         return;
       }
@@ -429,12 +540,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isTesting = _testing;
     final isDataTransferBusy = _dataTransferBusy;
-    final isAnyBusy = isTesting || isDataTransferBusy;
+    final isLeaving = _leaving;
+    final isAnyBusy = isTesting || isDataTransferBusy || isLeaving;
     const sectionSpacing = UiConstants.sectionSpacing;
     const headerToContentSpacing = UiConstants.mediumSpacing;
     const controlSpacing = UiConstants.smallSpacing;
     return PopScope(
-      canPop: !isAnyBusy,
+      canPop: _allowPop && !isAnyBusy,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !isAnyBusy) {
+          unawaited(_flushSettingsAndPop());
+        }
+      },
       child: Scaffold(
         appBar: AppBar(
           title: Row(

@@ -243,6 +243,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get openAiTimeoutSecondsLabel => 'Timeout (seconds)';
 
   @override
+  String settingsSaveFailed(Object error) {
+    return 'Failed to save settings: $error';
+  }
+
+  @override
   String get metabolicProfileTitle => 'Metabolic profile';
 
   @override
