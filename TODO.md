@@ -147,12 +147,12 @@ verify each item independently.
   - Done when a failed refresh shows an error without removing the last valid
     summary from the current screen.
 
-- [ ] Prevent release builds from silently using debug signing.
+- [x] Prevent release builds from silently using debug signing.
   - Fail local release builds clearly when release signing configuration is
     absent, or require an explicit opt-in for a debug-signed artifact.
   - Keep CI signing behavior unchanged and secret-safe.
   - Relevant code:
-    [build.gradle.kts](android/app/build.gradle.kts#L59)
+    [build.gradle.kts](android/app/build.gradle.kts)
   - Done when an artifact described as a release cannot be mistaken for a
     properly release-signed build.
 
