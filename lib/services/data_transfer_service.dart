@@ -6,9 +6,7 @@ import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../models/food_item.dart';
 import 'database_service.dart';
-import 'food_library_service.dart';
 import 'macro_ratio_preset_catalog.dart';
 
 class ImportSummary {
@@ -65,7 +63,8 @@ class DataTransferService {
     final metabolicProfileHistory = await db.query('metabolic_profile_history');
     final daySummaries = await db.query('day_summary');
     final settings = {
-      for (final row in settingsRows) row['key'] as String: row['value'] as String,
+      for (final row in settingsRows)
+        row['key'] as String: row['value'] as String,
     };
 
     final payload = {
@@ -128,14 +127,15 @@ class DataTransferService {
       throw const FormatException('Invalid backup format.');
     }
     final formatVersion = decoded['format_version'];
-    if (formatVersion is! int || (formatVersion != 1 && formatVersion != _formatVersion)) {
+    if (formatVersion != _formatVersion) {
       throw const FormatException('Unsupported backup format version.');
     }
 
     final settings = _readSettings(decoded['settings']);
-    final foods = formatVersion >= 2 ? _readRows(decoded['foods'] ?? const []) : const <Map<String, dynamic>>[];
-    final metabolicProfileHistory = _readRows(decoded['metabolic_profile_history'] ?? const []);
-    final daySummaries = _readRows(decoded['day_summary'] ?? const []);
+    final foods = _readRows(decoded['foods']);
+    final metabolicProfileHistory =
+        _readRows(decoded['metabolic_profile_history']);
+    final daySummaries = _readRows(decoded['day_summary']);
     final entries = _readRows(decoded['entries']);
     final entryItems = _readRows(decoded['entry_items']);
     final apiKeyFromBackup = _readApiKeyFromBackup(decoded['secure']);
@@ -152,8 +152,15 @@ class DataTransferService {
   }
 
   Future<ImportSummary> applyImportData(ImportPayload payload) async {
-    _validateImportPayload(payload);
     final db = await DatabaseService.instance.database;
+    return applyImportDataInDatabase(db, payload);
+  }
+
+  Future<ImportSummary> applyImportDataInDatabase(
+    Database db,
+    ImportPayload payload,
+  ) async {
+    _validateImportPayload(payload);
     await db.transaction((txn) async {
       await txn.delete('entry_items');
       await txn.delete('foods');
@@ -166,10 +173,11 @@ class DataTransferService {
         await txn.insert(
           'foods',
           {
-            'id': food['id'] as int?,
+            'id': food['id'] as int,
             'name': food['name'] as String,
             'standard_unit': food['standard_unit'] as String,
-            'standard_unit_amount': (food['standard_unit_amount'] as num).toDouble(),
+            'standard_unit_amount':
+                (food['standard_unit_amount'] as num).toDouble(),
             'standard_calories': (food['standard_calories'] as num).toDouble(),
             'standard_fat': (food['standard_fat'] as num).toDouble(),
             'standard_protein': (food['standard_protein'] as num).toDouble(),
@@ -177,9 +185,10 @@ class DataTransferService {
             'notes': food['notes'] as String? ?? '',
             'created_at': food['created_at'] as String,
             'updated_at': food['updated_at'] as String,
-            'is_visible_in_library': ((food['is_visible_in_library'] as num?)?.toInt() ?? 1),
+            'is_visible_in_library':
+                (food['is_visible_in_library'] as num).toInt(),
           },
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
       }
 
@@ -193,81 +202,35 @@ class DataTransferService {
             'prompt': entry['prompt'] as String,
             'response': entry['response'] as String,
           },
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
       }
 
       for (final item in payload.entryItems) {
-        final foodId = (item['food_id'] as num?)?.toInt();
-        final amount = item['amount'] as String;
-        final multiplierRaw = (item['multiplier'] as num?)?.toDouble() ?? 1.0;
-        final multiplier = multiplierRaw > 0 ? multiplierRaw : 1.0;
-        final standardUnit = (item['standard_unit'] as String?)?.trim();
-        final standardUnitAmountRaw = (item['standard_unit_amount'] as num?)?.toDouble() ?? 1.0;
-        final standardUnitAmount = standardUnitAmountRaw > 0 ? standardUnitAmountRaw : 1.0;
-        final legacyStandardAmount = (item['standard_amount'] as String?)?.trim();
-        final ratio = FoodItem.multiplierRatio(
-          multiplier: multiplier,
-          standardUnitAmount: standardUnitAmount,
-        );
-        final standardCalories =
-            (item['standard_calories'] as num?)?.toDouble() ?? ((item['calories'] as num).toDouble() / ratio);
-        final standardFat =
-            (item['standard_fat'] as num?)?.toDouble() ?? (((item['fat'] as num?)?.toDouble() ?? 0) / ratio);
-        final standardProtein = (item['standard_protein'] as num?)?.toDouble() ??
-            (((item['protein'] as num?)?.toDouble() ?? 0) / ratio);
-        final standardCarbs =
-            (item['standard_carbs'] as num?)?.toDouble() ?? (((item['carbs'] as num?)?.toDouble() ?? 0) / ratio);
-        final calories = (standardCalories * ratio).round();
-        final fat = standardFat * ratio;
-        final protein = standardProtein * ratio;
-        final carbs = standardCarbs * ratio;
-        var resolvedFoodId = foodId;
-        if (resolvedFoodId == null || resolvedFoodId <= 0) {
-          resolvedFoodId = await FoodLibraryService.instance.ensureFoodInDatabase(
-            txn,
-            name: item['name'] as String,
-            standardUnit: (standardUnit != null && standardUnit.isNotEmpty)
-                ? standardUnit
-                : amount,
-            standardUnitAmount: standardUnitAmount,
-            standardCalories: standardCalories,
-            standardFat: standardFat,
-            standardProtein: standardProtein,
-            standardCarbs: standardCarbs,
-            notes: item['notes'] as String? ?? '',
-            isVisibleInLibrary: true,
-          );
-        }
         await txn.insert(
           'entry_items',
           {
             'id': item['id'] as int,
             'entry_id': item['entry_id'] as int,
-            'food_id': resolvedFoodId,
+            'food_id': item['food_id'] as int,
             'name': item['name'] as String,
-            'amount': amount,
-            'calories': calories,
-            'fat': fat,
-            'protein': protein,
-            'carbs': carbs,
-            'standard_amount': (legacyStandardAmount != null && legacyStandardAmount.isNotEmpty)
-                ? legacyStandardAmount
-                : '$standardUnitAmount ${standardUnit ?? amount}',
-            'standard_unit': (standardUnit != null && standardUnit.isNotEmpty)
-                ? standardUnit
-                : (legacyStandardAmount != null && legacyStandardAmount.isNotEmpty)
-                    ? legacyStandardAmount
-                    : amount,
-            'standard_unit_amount': standardUnitAmount,
-            'multiplier': multiplier,
-            'standard_calories': standardCalories,
-            'standard_fat': standardFat,
-            'standard_protein': standardProtein,
-            'standard_carbs': standardCarbs,
+            'amount': item['amount'] as String,
+            'calories': (item['calories'] as num).round(),
+            'fat': (item['fat'] as num).toDouble(),
+            'protein': (item['protein'] as num).toDouble(),
+            'carbs': (item['carbs'] as num).toDouble(),
+            'standard_amount': item['standard_amount'] as String,
+            'standard_unit': item['standard_unit'] as String,
+            'standard_unit_amount':
+                (item['standard_unit_amount'] as num).toDouble(),
+            'multiplier': (item['multiplier'] as num).toDouble(),
+            'standard_calories': (item['standard_calories'] as num).toDouble(),
+            'standard_fat': (item['standard_fat'] as num).toDouble(),
+            'standard_protein': (item['standard_protein'] as num).toDouble(),
+            'standard_carbs': (item['standard_carbs'] as num).toDouble(),
             'notes': item['notes'] as String? ?? '',
           },
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
       }
 
@@ -275,41 +238,30 @@ class DataTransferService {
         await txn.insert(
           'settings',
           {'key': setting.key, 'value': setting.value},
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
       }
 
       for (final profile in payload.metabolicProfileHistory) {
-        final importedFat = (profile['fat_ratio_percent'] as num?)?.round() ?? 30;
-        final importedProtein = (profile['protein_ratio_percent'] as num?)?.round() ?? 30;
-        final importedCarbs = (profile['carbs_ratio_percent'] as num?)?.round() ?? 40;
-        final presetKey = (profile['macro_preset_key'] as String?)?.trim();
-        final resolvedPreset = (presetKey == null || presetKey.isEmpty)
-            ? MacroRatioPresetCatalog.presetForKey(
-                MacroRatioPresetCatalog.keyForRatios(
-                  fatPercent: importedFat,
-                  proteinPercent: importedProtein,
-                  carbsPercent: importedCarbs,
-                ),
-              )
-            : MacroRatioPresetCatalog.presetForKey(presetKey);
         await txn.insert(
           'metabolic_profile_history',
           {
-            'id': profile['id'] as int?,
+            'id': profile['id'] as int,
             'profile_date': profile['profile_date'] as String,
             'age': (profile['age'] as num).round(),
             'sex': profile['sex'] as String,
             'height_cm': (profile['height_cm'] as num).toDouble(),
             'weight_kg': (profile['weight_kg'] as num).toDouble(),
             'activity_level': profile['activity_level'] as String,
-            'macro_preset_key': resolvedPreset.key,
-            'fat_ratio_percent': resolvedPreset.fatPercent,
-            'protein_ratio_percent': resolvedPreset.proteinPercent,
-            'carbs_ratio_percent': resolvedPreset.carbsPercent,
+            'macro_preset_key': profile['macro_preset_key'] as String,
+            'fat_ratio_percent': (profile['fat_ratio_percent'] as num).round(),
+            'protein_ratio_percent':
+                (profile['protein_ratio_percent'] as num).round(),
+            'carbs_ratio_percent':
+                (profile['carbs_ratio_percent'] as num).round(),
             'created_at': profile['created_at'] as String,
           },
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
       }
 
@@ -319,13 +271,13 @@ class DataTransferService {
           {
             'summary_date': summary['summary_date'] as String,
             'language_code': summary['language_code'] as String,
-            'model': summary['model'] as String? ?? '',
+            'model': summary['model'] as String,
             'source_hash': summary['source_hash'] as String,
             'summary_json': summary['summary_json'] as String,
             'created_at': summary['created_at'] as String,
             'updated_at': summary['updated_at'] as String,
           },
-          conflictAlgorithm: ConflictAlgorithm.replace,
+          conflictAlgorithm: ConflictAlgorithm.abort,
         );
       }
     });
@@ -338,8 +290,24 @@ class DataTransferService {
   }
 
   void _validateImportPayload(ImportPayload payload) {
+    final entryIds = _requireUniquePositiveIds(
+      payload.entries,
+      table: 'entries',
+    );
+    final foodIds = _requireUniquePositiveIds(
+      payload.foods,
+      table: 'foods',
+    );
+    _requireUniquePositiveIds(
+      payload.entryItems,
+      table: 'entry_items',
+    );
+    _requireUniquePositiveIds(
+      payload.metabolicProfileHistory,
+      table: 'metabolic_profile_history',
+    );
+
     for (final entry in payload.entries) {
-      _requireInt(entry, 'id', table: 'entries');
       _requireString(entry, 'entry_date', table: 'entries');
       _requireString(entry, 'created_at', table: 'entries');
       _requireString(entry, 'prompt', table: 'entries');
@@ -347,7 +315,6 @@ class DataTransferService {
     }
 
     for (final food in payload.foods) {
-      _requireOptionalInt(food, 'id', table: 'foods');
       _requireString(food, 'name', table: 'foods');
       _requireString(food, 'standard_unit', table: 'foods');
       _requireNum(food, 'standard_unit_amount', table: 'foods');
@@ -358,46 +325,81 @@ class DataTransferService {
       _requireOptionalString(food, 'notes', table: 'foods');
       _requireString(food, 'created_at', table: 'foods');
       _requireString(food, 'updated_at', table: 'foods');
-      _requireOptionalNum(food, 'is_visible_in_library', table: 'foods');
+      _requireNum(food, 'is_visible_in_library', table: 'foods');
+      if ((food['standard_unit_amount'] as num).toDouble() <= 0) {
+        throw const FormatException(
+          'Invalid "foods.standard_unit_amount" in backup payload.',
+        );
+      }
     }
 
     for (final item in payload.entryItems) {
-      _requireInt(item, 'id', table: 'entry_items');
-      _requireInt(item, 'entry_id', table: 'entry_items');
-      _requireOptionalInt(item, 'food_id', table: 'entry_items');
+      final entryId = _requirePositiveInt(
+        item,
+        'entry_id',
+        table: 'entry_items',
+      );
+      final foodId = _requirePositiveInt(
+        item,
+        'food_id',
+        table: 'entry_items',
+      );
       _requireString(item, 'name', table: 'entry_items');
       _requireString(item, 'amount', table: 'entry_items');
       _requireNum(item, 'calories', table: 'entry_items');
-      _requireOptionalNum(item, 'fat', table: 'entry_items');
-      _requireOptionalNum(item, 'protein', table: 'entry_items');
-      _requireOptionalNum(item, 'carbs', table: 'entry_items');
-      _requireOptionalString(item, 'standard_amount', table: 'entry_items');
-      _requireOptionalString(item, 'standard_unit', table: 'entry_items');
-      _requireOptionalNum(item, 'standard_unit_amount', table: 'entry_items');
-      _requireOptionalNum(item, 'multiplier', table: 'entry_items');
-      _requireOptionalNum(item, 'standard_calories', table: 'entry_items');
-      _requireOptionalNum(item, 'standard_fat', table: 'entry_items');
-      _requireOptionalNum(item, 'standard_protein', table: 'entry_items');
-      _requireOptionalNum(item, 'standard_carbs', table: 'entry_items');
+      _requireNum(item, 'fat', table: 'entry_items');
+      _requireNum(item, 'protein', table: 'entry_items');
+      _requireNum(item, 'carbs', table: 'entry_items');
+      _requireString(item, 'standard_amount', table: 'entry_items');
+      _requireString(item, 'standard_unit', table: 'entry_items');
+      _requireNum(item, 'standard_unit_amount', table: 'entry_items');
+      _requireNum(item, 'multiplier', table: 'entry_items');
+      _requireNum(item, 'standard_calories', table: 'entry_items');
+      _requireNum(item, 'standard_fat', table: 'entry_items');
+      _requireNum(item, 'standard_protein', table: 'entry_items');
+      _requireNum(item, 'standard_carbs', table: 'entry_items');
       _requireOptionalString(item, 'notes', table: 'entry_items');
-      final multiplier = (item['multiplier'] as num?)?.toDouble();
-      if (multiplier != null && multiplier <= 0) {
-        throw const FormatException('Invalid "entry_items.multiplier" in backup payload.');
+      if ((item['standard_unit_amount'] as num).toDouble() <= 0) {
+        throw const FormatException(
+          'Invalid "entry_items.standard_unit_amount" in backup payload.',
+        );
+      }
+      if ((item['multiplier'] as num).toDouble() <= 0) {
+        throw const FormatException(
+          'Invalid "entry_items.multiplier" in backup payload.',
+        );
+      }
+      if (!entryIds.contains(entryId)) {
+        throw FormatException(
+          'Invalid "entry_items.entry_id" reference in backup payload: '
+          'entries.id $entryId does not exist.',
+        );
+      }
+      if (!foodIds.contains(foodId)) {
+        throw FormatException(
+          'Invalid "entry_items.food_id" reference in backup payload: '
+          'foods.id $foodId does not exist.',
+        );
       }
     }
 
     for (final profile in payload.metabolicProfileHistory) {
-      _requireOptionalInt(profile, 'id', table: 'metabolic_profile_history');
-      _requireString(profile, 'profile_date', table: 'metabolic_profile_history');
+      _requireString(profile, 'profile_date',
+          table: 'metabolic_profile_history');
       _requireInt(profile, 'age', table: 'metabolic_profile_history');
       _requireString(profile, 'sex', table: 'metabolic_profile_history');
       _requireNum(profile, 'height_cm', table: 'metabolic_profile_history');
       _requireNum(profile, 'weight_kg', table: 'metabolic_profile_history');
-      _requireString(profile, 'activity_level', table: 'metabolic_profile_history');
-      _requireOptionalString(profile, 'macro_preset_key', table: 'metabolic_profile_history');
-      _requireOptionalNum(profile, 'fat_ratio_percent', table: 'metabolic_profile_history');
-      _requireOptionalNum(profile, 'protein_ratio_percent', table: 'metabolic_profile_history');
-      _requireOptionalNum(profile, 'carbs_ratio_percent', table: 'metabolic_profile_history');
+      _requireString(profile, 'activity_level',
+          table: 'metabolic_profile_history');
+      _requireString(profile, 'macro_preset_key',
+          table: 'metabolic_profile_history');
+      _requireNum(profile, 'fat_ratio_percent',
+          table: 'metabolic_profile_history');
+      _requireNum(profile, 'protein_ratio_percent',
+          table: 'metabolic_profile_history');
+      _requireNum(profile, 'carbs_ratio_percent',
+          table: 'metabolic_profile_history');
       _requireString(profile, 'created_at', table: 'metabolic_profile_history');
       _validateMacroRatios(profile);
     }
@@ -405,7 +407,7 @@ class DataTransferService {
     for (final summary in payload.daySummaries) {
       _requireString(summary, 'summary_date', table: 'day_summary');
       _requireString(summary, 'language_code', table: 'day_summary');
-      _requireOptionalString(summary, 'model', table: 'day_summary');
+      _requireString(summary, 'model', table: 'day_summary');
       _requireString(summary, 'source_hash', table: 'day_summary');
       _requireString(summary, 'summary_json', table: 'day_summary');
       _requireString(summary, 'created_at', table: 'day_summary');
@@ -418,7 +420,8 @@ class DataTransferService {
     if (presetKey != null && presetKey.isNotEmpty) {
       final preset = MacroRatioPresetCatalog.presetForKey(presetKey);
       if (preset.key != presetKey) {
-        throw const FormatException('Invalid macro preset key in backup payload.');
+        throw const FormatException(
+            'Invalid macro preset key in backup payload.');
       }
       return;
     }
@@ -427,10 +430,12 @@ class DataTransferService {
     final carbs = (row['carbs_ratio_percent'] as num?)?.round() ?? 40;
     final values = [fat, protein, carbs];
     if (values.any((v) => v < 0 || v > 100)) {
-      throw const FormatException('Invalid macro ratio range in backup payload.');
+      throw const FormatException(
+          'Invalid macro ratio range in backup payload.');
     }
     if (fat + protein + carbs != 100) {
-      throw const FormatException('Macro ratios in backup payload must sum to 100.');
+      throw const FormatException(
+          'Macro ratios in backup payload must sum to 100.');
     }
   }
 
@@ -467,15 +472,32 @@ class DataTransferService {
     }
   }
 
-  void _requireOptionalInt(
+  int _requirePositiveInt(
     Map<String, dynamic> row,
     String key, {
     required String table,
   }) {
     final value = row[key];
-    if (value != null && value is! int) {
+    if (value is! int || value <= 0) {
       throw FormatException('Invalid "$table.$key" in backup payload.');
     }
+    return value;
+  }
+
+  Set<int> _requireUniquePositiveIds(
+    List<Map<String, dynamic>> rows, {
+    required String table,
+  }) {
+    final ids = <int>{};
+    for (final row in rows) {
+      final id = _requirePositiveInt(row, 'id', table: table);
+      if (!ids.add(id)) {
+        throw FormatException(
+          'Duplicate "$table.id" value $id in backup payload.',
+        );
+      }
+    }
+    return ids;
   }
 
   void _requireNum(
@@ -489,24 +511,16 @@ class DataTransferService {
     }
   }
 
-  void _requireOptionalNum(
-    Map<String, dynamic> row,
-    String key, {
-    required String table,
-  }) {
-    final value = row[key];
-    if (value != null && value is! num) {
-      throw FormatException('Invalid "$table.$key" in backup payload.');
-    }
-  }
-
   Map<String, String> _readSettings(Object? rawSettings) {
     if (rawSettings is! Map<String, dynamic>) {
       throw const FormatException('Invalid settings payload.');
     }
     final settings = <String, String>{};
     for (final entry in rawSettings.entries) {
-      settings[entry.key] = entry.value.toString();
+      if (entry.value is! String) {
+        throw const FormatException('Invalid settings payload.');
+      }
+      settings[entry.key] = entry.value as String;
     }
     return settings;
   }
@@ -515,14 +529,12 @@ class DataTransferService {
     if (rawRows is! List) {
       throw const FormatException('Invalid row payload.');
     }
-    return rawRows
-        .map((item) {
-          if (item is! Map<String, dynamic>) {
-            throw const FormatException('Invalid row payload item.');
-          }
-          return item;
-        })
-        .toList(growable: false);
+    return rawRows.map((item) {
+      if (item is! Map<String, dynamic>) {
+        throw const FormatException('Invalid row payload item.');
+      }
+      return item;
+    }).toList(growable: false);
   }
 
   String? _readApiKeyFromBackup(Object? rawSecure) {

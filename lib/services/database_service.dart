@@ -8,6 +8,10 @@ class DatabaseService {
 
   static final DatabaseService instance = DatabaseService._();
 
+  static Future<void> configureDatabase(Database db) async {
+    await db.execute('PRAGMA foreign_keys = ON');
+  }
+
   Database? _database;
 
   Future<void> initialize() async {
@@ -19,6 +23,7 @@ class DatabaseService {
     _database = await openDatabase(
       join(await getDatabasesPath(), 'calorie_tracker.db'),
       version: 11,
+      onConfigure: configureDatabase,
       onCreate: (db, version) async {
         await db.execute(
           '''
@@ -305,7 +310,8 @@ class DatabaseService {
     for (final row in rows) {
       final name = (row['name'] as String?) ?? '';
       final standardUnit = ((row['standard_unit'] as String?) ?? '').trim();
-      final standardUnitAmount = (row['standard_unit_amount'] as num?)?.toDouble() ?? 1.0;
+      final standardUnitAmount =
+          (row['standard_unit_amount'] as num?)?.toDouble() ?? 1.0;
       final standardCalories = (row['standard_calories'] as num?)?.toDouble() ??
           ((row['calories'] as num?)?.toDouble() ?? 0);
       final standardFat = (row['standard_fat'] as num?)?.toDouble() ??
@@ -334,7 +340,8 @@ class DatabaseService {
           {
             'name': name,
             'standard_unit': standardUnit,
-            'standard_unit_amount': standardUnitAmount > 0 ? standardUnitAmount : 1.0,
+            'standard_unit_amount':
+                standardUnitAmount > 0 ? standardUnitAmount : 1.0,
             'standard_calories': standardCalories,
             'standard_fat': standardFat,
             'standard_protein': standardProtein,

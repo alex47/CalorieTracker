@@ -32,17 +32,17 @@ verify each item independently.
   - Done when editing one profile can neither overwrite nor delete another
     profile unintentionally.
 
-- [ ] Enforce relational integrity during data import.
-  - Validate that every imported `entry_item` references an imported or
-    existing entry and food.
+- [x] Enforce relational integrity during data import.
+  - Validate that every imported `entry_item` references an entry and food
+    included in the same backup payload.
   - Enable SQLite foreign-key enforcement for every database connection.
   - Make the import fail clearly and atomically when relationships are invalid.
   - Add tests for missing entry IDs, missing food IDs, and a valid complete
     import.
   - Relevant code:
-    [data_transfer_service.dart](lib/services/data_transfer_service.dart#L340),
-    [database_service.dart](lib/services/database_service.dart#L19),
-    [entries_repository.dart](lib/services/entries_repository.dart#L200)
+    [data_transfer_service.dart](lib/services/data_transfer_service.dart#L157),
+    [database_service.dart](lib/services/database_service.dart#L11),
+    [data_transfer_service_test.dart](test/services/data_transfer_service_test.dart)
   - Done when an import cannot report success while creating records that are
     hidden by normal joined queries.
 
