@@ -137,12 +137,13 @@ verify each item independently.
 
 ## P3 - User Experience And Release Safety
 
-- [ ] Keep an existing day summary visible after refresh failure.
+- [x] Keep an existing day summary visible after refresh failure.
   - Do not permanently clear the displayed summary before a replacement has
     succeeded.
   - Restore or retain the persisted summary when re-summarization fails.
   - Relevant code:
-    [day_summary_screen.dart](lib/screens/day_summary_screen.dart#L133)
+    [day_summary_screen.dart](lib/screens/day_summary_screen.dart),
+    [day_summary_screen_test.dart](test/screens/day_summary_screen_test.dart)
   - Done when a failed refresh shows an error without removing the last valid
     summary from the current screen.
 

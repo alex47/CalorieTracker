@@ -3,6 +3,7 @@ import 'package:calorie_tracker/l10n/app_localizations.dart';
 
 import '../models/day_summary.dart';
 import '../models/food_item.dart';
+import '../models/metabolic_profile.dart';
 import '../services/day_summary_service.dart';
 import '../services/day_summary_snapshot_builder.dart';
 import '../services/entries_repository.dart';
@@ -18,13 +19,44 @@ import '../widgets/app_dialog.dart';
 import '../widgets/dialog_action_row.dart';
 import '../widgets/labeled_group_box.dart';
 
+typedef DaySummaryItemsLoadOperation = Future<List<FoodItem>> Function(
+  DateTime date,
+);
+
+typedef DaySummaryProfileLoadOperation = Future<MetabolicProfile?> Function(
+  DateTime date,
+);
+
+typedef StoredDaySummaryLoadOperation = Future<StoredDaySummary?> Function(
+  DateTime date,
+);
+
+typedef DaySummaryGenerationOperation = Future<DaySummary> Function({
+  required String apiKey,
+  required String model,
+  required String languageCode,
+  required String reasoningEffort,
+  required int maxOutputTokens,
+  required Map<String, dynamic> daySnapshot,
+});
+
 class DaySummaryScreen extends StatefulWidget {
   const DaySummaryScreen({
     super.key,
     required this.date,
+    this.loadItems,
+    this.loadProfile,
+    this.loadStoredSummary,
+    this.loadApiKey,
+    this.generateSummary,
   });
 
   final DateTime date;
+  final DaySummaryItemsLoadOperation? loadItems;
+  final DaySummaryProfileLoadOperation? loadProfile;
+  final StoredDaySummaryLoadOperation? loadStoredSummary;
+  final Future<String?> Function()? loadApiKey;
+  final DaySummaryGenerationOperation? generateSummary;
 
   @override
   State<DaySummaryScreen> createState() => _DaySummaryScreenState();
@@ -57,11 +89,12 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
     try {
       final date = _dayOnlyDate;
       final settings = SettingsService.instance.settings;
-      final items = await EntriesRepository.instance.fetchItemsForDate(date);
-      final profile = await MetabolicProfileHistoryService.instance
-          .getEffectiveProfileForDate(
-        date: date,
-      );
+      final items = await (widget.loadItems?.call(date) ??
+          EntriesRepository.instance.fetchItemsForDate(date));
+      final profile = await (widget.loadProfile?.call(date) ??
+          MetabolicProfileHistoryService.instance.getEffectiveProfileForDate(
+            date: date,
+          ));
       final targets = profile == null
           ? null
           : NutritionTargetService.targetsFromProfile(profile);
@@ -73,7 +106,8 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
         languageCode: settings.languageCode,
       );
       final sourceHash = DaySummaryService.instance.computeSourceHash(snapshot);
-      final stored = await DaySummaryService.instance.fetchForDate(date);
+      final stored = await (widget.loadStoredSummary?.call(date) ??
+          DaySummaryService.instance.fetchForDate(date));
       final matchesCurrentState = stored != null &&
           stored.sourceHash == sourceHash &&
           stored.languageCode == settings.languageCode;
@@ -102,7 +136,8 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
 
   Future<void> _summarize() async {
     final l10n = AppLocalizations.of(context)!;
-    final apiKey = await SettingsService.instance.getApiKey();
+    final apiKey = await (widget.loadApiKey?.call() ??
+        SettingsService.instance.getApiKey());
     if (apiKey == null || apiKey.isEmpty) {
       if (!mounted) {
         return;
@@ -132,22 +167,32 @@ class _DaySummaryScreenState extends State<DaySummaryScreen> {
     setState(() {
       _summarizing = true;
       _summarizingAgain = hadExistingSummary;
-      if (hadExistingSummary) {
-        _summary = null;
-      }
     });
     try {
-      final openAi = OpenAIService(
-        apiKey,
-        requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
-      );
-      final summary = await openAi.summarizeDay(
-        model: settings.model,
-        languageCode: settings.languageCode,
-        reasoningEffort: settings.reasoningEffort,
-        maxOutputTokens: settings.maxOutputTokens,
-        daySnapshot: _snapshot!,
-      );
+      final generateSummary = widget.generateSummary;
+      final DaySummary summary;
+      if (generateSummary != null) {
+        summary = await generateSummary(
+          apiKey: apiKey,
+          model: settings.model,
+          languageCode: settings.languageCode,
+          reasoningEffort: settings.reasoningEffort,
+          maxOutputTokens: settings.maxOutputTokens,
+          daySnapshot: _snapshot!,
+        );
+      } else {
+        final openAi = OpenAIService(
+          apiKey,
+          requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
+        );
+        summary = await openAi.summarizeDay(
+          model: settings.model,
+          languageCode: settings.languageCode,
+          reasoningEffort: settings.reasoningEffort,
+          maxOutputTokens: settings.maxOutputTokens,
+          daySnapshot: _snapshot!,
+        );
+      }
       await DaySummaryService.instance.upsert(
         date: _dayOnlyDate,
         languageCode: settings.languageCode,
