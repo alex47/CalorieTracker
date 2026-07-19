@@ -8,13 +8,27 @@ import '../theme/ui_constants.dart';
 import '../widgets/app_button.dart';
 import '../widgets/labeled_input_box.dart';
 
+typedef FoodDefinitionSaveOperation = Future<void> Function({
+  required FoodDefinition? existingFood,
+  required String name,
+  required String standardUnit,
+  required double standardUnitAmount,
+  required double standardCalories,
+  required double standardFat,
+  required double standardProtein,
+  required double standardCarbs,
+  required String notes,
+});
+
 class FoodDefinitionScreen extends StatefulWidget {
   const FoodDefinitionScreen({
     super.key,
     this.food,
+    this.saveFood,
   });
 
   final FoodDefinition? food;
+  final FoodDefinitionSaveOperation? saveFood;
 
   @override
   State<FoodDefinitionScreen> createState() => _FoodDefinitionScreenState();
@@ -88,6 +102,9 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) {
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     final name = _nameController.text.trim();
     final unit = _unitController.text.trim();
@@ -120,7 +137,20 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
     });
 
     try {
-      if (_isEditing) {
+      final operation = widget.saveFood;
+      if (operation != null) {
+        await operation(
+          existingFood: widget.food,
+          name: name,
+          standardUnit: unit,
+          standardUnitAmount: unitAmount,
+          standardCalories: calories,
+          standardFat: fat,
+          standardProtein: protein,
+          standardCarbs: carbs,
+          notes: _notesController.text.trim(),
+        );
+      } else if (_isEditing) {
         await FoodLibraryService.instance.updateFood(
           foodId: widget.food!.id,
           name: name,
@@ -149,15 +179,16 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
       if (!mounted) {
         return;
       }
+      setState(() => _saving = false);
       Navigator.pop(context, true);
     } catch (error) {
+      if (!mounted) {
+        return;
+      }
       setState(() {
+        _saving = false;
         _errorMessage = error.toString();
       });
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
-      }
     }
   }
 
@@ -165,97 +196,108 @@ class _FoodDefinitionScreenState extends State<FoodDefinitionScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     const controlSpacing = UiConstants.smallSpacing;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _isEditing ? l10n.editFoodButton : l10n.addFoodDefinitionTitle,
+    return PopScope(
+      canPop: !_saving,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _isEditing ? l10n.editFoodButton : l10n.addFoodDefinitionTitle,
+          ),
         ),
-      ),
-      body: AbsorbPointer(
-        absorbing: _saving,
-        child: ListView(
-          padding: const EdgeInsets.all(UiConstants.pagePadding),
-          children: [
-            LabeledInputBox(
-              controller: _nameController,
-              label: l10n.foodLabel,
-              contentHeight: UiConstants.settingsFieldHeight,
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _unitController,
-              label: l10n.standardUnitLabel,
-              contentHeight: UiConstants.settingsFieldHeight,
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _unitAmountController,
-              label: l10n.standardUnitAmountLabel,
-              contentHeight: UiConstants.settingsFieldHeight,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _caloriesController,
-              label: l10n.caloriesLabel,
-              contentHeight: UiConstants.settingsFieldHeight,
-              borderColor: AppColors.calories,
-              textColor: AppColors.calories,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _fatController,
-              label: '${l10n.fatLabel} (g)',
-              contentHeight: UiConstants.settingsFieldHeight,
-              borderColor: AppColors.fat,
-              textColor: AppColors.fat,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _proteinController,
-              label: '${l10n.proteinLabel} (g)',
-              contentHeight: UiConstants.settingsFieldHeight,
-              borderColor: AppColors.protein,
-              textColor: AppColors.protein,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _carbsController,
-              label: '${l10n.carbsLabel} (g)',
-              contentHeight: UiConstants.settingsFieldHeight,
-              borderColor: AppColors.carbs,
-              textColor: AppColors.carbs,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-            ),
-            const SizedBox(height: controlSpacing),
-            LabeledInputBox(
-              controller: _notesController,
-              label: l10n.notesLabel,
-              minLines: 3,
-              maxLines: 5,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: UiConstants.smallSpacing),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+        body: AbsorbPointer(
+          absorbing: _saving,
+          child: ListView(
+            padding: const EdgeInsets.all(UiConstants.pagePadding),
+            children: [
+              LabeledInputBox(
+                controller: _nameController,
+                label: l10n.foodLabel,
+                contentHeight: UiConstants.settingsFieldHeight,
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _unitController,
+                label: l10n.standardUnitLabel,
+                contentHeight: UiConstants.settingsFieldHeight,
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _unitAmountController,
+                label: l10n.standardUnitAmountLabel,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _caloriesController,
+                label: l10n.caloriesLabel,
+                contentHeight: UiConstants.settingsFieldHeight,
+                borderColor: AppColors.calories,
+                textColor: AppColors.calories,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _fatController,
+                label: '${l10n.fatLabel} (g)',
+                contentHeight: UiConstants.settingsFieldHeight,
+                borderColor: AppColors.fat,
+                textColor: AppColors.fat,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _proteinController,
+                label: '${l10n.proteinLabel} (g)',
+                contentHeight: UiConstants.settingsFieldHeight,
+                borderColor: AppColors.protein,
+                textColor: AppColors.protein,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _carbsController,
+                label: '${l10n.carbsLabel} (g)',
+                contentHeight: UiConstants.settingsFieldHeight,
+                borderColor: AppColors.carbs,
+                textColor: AppColors.carbs,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+              const SizedBox(height: controlSpacing),
+              LabeledInputBox(
+                controller: _notesController,
+                label: l10n.notesLabel,
+                minLines: 3,
+                maxLines: 5,
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: UiConstants.smallSpacing),
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+              const SizedBox(height: UiConstants.mediumSpacing),
+              AppButton(
+                onPressed: _saving ? null : _save,
+                icon: _saving
+                    ? const SizedBox(
+                        height: UiConstants.loadingIndicatorSize,
+                        width: UiConstants.loadingIndicatorSize,
+                        child: CircularProgressIndicator(
+                          strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                        ),
+                      )
+                    : const Icon(Icons.save_outlined),
+                label: l10n.saveButton,
               ),
             ],
-            const SizedBox(height: UiConstants.mediumSpacing),
-            AppButton(
-              onPressed: _saving ? null : _save,
-              icon: const Icon(Icons.save_outlined),
-              label: l10n.saveButton,
-            ),
-          ],
+          ),
         ),
       ),
     );

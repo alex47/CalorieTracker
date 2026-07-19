@@ -16,12 +16,35 @@ import '../widgets/food_breakdown_card.dart';
 import '../widgets/labeled_input_box.dart';
 import '../widgets/raw_ai_response_section.dart';
 
+typedef FoodEstimateOperation = Future<Map<String, dynamic>> Function({
+  required String apiKey,
+  required String prompt,
+  required List<Map<String, String>> history,
+});
+
+typedef FoodEntryGroupSaveOperation = Future<void> Function({
+  required DateTime date,
+  required String prompt,
+  required String response,
+  required List<Map<String, dynamic>> items,
+  required List<bool> visibleInLibraryFlags,
+});
+
 class AddNewFoodScreen extends StatefulWidget {
-  const AddNewFoodScreen({super.key, this.date});
+  const AddNewFoodScreen({
+    super.key,
+    this.date,
+    this.loadApiKey,
+    this.estimateCalories,
+    this.saveEntryGroup,
+  });
 
   static const routeName = '/add-new-food';
 
   final DateTime? date;
+  final Future<String?> Function()? loadApiKey;
+  final FoodEstimateOperation? estimateCalories;
+  final FoodEntryGroupSaveOperation? saveEntryGroup;
 
   @override
   State<AddNewFoodScreen> createState() => _AddNewFoodScreenState();
@@ -35,6 +58,7 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
   late DateTime _entryDate;
   bool _didResolveRouteArgs = false;
   bool _loading = false;
+  bool _saving = false;
   String? _errorMessage;
   String? _rawAiResponseText;
 
@@ -143,13 +167,10 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
   }
 
   Future<void> _submitAi({required String prompt}) async {
-    final l10n = AppLocalizations.of(context)!;
-    final apiKey = await SettingsService.instance.getApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      setState(() => _errorMessage = l10n.setApiKeyInSettings);
+    if (_loading || _saving) {
       return;
     }
-
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _loading = true;
       _errorMessage = null;
@@ -157,19 +178,30 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
     });
 
     try {
-      final settings = SettingsService.instance.settings;
-      final service = OpenAIService(
-        apiKey,
-        requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
-      );
-      final response = await service.estimateCalories(
-        model: settings.model,
-        languageCode: settings.languageCode,
-        reasoningEffort: settings.reasoningEffort,
-        maxOutputTokens: settings.maxOutputTokens,
-        userInput: prompt,
-        history: _history,
-      );
+      final apiKey = await (widget.loadApiKey?.call() ??
+          SettingsService.instance.getApiKey());
+      if (!mounted) {
+        return;
+      }
+      if (apiKey == null || apiKey.isEmpty) {
+        setState(() => _errorMessage = l10n.setApiKeyInSettings);
+        return;
+      }
+
+      final operation = widget.estimateCalories;
+      final response = operation == null
+          ? await _estimateCaloriesWithService(
+              apiKey: apiKey,
+              prompt: prompt,
+            )
+          : await operation(
+              apiKey: apiKey,
+              prompt: prompt,
+              history: List<Map<String, String>>.unmodifiable(_history),
+            );
+      if (!mounted) {
+        return;
+      }
       final parsedItems = (response['items'] as List<dynamic>)
           .map((item) => Map<String, dynamic>.from(item as Map))
           .toList();
@@ -180,6 +212,9 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
         _rawAiResponseText = null;
       });
     } catch (error) {
+      if (!mounted) {
+        return;
+      }
       final rawResponse =
           error is AiParseException ? error.rawResponseText : null;
       setState(() {
@@ -187,8 +222,29 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
         _rawAiResponseText = rawResponse;
       });
     } finally {
-      setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
+  }
+
+  Future<Map<String, dynamic>> _estimateCaloriesWithService({
+    required String apiKey,
+    required String prompt,
+  }) {
+    final settings = SettingsService.instance.settings;
+    final service = OpenAIService(
+      apiKey,
+      requestTimeout: Duration(seconds: settings.openAiTimeoutSeconds),
+    );
+    return service.estimateCalories(
+      model: settings.model,
+      languageCode: settings.languageCode,
+      reasoningEffort: settings.reasoningEffort,
+      maxOutputTokens: settings.maxOutputTokens,
+      userInput: prompt,
+      history: _history,
+    );
   }
 
   Future<bool?> _askSaveToLibrary(String foodName) {
@@ -229,6 +285,9 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
   }
 
   Future<void> _saveAiItems() async {
+    if (_loading || _saving) {
+      return;
+    }
     final l10n = AppLocalizations.of(context)!;
     if (_items.isEmpty) {
       setState(() => _errorMessage = l10n.requestCaloriesBeforeSaving);
@@ -239,147 +298,196 @@ class _AddNewFoodScreenState extends State<AddNewFoodScreen> {
       return;
     }
 
-    final visibleFlags = <bool>[];
-    for (final item in _items) {
-      final decision = await _askSaveToLibrary((item['name'] as String?) ?? '');
-      if (decision == null) {
+    setState(() {
+      _saving = true;
+      _errorMessage = null;
+    });
+    try {
+      final visibleFlags = <bool>[];
+      for (final item in _items) {
+        final decision =
+            await _askSaveToLibrary((item['name'] as String?) ?? '');
+        if (!mounted) {
+          return;
+        }
+        if (decision == null) {
+          return;
+        }
+        visibleFlags.add(decision);
+      }
+
+      final latestUserPrompt = _history.lastWhere(
+        (item) => item['role'] == 'user',
+        orElse: () => {'content': _inputController.text},
+      )['content'];
+      final prompt = (latestUserPrompt ?? _inputController.text).trim();
+      final response = jsonEncode({'items': _items});
+      final operation = widget.saveEntryGroup;
+      if (operation == null) {
+        await EntriesRepository.instance.createEntryGroup(
+          date: _entryDate,
+          prompt: prompt,
+          response: response,
+          items: _items,
+          visibleInLibraryFlags: visibleFlags,
+        );
+      } else {
+        await operation(
+          date: _entryDate,
+          prompt: prompt,
+          response: response,
+          items: _items,
+          visibleInLibraryFlags: visibleFlags,
+        );
+      }
+      if (!mounted) {
         return;
       }
-      visibleFlags.add(decision);
-    }
-
-    final latestUserPrompt = _history.lastWhere(
-      (item) => item['role'] == 'user',
-      orElse: () => {'content': _inputController.text},
-    )['content'];
-    await EntriesRepository.instance.createEntryGroup(
-      date: _entryDate,
-      prompt: (latestUserPrompt ?? _inputController.text).trim(),
-      response: jsonEncode({'items': _items}),
-      items: _items,
-      visibleInLibraryFlags: visibleFlags,
-    );
-    if (mounted) {
+      setState(() => _saving = false);
       Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _saving = false;
+        _errorMessage = l10n.failedToSaveItem(error.toString());
+      });
+    } finally {
+      if (mounted && _saving) {
+        setState(() => _saving = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isBusy = _loading;
+    final isBusy = _loading || _saving;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.addNewFoodTitle)),
-      body: AbsorbPointer(
-        absorbing: isBusy,
-        child: ListView(
-          padding: const EdgeInsets.all(UiConstants.pagePadding),
-          children: [
-            LabeledInputBox(
-              label: l10n.foodAndAmountsLabel,
-              controller: _inputController,
-              enabled: !isBusy,
-              minLines: 3,
-              maxLines: 6,
-              contentHeight: UiConstants.settingsFieldHeight,
-              keyboardType: TextInputType.multiline,
-            ),
-            const SizedBox(height: UiConstants.mediumSpacing),
-            AppButton(
-              onPressed: isBusy
-                  ? null
-                  : () {
-                      final text = _inputController.text.trim();
-                      if (text.isEmpty) {
-                        setState(() => _errorMessage = l10n.enterFoodItems);
-                        return;
-                      }
-                      setState(() {
-                        _items = [];
+    return PopScope(
+      canPop: !isBusy,
+      child: Scaffold(
+        appBar: AppBar(title: Text(l10n.addNewFoodTitle)),
+        body: AbsorbPointer(
+          absorbing: isBusy,
+          child: ListView(
+            padding: const EdgeInsets.all(UiConstants.pagePadding),
+            children: [
+              LabeledInputBox(
+                label: l10n.foodAndAmountsLabel,
+                controller: _inputController,
+                enabled: !isBusy,
+                minLines: 3,
+                maxLines: 6,
+                contentHeight: UiConstants.settingsFieldHeight,
+                keyboardType: TextInputType.multiline,
+              ),
+              const SizedBox(height: UiConstants.mediumSpacing),
+              AppButton(
+                onPressed: isBusy
+                    ? null
+                    : () {
+                        final text = _inputController.text.trim();
+                        if (text.isEmpty) {
+                          setState(() => _errorMessage = l10n.enterFoodItems);
+                          return;
+                        }
+                        setState(() {
+                          _items = [];
+                          _errorMessage = null;
+                          _history.clear();
+                          _history.add({'role': 'user', 'content': text});
+                        });
+                        _submitAi(prompt: text);
+                      },
+                icon: _loading
+                    ? const SizedBox(
+                        height: UiConstants.loadingIndicatorSize,
+                        width: UiConstants.loadingIndicatorSize,
+                        child: CircularProgressIndicator(
+                          strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                        ),
+                      )
+                    : const Icon(Icons.auto_awesome_outlined),
+                label: l10n.estimateCaloriesButton,
+              ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: UiConstants.mediumSpacing),
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
+              if (_rawAiResponseText != null &&
+                  _rawAiResponseText!.trim().isNotEmpty) ...[
+                const SizedBox(height: UiConstants.smallSpacing),
+                RawAiResponseSection(
+                  title: l10n.showAiResponseButton,
+                  responseText: _rawAiResponseText!,
+                ),
+              ],
+              if (_items.isNotEmpty) ...[
+                const SizedBox(height: UiConstants.largeSpacing),
+                _AiResultsCard(
+                  items: _items,
+                  multiplierControllers: _multiplierControllers,
+                  onMultiplierChanged: (index, value) {
+                    setState(() {
+                      if (_parsePositiveDouble(value) != null) {
                         _errorMessage = null;
-                        _history.clear();
-                        _history.add({'role': 'user', 'content': text});
-                      });
-                      _submitAi(prompt: text);
-                    },
-              icon: isBusy
-                  ? const SizedBox(
-                      height: UiConstants.loadingIndicatorSize,
-                      width: UiConstants.loadingIndicatorSize,
-                      child: CircularProgressIndicator(
-                        strokeWidth: UiConstants.loadingIndicatorStrokeWidth,
+                      }
+                    });
+                  },
+                  onComputedValuesChanged: (
+                    index, {
+                    required calories,
+                    required fat,
+                    required protein,
+                    required carbs,
+                    required multiplier,
+                  }) {
+                    setState(() {
+                      _items[index]['multiplier'] = multiplier;
+                      _items[index]['calories'] = calories;
+                      _items[index]['fat'] = fat;
+                      _items[index]['protein'] = protein;
+                      _items[index]['carbs'] = carbs;
+                    });
+                  },
+                ),
+                const SizedBox(height: UiConstants.mediumSpacing),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        onPressed: isBusy ? null : () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        label: l10n.cancelButton,
                       ),
-                    )
-                  : const Icon(Icons.auto_awesome_outlined),
-              label: l10n.estimateCaloriesButton,
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: UiConstants.mediumSpacing),
-              Text(
-                _errorMessage!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            if (_rawAiResponseText != null &&
-                _rawAiResponseText!.trim().isNotEmpty) ...[
-              const SizedBox(height: UiConstants.smallSpacing),
-              RawAiResponseSection(
-                title: l10n.showAiResponseButton,
-                responseText: _rawAiResponseText!,
-              ),
-            ],
-            if (_items.isNotEmpty) ...[
-              const SizedBox(height: UiConstants.largeSpacing),
-              _AiResultsCard(
-                items: _items,
-                multiplierControllers: _multiplierControllers,
-                onMultiplierChanged: (index, value) {
-                  setState(() {
-                    if (_parsePositiveDouble(value) != null) {
-                      _errorMessage = null;
-                    }
-                  });
-                },
-                onComputedValuesChanged: (
-                  index, {
-                  required calories,
-                  required fat,
-                  required protein,
-                  required carbs,
-                  required multiplier,
-                }) {
-                  setState(() {
-                    _items[index]['multiplier'] = multiplier;
-                    _items[index]['calories'] = calories;
-                    _items[index]['fat'] = fat;
-                    _items[index]['protein'] = protein;
-                    _items[index]['carbs'] = carbs;
-                  });
-                },
-              ),
-              const SizedBox(height: UiConstants.mediumSpacing),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppButton(
-                      onPressed: isBusy ? null : () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                      label: l10n.cancelButton,
                     ),
-                  ),
-                  const SizedBox(width: UiConstants.buttonSpacing),
-                  Expanded(
-                    child: AppButton(
-                      onPressed: isBusy ? null : _saveAiItems,
-                      icon: const Icon(Icons.save_outlined),
-                      label: l10n.saveButton,
+                    const SizedBox(width: UiConstants.buttonSpacing),
+                    Expanded(
+                      child: AppButton(
+                        onPressed: isBusy ? null : _saveAiItems,
+                        icon: _saving
+                            ? const SizedBox(
+                                height: UiConstants.loadingIndicatorSize,
+                                width: UiConstants.loadingIndicatorSize,
+                                child: CircularProgressIndicator(
+                                  strokeWidth:
+                                      UiConstants.loadingIndicatorStrokeWidth,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: l10n.saveButton,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

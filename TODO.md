@@ -75,14 +75,16 @@ verify each item independently.
   - Done when a bulk action either applies to every selected item or changes
     nothing.
 
-- [ ] Make async food screens safe during navigation.
+- [x] Make async food screens safe during navigation.
   - Prevent or safely handle navigation while requests and saves are active.
   - Guard every post-`await` UI update with the appropriate mounted check.
   - Cover success and failure paths in add-food, food-definition, and
     food-item-detail screens.
   - Relevant code:
     [add_new_food_screen.dart](lib/screens/add_new_food_screen.dart#L145),
-    [food_definition_screen.dart](lib/screens/food_definition_screen.dart#L153)
+    [food_definition_screen.dart](lib/screens/food_definition_screen.dart#L153),
+    [food_item_detail_screen.dart](lib/screens/food_item_detail_screen.dart),
+    [async_food_screens_test.dart](test/screens/async_food_screens_test.dart)
   - Done when leaving a screen during an operation cannot trigger
     `setState()` after disposal or an invalid navigation action.
 
