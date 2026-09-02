@@ -70,8 +70,44 @@ class EntriesRepository {
     if (foods.isEmpty) {
       return;
     }
-    final entryId = await _findOrCreateLibraryEntryRow(db, date: date);
+    final start = AppDateUtils.dayOnly(date);
+    final end = AppDateUtils.addCalendarDays(start, 1);
+    int? entryId;
     for (final food in foods) {
+      final multiplier = food.multiplier > 0 ? food.multiplier : 1.0;
+      final existingRows = await db.rawQuery(
+        '''
+        SELECT entry_items.id
+        FROM entry_items
+        INNER JOIN entries ON entries.id = entry_items.entry_id
+        WHERE entry_items.food_id = ?
+          AND entries.entry_date >= ?
+          AND entries.entry_date < ?
+        ORDER BY entries.created_at DESC, entry_items.id DESC
+        LIMIT 1
+        ''',
+        [food.foodId, start.toIso8601String(), end.toIso8601String()],
+      );
+      if (existingRows.isNotEmpty) {
+        final itemId = (existingRows.first['id'] as num).toInt();
+        final updated = await db.rawUpdate(
+          '''
+          UPDATE entry_items
+          SET multiplier = CASE
+            WHEN multiplier > 0 THEN multiplier
+            ELSE 1.0
+          END + ?
+          WHERE id = ?
+          ''',
+          [multiplier, itemId],
+        );
+        if (updated != 1) {
+          throw StateError('Entry item $itemId does not exist.');
+        }
+        continue;
+      }
+
+      entryId ??= await _findOrCreateLibraryEntryRow(db, date: date);
       await db.insert('entry_items', {
         'entry_id': entryId,
         'food_id': food.foodId,
@@ -84,7 +120,7 @@ class EntriesRepository {
         'standard_amount': '',
         'standard_unit': '',
         'standard_unit_amount': 1.0,
-        'multiplier': food.multiplier > 0 ? food.multiplier : 1.0,
+        'multiplier': multiplier,
         'standard_calories': 0,
         'standard_fat': 0,
         'standard_protein': 0,

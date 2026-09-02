@@ -199,6 +199,77 @@ void main() {
       expect(items.map((item) => item.multiplier), [1, 200]);
     });
 
+    test('same-day adds combine with the first matching food item', () async {
+      final repository = EntriesRepository.instance;
+      await db.insert('entries', {
+        'id': 2,
+        'entry_date': '2026-01-01T00:00:00.000',
+        'created_at': '2026-01-01T13:00:00.000',
+        'prompt': 'Newer entry',
+        'response': '',
+      });
+      await _insertEntryItem(
+        db,
+        id: 13,
+        entryId: 2,
+        foodId: 1,
+        multiplier: 20,
+      );
+
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: DateTime(2026, 1, 1, 23, 59),
+        foodId: 1,
+        multiplier: 30,
+      );
+
+      final rows = await db.query(
+        'entry_items',
+        columns: ['id', 'multiplier'],
+        where: 'food_id = ?',
+        whereArgs: [1],
+        orderBy: 'id ASC',
+      );
+      expect(rows, hasLength(2));
+      expect(rows[0]['multiplier'], 150.0);
+      expect(rows[1]['multiplier'], 50.0);
+      expect(await db.query('entries'), hasLength(2));
+    });
+
+    test('same-day add matches by food ID and normalizes the new amount',
+        () async {
+      final repository = EntriesRepository.instance;
+      await FoodLibraryService.instance.updateFoodInDatabase(
+        db,
+        foodId: 2,
+        name: 'Food 1',
+        standardUnit: 'g',
+        standardUnitAmount: 100,
+        standardCalories: 100,
+        standardFat: 1,
+        standardProtein: 2,
+        standardCarbs: 3,
+        notes: '',
+        isVisibleInLibrary: true,
+      );
+
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: DateTime(2026, 1, 1),
+        foodId: 1,
+        multiplier: 0,
+      );
+
+      final items = await repository.fetchItemsForDateInDatabase(
+        db,
+        DateTime(2026, 1, 1),
+      );
+      expect(items, hasLength(3));
+      expect(items.singleWhere((item) => item.foodId == 1).multiplier, 151);
+      expect(items.singleWhere((item) => item.foodId == 2).multiplier, 150);
+      expect(await db.query('entries'), hasLength(1));
+    });
+
     test('fetches only the requested date in newest-first order', () async {
       final repository = EntriesRepository.instance;
       final sourceItems = await repository.fetchItemsForDateInDatabase(
@@ -312,6 +383,78 @@ void main() {
       expect(copied.map((item) => item.multiplier), [150, 150]);
       expect(await _sourceItemIds(db), [10, 11, 12]);
     });
+
+    test('bulk copy combines matching foods and inserts unmatched foods',
+        () async {
+      final repository = EntriesRepository.instance;
+      final targetDate = DateTime(2026, 2, 2);
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: targetDate,
+        foodId: 1,
+        multiplier: 25,
+      );
+
+      await repository.copyItemsToDateInDatabase(
+        db,
+        items: [_item(id: 10, foodId: 1), _item(id: 11, foodId: 2)],
+        date: targetDate,
+      );
+
+      final copied = await repository.fetchItemsForDateInDatabase(
+        db,
+        targetDate,
+      );
+      expect(copied, hasLength(2));
+      expect(copied.singleWhere((item) => item.foodId == 1).multiplier, 175);
+      expect(copied.singleWhere((item) => item.foodId == 2).multiplier, 150);
+      expect(
+        await db.query(
+          'entries',
+          where: 'entry_date = ?',
+          whereArgs: ['2026-02-02T00:00:00.000'],
+        ),
+        hasLength(1),
+      );
+    });
+
+    test('bulk copy rolls back combined and inserted foods together', () async {
+      final repository = EntriesRepository.instance;
+      final targetDate = DateTime(2026, 2, 2);
+      await repository.addFoodToDateInDatabase(
+        db,
+        date: targetDate,
+        foodId: 1,
+        multiplier: 25,
+      );
+      await db.execute(
+        '''
+        CREATE TRIGGER fail_unmatched_bulk_copy
+        BEFORE INSERT ON entry_items
+        WHEN NEW.food_id = 2
+        BEGIN
+          SELECT RAISE(ABORT, 'injected copy failure');
+        END
+        ''',
+      );
+
+      await expectLater(
+        repository.copyItemsToDateInDatabase(
+          db,
+          items: [_item(id: 10, foodId: 1), _item(id: 11, foodId: 2)],
+          date: targetDate,
+        ),
+        throwsA(isA<DatabaseException>()),
+      );
+
+      final copied = await repository.fetchItemsForDateInDatabase(
+        db,
+        targetDate,
+      );
+      expect(copied, hasLength(1));
+      expect(copied.single.foodId, 1);
+      expect(copied.single.multiplier, 25);
+    });
   });
 }
 
@@ -361,6 +504,35 @@ Future<List<int>> _sourceItemIds(Database db) async {
   return rows.map((row) => (row['id'] as num).toInt()).toList();
 }
 
+Future<void> _insertEntryItem(
+  Database db, {
+  required int id,
+  required int entryId,
+  required int foodId,
+  required double multiplier,
+}) async {
+  await db.insert('entry_items', {
+    'id': id,
+    'entry_id': entryId,
+    'food_id': foodId,
+    'name': '',
+    'amount': '',
+    'calories': 0,
+    'fat': 0.0,
+    'protein': 0.0,
+    'carbs': 0.0,
+    'standard_amount': '',
+    'standard_unit': '',
+    'standard_unit_amount': 1.0,
+    'multiplier': multiplier,
+    'standard_calories': 0.0,
+    'standard_fat': 0.0,
+    'standard_protein': 0.0,
+    'standard_carbs': 0.0,
+    'notes': '',
+  });
+}
+
 Future<void> _seedData(Database db) async {
   for (var id = 1; id <= 3; id++) {
     await db.insert('foods', {
@@ -386,25 +558,12 @@ Future<void> _seedData(Database db) async {
     'response': '',
   });
   for (var id = 10; id <= 12; id++) {
-    await db.insert('entry_items', {
-      'id': id,
-      'entry_id': 1,
-      'food_id': id - 9,
-      'name': '',
-      'amount': '',
-      'calories': 0,
-      'fat': 0.0,
-      'protein': 0.0,
-      'carbs': 0.0,
-      'standard_amount': '',
-      'standard_unit': '',
-      'standard_unit_amount': 1.0,
-      'multiplier': 150.0,
-      'standard_calories': 0.0,
-      'standard_fat': 0.0,
-      'standard_protein': 0.0,
-      'standard_carbs': 0.0,
-      'notes': '',
-    });
+    await _insertEntryItem(
+      db,
+      id: id,
+      entryId: 1,
+      foodId: id - 9,
+      multiplier: 150,
+    );
   }
 }

@@ -85,38 +85,12 @@ void main() {
       expect(foods, hasLength(1));
       expect(foods.single.name, 'Apple');
 
-      await _pumpRoute(
-        tester,
-        AddEntryScreen(
-          date: _today,
-          loadFoods: ({
-            required searchQuery,
-            required visibleOnly,
-          }) =>
-              FoodLibraryService.instance.fetchFoodsInDatabase(
-            db,
-            searchQuery: searchQuery,
-            visibleOnly: visibleOnly,
-          ),
-          addExistingFood: ({
-            required date,
-            required foodId,
-            required multiplier,
-          }) =>
-              EntriesRepository.instance.addFoodToDateInDatabase(
-            db,
-            date: date,
-            foodId: foodId,
-            multiplier: multiplier,
-          ),
-        ),
-      );
-      await tester.tap(find.text('Apple'));
-      await tester.pumpAndSettle();
+      await _pumpAddEntry(tester, db);
+      await _pumpAddEntry(tester, db);
 
       await _pumpHome(tester, db);
       expect(find.text('Apple'), findsOneWidget);
-      expect(find.text('100 g'), findsOneWidget);
+      expect(find.text('200 g'), findsOneWidget);
 
       final loggedItem =
           (await EntriesRepository.instance.fetchItemsForDateInDatabase(
@@ -124,6 +98,7 @@ void main() {
         _today,
       ))
               .single;
+      expect(loggedItem.multiplier, 200);
       await _pumpRoute(
         tester,
         FoodItemDetailScreen(
@@ -165,6 +140,12 @@ void main() {
       );
       await EntriesRepository.instance.addFoodToDateInDatabase(
         db,
+        date: _today,
+        foodId: appleId,
+        multiplier: 50,
+      );
+      await EntriesRepository.instance.addFoodToDateInDatabase(
+        db,
         date: previousDay,
         foodId: bananaId,
         multiplier: 100,
@@ -194,6 +175,10 @@ void main() {
         _today,
       );
       expect(todayItems.map((item) => item.name).toSet(), {'Apple', 'Banana'});
+      expect(
+        todayItems.singleWhere((item) => item.foodId == appleId).multiplier,
+        150,
+      );
       expect(find.text('July 20, 2026'), findsOneWidget);
 
       await tester.pumpWidget(
@@ -304,6 +289,37 @@ Future<void> _pumpHome(
       ),
     ),
   );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpAddEntry(
+  WidgetTester tester,
+  Database db,
+) async {
+  await _pumpRoute(
+    tester,
+    AddEntryScreen(
+      date: _today,
+      loadFoods: ({required searchQuery, required visibleOnly}) =>
+          FoodLibraryService.instance.fetchFoodsInDatabase(
+        db,
+        searchQuery: searchQuery,
+        visibleOnly: visibleOnly,
+      ),
+      addExistingFood: ({
+        required date,
+        required foodId,
+        required multiplier,
+      }) =>
+          EntriesRepository.instance.addFoodToDateInDatabase(
+        db,
+        date: date,
+        foodId: foodId,
+        multiplier: multiplier,
+      ),
+    ),
+  );
+  await tester.tap(find.text('Apple'));
   await tester.pumpAndSettle();
 }
 
