@@ -154,11 +154,11 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   }
 
   bool _isFutureDay(DateTime day) => day.isAfter(_todayDayOnly());
-  bool _isCompletedWeek(List<_DayMetricTotals> dailyTotals) {
-    if (dailyTotals.isEmpty) {
+  bool _hasReachedWeekEnd(List<_DayMetricTotals> dailyTotals) {
+    if (dailyTotals.length != 7) {
       return false;
     }
-    return dailyTotals.last.date.isBefore(_todayDayOnly());
+    return !dailyTotals.last.date.isAfter(_todayDayOnly());
   }
 
   void _openDay(DateTime date) {
@@ -195,10 +195,12 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
     List<ResolvedDailyDeficit?>? resolvedDeficits,
     AppLocalizations l10n,
   ) {
-    if (!_isCompletedWeek(dailyTotals)) {
+    if (!_hasReachedWeekEnd(dailyTotals)) {
       return '-';
     }
-    if (resolvedDeficits == null) {
+    if (resolvedDeficits == null ||
+        resolvedDeficits.length != dailyTotals.length ||
+        resolvedDeficits.any((deficit) => deficit == null)) {
       return '-';
     }
     final nonNull = resolvedDeficits

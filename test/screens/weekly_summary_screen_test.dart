@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:calorie_tracker/models/food_item.dart';
 import 'package:calorie_tracker/models/metabolic_profile.dart';
 import 'package:calorie_tracker/screens/weekly_summary_screen.dart';
+import 'package:calorie_tracker/widgets/labeled_group_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -96,6 +97,57 @@ void main() {
       );
     });
 
+    testWidgets('shows the full weekly deficit on Sunday after food is logged',
+        (tester) async {
+      await _pumpWeekly(
+        tester,
+        now: DateTime(2026, 7, 19, 12),
+        loadItems: (date) async =>
+            date.day == 19 ? [_food(calories: 1000)] : [],
+        settle: true,
+      );
+
+      expect(find.text('5460 kcal*'), findsOneWidget);
+      expect(find.text('780 kcal'), findsOneWidget);
+      expect(find.text('780 kcal*'), findsNWidgets(6));
+    });
+
+    testWidgets('keeps the weekly deficit hidden on an unlogged Sunday',
+        (tester) async {
+      await _pumpWeekly(
+        tester,
+        now: DateTime(2026, 7, 19, 12),
+        loadItems: (date) async =>
+            date.day == 13 ? [_food(calories: 1000)] : [],
+        settle: true,
+      );
+
+      final weeklyDeficitBox =
+          find.widgetWithText(LabeledGroupBox, 'Weekly deficit');
+      expect(weeklyDeficitBox, findsOneWidget);
+      expect(
+        find.descendant(of: weeklyDeficitBox, matching: find.text('-')),
+        findsOneWidget,
+      );
+      expect(find.text('4680 kcal*'), findsNothing);
+    });
+
+    testWidgets('shows Monday actual deficit immediately after food is logged',
+        (tester) async {
+      await _pumpWeekly(
+        tester,
+        anchorDate: DateTime(2026, 7, 20),
+        now: DateTime(2026, 7, 20, 12),
+        loadItems: (date) async =>
+            date.day == 20 ? [_food(calories: 1000)] : [],
+        settle: true,
+      );
+
+      expect(find.text('780 kcal'), findsOneWidget);
+      expect(find.text('5460 kcal'), findsNothing);
+      expect(find.textContaining('* Estimated'), findsNothing);
+    });
+
     testWidgets('pages to current week, blocks future days, and returns today',
         (tester) async {
       final selectedDays = <DateTime>[];
@@ -165,6 +217,7 @@ final _today = DateTime(2026, 7, 20, 12);
 Future<void> _pumpWeekly(
   WidgetTester tester, {
   DateTime? anchorDate,
+  DateTime? now,
   required WeeklyItemsLoadOperation loadItems,
   ValueChanged<DateTime>? onDaySelected,
   bool settle = false,
@@ -177,7 +230,7 @@ Future<void> _pumpWeekly(
     localizedTestApp(
       home: WeeklySummaryScreen(
         anchorDate: anchorDate ?? DateTime(2026, 7, 13),
-        now: () => _today,
+        now: () => now ?? _today,
         languageCode: 'en',
         loadItems: loadItems,
         loadProfiles: ({

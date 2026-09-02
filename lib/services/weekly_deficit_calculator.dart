@@ -35,7 +35,7 @@ class WeeklyDeficitCalculator {
     final observedDeficits = days
         .where((day) {
           final date = AppDateUtils.dayOnly(day.date);
-          return date.isBefore(todayDay) &&
+          return !date.isAfter(todayDay) &&
               day.itemCount > 0 &&
               day.calorieTarget != null;
         })

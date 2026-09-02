@@ -47,7 +47,7 @@ void main() {
       expect(deficits?[2]?.estimated, isTrue);
     });
 
-    test('returns no result without a logged past day', () {
+    test('returns no result without a logged day through today', () {
       final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
         days: [
           _day(DateTime(2026, 7, 13)),
@@ -75,6 +75,39 @@ void main() {
       expect(deficits?[1]?.estimated, isTrue);
       expect(deficits?[2], isNull);
       expect(deficits?[3], isNull);
+    });
+
+    test('shows an actual deficit for a logged current day', () {
+      final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
+        days: [
+          _day(DateTime(2026, 7, 20), calories: 1500, itemCount: 1),
+          _day(DateTime(2026, 7, 21), calories: 1500, itemCount: 1),
+        ],
+        today: DateTime(2026, 7, 20, 22),
+      );
+
+      expect(deficits?[0]?.value, 500);
+      expect(deficits?[0]?.estimated, isFalse);
+      expect(deficits?[1], isNull);
+    });
+
+    test('uses a logged Sunday to estimate earlier missing week days', () {
+      final deficits = WeeklyDeficitCalculator.resolveDailyDeficits(
+        days: [
+          for (var day = 13; day <= 18; day++) _day(DateTime(2026, 7, day)),
+          _day(DateTime(2026, 7, 19), calories: 1500, itemCount: 1),
+        ],
+        today: DateTime(2026, 7, 19, 22),
+      );
+
+      expect(
+        deficits?.map((deficit) => deficit?.value),
+        [500, 500, 500, 500, 500, 500, 500],
+      );
+      expect(
+        deficits?.map((deficit) => deficit?.estimated),
+        [true, true, true, true, true, true, false],
+      );
     });
 
     test('preserves negative deficits and includes them in the average', () {
