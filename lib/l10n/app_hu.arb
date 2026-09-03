@@ -278,7 +278,9 @@
   "foodDetailsTitle": "Étel részletei",
   "multiplierLabel": "Szorzó",
   "invalidMultiplierValue": "Adj meg egy érvényes, 0-nál nagyobb szorzót.",
+  "copyButton": "Másolás",
   "copyToTodayButton": "Másolás mára",
+  "pasteButton": "Beillesztés",
   "selectedItemsCount": "{count} kijelölve",
   "@selectedItemsCount": {
     "placeholders": {
@@ -298,8 +300,8 @@
       "count": {}
     }
   },
-  "failedToCopySelectedItems": "A kijelölt tételek másolása sikertelen. {error}",
-  "@failedToCopySelectedItems": {
+  "failedToPasteCopiedItems": "A másolt tételek beillesztése sikertelen. {error}",
+  "@failedToPasteCopiedItems": {
     "placeholders": {
       "error": {}
     }

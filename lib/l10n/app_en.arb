@@ -278,7 +278,9 @@
   "foodDetailsTitle": "Food details",
   "multiplierLabel": "Multiplier",
   "invalidMultiplierValue": "Please enter a valid multiplier greater than 0.",
+  "copyButton": "Copy",
   "copyToTodayButton": "Copy to today",
+  "pasteButton": "Paste",
   "selectedItemsCount": "{count} selected",
   "@selectedItemsCount": {
     "placeholders": {
@@ -298,8 +300,8 @@
       "count": {}
     }
   },
-  "failedToCopySelectedItems": "Failed to copy selected items. {error}",
-  "@failedToCopySelectedItems": {
+  "failedToPasteCopiedItems": "Failed to paste copied items. {error}",
+  "@failedToPasteCopiedItems": {
     "placeholders": {
       "error": {}
     }

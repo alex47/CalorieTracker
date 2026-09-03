@@ -550,7 +550,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please enter a valid multiplier greater than 0.';
 
   @override
+  String get copyButton => 'Copy';
+
+  @override
   String get copyToTodayButton => 'Copy to today';
+
+  @override
+  String get pasteButton => 'Paste';
 
   @override
   String selectedItemsCount(Object count) {
@@ -571,8 +577,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String failedToCopySelectedItems(Object error) {
-    return 'Failed to copy selected items. $error';
+  String failedToPasteCopiedItems(Object error) {
+    return 'Failed to paste copied items. $error';
   }
 
   @override

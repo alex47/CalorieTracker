@@ -6,7 +6,7 @@ The app is built primarily for Android, with Linux desktop support used for loca
 
 ## Features
 
-- Daily food logging with swipe navigation between dates.
+- Daily food logging with swipe navigation and one-shot copy/paste between dates.
 - Reusable food library with search, manual food definitions, portion editing, usage counts, and merge tooling.
 - AI-assisted food creation through the OpenAI Responses API with strict JSON output.
 - Daily and weekly views for calories, macros, and calorie deficit.
@@ -18,7 +18,7 @@ The app is built primarily for Android, with Linux desktop support used for loca
 
 ## App Flow
 
-The home screen shows the selected day, daily calorie progress, macro progress, and tracked foods. Dates are paged by swiping, and future days are blocked.
+The home screen shows the selected day, daily calorie progress, macro progress, and tracked foods. Dates are paged by swiping, and future days are blocked. Long-press food rows to select multiple items, then copy and paste them once into another day, copy them directly to today, or delete them.
 
 Adding food starts from the saved food library. New foods can be created manually or estimated with OpenAI from free-form text, then adjusted before saving.
 

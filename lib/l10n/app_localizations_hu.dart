@@ -556,7 +556,13 @@ class AppLocalizationsHu extends AppLocalizations {
       'Adj meg egy érvényes, 0-nál nagyobb szorzót.';
 
   @override
+  String get copyButton => 'Másolás';
+
+  @override
   String get copyToTodayButton => 'Másolás mára';
+
+  @override
+  String get pasteButton => 'Beillesztés';
 
   @override
   String selectedItemsCount(Object count) {
@@ -577,8 +583,8 @@ class AppLocalizationsHu extends AppLocalizations {
   }
 
   @override
-  String failedToCopySelectedItems(Object error) {
-    return 'A kijelölt tételek másolása sikertelen. $error';
+  String failedToPasteCopiedItems(Object error) {
+    return 'A másolt tételek beillesztése sikertelen. $error';
   }
 
   @override

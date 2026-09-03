@@ -102,12 +102,14 @@ class _HomeScreenState extends State<HomeScreen>
   final Map<String, Future<DailyTargets?>> _targetFutures = {};
   final Map<String, Future<MetabolicProfile?>> _profileFutures = {};
   final Map<int, FoodItem> _selectedItems = <int, FoodItem>{};
+  List<FoodItem> _clipboardItems = const <FoodItem>[];
   PageRoute<dynamic>? _route;
-  bool _bulkCopying = false;
+  bool _pastingItems = false;
   bool _bulkDeleting = false;
 
   bool get _selectionMode => _selectedItems.isNotEmpty;
-  bool get _bulkActionBusy => _bulkCopying || _bulkDeleting;
+  bool get _hasClipboardItems => _clipboardItems.isNotEmpty;
+  bool get _bulkActionBusy => _pastingItems || _bulkDeleting;
   DateTime _now() => widget.now?.call() ?? DateTime.now();
 
   @override
@@ -273,6 +275,17 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
+  void _copySelectedItems() {
+    if (_selectedItems.isEmpty || _bulkActionBusy) {
+      return;
+    }
+    final copiedItems = List<FoodItem>.unmodifiable(_selectedItems.values);
+    setState(() {
+      _clipboardItems = copiedItems;
+      _selectedItems.clear();
+    });
+  }
+
   Widget _bulkActionIcon({
     required bool loading,
     required IconData icon,
@@ -295,44 +308,66 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Future<void> _copySelectedItemsToToday() async {
-    if (_selectedItems.isEmpty || _isTodaySelected() || _bulkActionBusy) {
+  Future<void> _pasteClipboardToDate(
+    DateTime date, {
+    required Future<void> Function() onSuccess,
+  }) async {
+    if (_clipboardItems.isEmpty || _bulkActionBusy) {
       return;
     }
     final l10n = AppLocalizations.of(context)!;
-    final selectedItems = _selectedItems.values.toList(growable: false);
-    setState(() => _bulkCopying = true);
-    var copied = false;
+    final clipboardItems = _clipboardItems;
+    setState(() => _pastingItems = true);
     try {
-      final today = _now();
-      await (widget.copyItems?.call(items: selectedItems, date: today) ??
+      await (widget.copyItems?.call(items: clipboardItems, date: date) ??
           EntriesRepository.instance.copyItemsToDate(
-            items: selectedItems,
-            date: today,
+            items: clipboardItems,
+            date: date,
           ));
-      copied = true;
       if (!mounted) {
         return;
       }
-      await _jumpToDate(today);
-      if (!mounted) {
-        return;
-      }
+      await onSuccess();
     } catch (error) {
       if (!mounted) {
         return;
       }
-      _showSnackBar(l10n.failedToCopySelectedItems(error.toString()));
+      _showSnackBar(l10n.failedToPasteCopiedItems(error.toString()));
     } finally {
       if (mounted) {
         setState(() {
-          _bulkCopying = false;
-          if (copied) {
-            _selectedItems.clear();
-          }
+          _pastingItems = false;
+          _clipboardItems = const <FoodItem>[];
         });
+      } else {
+        _pastingItems = false;
+        _clipboardItems = const <FoodItem>[];
       }
     }
+  }
+
+  Future<void> _pasteClipboardToSelectedDate() async {
+    final selectedDate = _selectedDate;
+    await _pasteClipboardToDate(
+      selectedDate,
+      onSuccess: () => _reloadDate(selectedDate),
+    );
+  }
+
+  Future<void> _copySelectedItemsToToday() async {
+    if (_selectedItems.isEmpty || _isTodaySelected() || _bulkActionBusy) {
+      return;
+    }
+    final today = _now();
+    final copiedItems = List<FoodItem>.unmodifiable(_selectedItems.values);
+    setState(() {
+      _clipboardItems = copiedItems;
+      _selectedItems.clear();
+    });
+    await _pasteClipboardToDate(
+      today,
+      onSuccess: () => _jumpToDate(today),
+    );
   }
 
   Future<void> _deleteSelectedItems() async {
@@ -533,60 +568,93 @@ class _HomeScreenState extends State<HomeScreen>
 
   double _bottomActionReserveHeight(BuildContext context) {
     final safeBottom = MediaQuery.of(context).padding.bottom;
-    return kMinInteractiveDimension + UiConstants.largeSpacing + safeBottom;
+    final rowCount = _selectionMode || _hasClipboardItems ? 2 : 1;
+    return (UiConstants.buttonHeight * rowCount) +
+        (UiConstants.buttonSpacing * (rowCount - 1)) +
+        UiConstants.largeSpacing +
+        safeBottom;
+  }
+
+  Widget _buildTwoColumnActionRow({
+    Widget? left,
+    Widget? right,
+  }) {
+    return Row(
+      children: [
+        Expanded(child: left ?? const SizedBox.shrink()),
+        const SizedBox(width: UiConstants.buttonSpacing),
+        Expanded(child: right ?? const SizedBox.shrink()),
+      ],
+    );
   }
 
   Widget _buildNormalFloatingActions(AppLocalizations l10n) {
-    return Row(
+    final normalActions = _buildTwoColumnActionRow(
+      left: FutureBuilder<List<FoodItem>>(
+        future: _itemsForDate(_selectedDate),
+        builder: (context, snapshot) {
+          final hasItems = (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
+          final canSummarize = !_bulkActionBusy &&
+              snapshot.connectionState != ConnectionState.waiting &&
+              hasItems;
+          return AppButton(
+            onPressed: canSummarize
+                ? () => _openDaySummaryScreen(_selectedDate)
+                : null,
+            icon: const Icon(Icons.auto_awesome_outlined),
+            label: l10n.summarizeDayButton,
+          );
+        },
+      ),
+      right: AppButton(
+        onPressed: _bulkActionBusy ? null : _navigateToAdd,
+        icon: const Icon(Icons.add_outlined),
+        label: l10n.addButton,
+      ),
+    );
+    if (!_hasClipboardItems) {
+      return normalActions;
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: FutureBuilder<List<FoodItem>>(
-            future: _itemsForDate(_selectedDate),
-            builder: (context, snapshot) {
-              final hasItems = (snapshot.data ?? const <FoodItem>[]).isNotEmpty;
-              final canSummarize = !_bulkActionBusy &&
-                  snapshot.connectionState != ConnectionState.waiting &&
-                  hasItems;
-              return AppButton(
-                onPressed: canSummarize
-                    ? () => _openDaySummaryScreen(_selectedDate)
-                    : null,
-                icon: const Icon(Icons.auto_awesome_outlined),
-                label: l10n.summarizeDayButton,
-              );
-            },
+        _buildTwoColumnActionRow(
+          right: AppButton(
+            onPressed: _bulkActionBusy ? null : _pasteClipboardToSelectedDate,
+            icon: _bulkActionIcon(
+              loading: _pastingItems,
+              icon: Icons.content_paste_outlined,
+            ),
+            label: l10n.pasteButton,
           ),
         ),
-        const SizedBox(width: UiConstants.buttonSpacing),
-        Expanded(
-          child: AppButton(
-            onPressed: _bulkActionBusy ? null : _navigateToAdd,
-            icon: const Icon(Icons.add_outlined),
-            label: l10n.addButton,
-          ),
-        ),
+        const SizedBox(height: UiConstants.buttonSpacing),
+        normalActions,
       ],
     );
   }
 
   Widget _buildSelectionFloatingActions(AppLocalizations l10n) {
-    return Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: AppButton(
+        _buildTwoColumnActionRow(
+          left: AppButton(
+            onPressed: _bulkActionBusy ? null : _copySelectedItems,
+            icon: const Icon(Icons.copy_outlined),
+            label: l10n.copyButton,
+          ),
+        ),
+        const SizedBox(height: UiConstants.buttonSpacing),
+        _buildTwoColumnActionRow(
+          left: AppButton(
             onPressed: _bulkActionBusy || _isTodaySelected()
                 ? null
                 : _copySelectedItemsToToday,
-            icon: _bulkActionIcon(
-              loading: _bulkCopying,
-              icon: Icons.content_copy_outlined,
-            ),
+            icon: const Icon(Icons.content_copy_outlined),
             label: l10n.copyToTodayButton,
           ),
-        ),
-        const SizedBox(width: UiConstants.buttonSpacing),
-        Expanded(
-          child: AppButton(
+          right: AppButton(
             onPressed: _bulkActionBusy ? null : _deleteSelectedItems,
             icon: _bulkActionIcon(
               loading: _bulkDeleting,

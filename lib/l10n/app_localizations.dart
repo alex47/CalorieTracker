@@ -1052,11 +1052,23 @@ abstract class AppLocalizations {
   /// **'Please enter a valid multiplier greater than 0.'**
   String get invalidMultiplierValue;
 
+  /// No description provided for @copyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyButton;
+
   /// No description provided for @copyToTodayButton.
   ///
   /// In en, this message translates to:
   /// **'Copy to today'**
   String get copyToTodayButton;
+
+  /// No description provided for @pasteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get pasteButton;
 
   /// No description provided for @selectedItemsCount.
   ///
@@ -1082,11 +1094,11 @@ abstract class AppLocalizations {
   /// **'Deleted {count} items.'**
   String deletedSelectedItemsMessage(Object count);
 
-  /// No description provided for @failedToCopySelectedItems.
+  /// No description provided for @failedToPasteCopiedItems.
   ///
   /// In en, this message translates to:
-  /// **'Failed to copy selected items. {error}'**
-  String failedToCopySelectedItems(Object error);
+  /// **'Failed to paste copied items. {error}'**
+  String failedToPasteCopiedItems(Object error);
 
   /// No description provided for @failedToDeleteSelectedItems.
   ///

@@ -255,7 +255,7 @@ class _CalorieTrackerAppState extends State<CalorieTrackerApp> {
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.buttonBackground,
               foregroundColor: AppColors.buttonForeground,
-              minimumSize: const Size(0, 52),
+              minimumSize: const Size(0, UiConstants.buttonHeight),
               padding: const EdgeInsets.symmetric(
                   horizontal: UiConstants.pagePadding),
               textStyle: appTextTheme.labelLarge,

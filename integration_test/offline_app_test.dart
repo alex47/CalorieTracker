@@ -166,8 +166,16 @@ void main() {
       await tester.pumpAndSettle();
       await tester.longPress(find.text('Apple'));
       await tester.longPress(find.text('Banana'));
-      await tester.tap(find.text('Copy to today'));
+      await tester.tap(find.text('Copy'));
+      await tester.pump();
+      expect(find.text('Paste'), findsOneWidget);
+
+      await tester.drag(find.byType(PageView), const Offset(-700, 0));
       await tester.pumpAndSettle();
+      expect(find.text('July 20, 2026'), findsOneWidget);
+      await tester.tap(find.text('Paste'));
+      await tester.pumpAndSettle();
+      expect(find.text('Paste'), findsNothing);
 
       final todayItems =
           await EntriesRepository.instance.fetchItemsForDateInDatabase(

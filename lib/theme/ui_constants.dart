@@ -18,6 +18,7 @@ class UiConstants {
 
   static const double cornerRadius = 6;
   static const double borderWidth = 1;
+  static const double buttonHeight = 52;
   static const double buttonMinWidth = 110;
   static const double buttonSpacing = smallSpacing;
   static const double metricGroupMinWidth = 100;
@@ -43,5 +44,6 @@ class UiConstants {
   static const double groupBoxHeaderGapHorizontalPadding = 4;
 
   static const Duration homePageSnapDuration = Duration(milliseconds: 260);
-  static const Duration progressBarAnimationDuration = Duration(milliseconds: 1000);
+  static const Duration progressBarAnimationDuration =
+      Duration(milliseconds: 1000);
 }
