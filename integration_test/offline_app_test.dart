@@ -168,11 +168,12 @@ void main() {
       await tester.longPress(find.text('Banana'));
       await tester.tap(find.text('Copy'));
       await tester.pump();
-      expect(find.text('Paste'), findsOneWidget);
+      expect(find.text('Paste'), findsNothing);
 
       await tester.drag(find.byType(PageView), const Offset(-700, 0));
       await tester.pumpAndSettle();
       expect(find.text('July 20, 2026'), findsOneWidget);
+      expect(find.text('Paste'), findsOneWidget);
       await tester.tap(find.text('Paste'));
       await tester.pumpAndSettle();
       expect(find.text('Paste'), findsNothing);

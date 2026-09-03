@@ -103,12 +103,15 @@ class _HomeScreenState extends State<HomeScreen>
   final Map<String, Future<MetabolicProfile?>> _profileFutures = {};
   final Map<int, FoodItem> _selectedItems = <int, FoodItem>{};
   List<FoodItem> _clipboardItems = const <FoodItem>[];
+  DateTime? _clipboardSourceDate;
   PageRoute<dynamic>? _route;
   bool _pastingItems = false;
   bool _bulkDeleting = false;
 
   bool get _selectionMode => _selectedItems.isNotEmpty;
   bool get _hasClipboardItems => _clipboardItems.isNotEmpty;
+  bool get _canPasteToSelectedDate =>
+      _hasClipboardItems && _clipboardSourceDate != _selectedDate;
   bool get _bulkActionBusy => _pastingItems || _bulkDeleting;
   DateTime _now() => widget.now?.call() ?? DateTime.now();
 
@@ -282,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen>
     final copiedItems = List<FoodItem>.unmodifiable(_selectedItems.values);
     setState(() {
       _clipboardItems = copiedItems;
+      _clipboardSourceDate = _selectedDate;
       _selectedItems.clear();
     });
   }
@@ -338,15 +342,20 @@ class _HomeScreenState extends State<HomeScreen>
         setState(() {
           _pastingItems = false;
           _clipboardItems = const <FoodItem>[];
+          _clipboardSourceDate = null;
         });
       } else {
         _pastingItems = false;
         _clipboardItems = const <FoodItem>[];
+        _clipboardSourceDate = null;
       }
     }
   }
 
   Future<void> _pasteClipboardToSelectedDate() async {
+    if (!_canPasteToSelectedDate) {
+      return;
+    }
     final selectedDate = _selectedDate;
     await _pasteClipboardToDate(
       selectedDate,
@@ -362,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen>
     final copiedItems = List<FoodItem>.unmodifiable(_selectedItems.values);
     setState(() {
       _clipboardItems = copiedItems;
-      _selectedItems.clear();
+      _clipboardSourceDate = _selectedDate;
     });
     await _pasteClipboardToDate(
       today,
@@ -568,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   double _bottomActionReserveHeight(BuildContext context) {
     final safeBottom = MediaQuery.of(context).padding.bottom;
-    final rowCount = _selectionMode || _hasClipboardItems ? 2 : 1;
+    final rowCount = _selectionMode || _canPasteToSelectedDate ? 2 : 1;
     return (UiConstants.buttonHeight * rowCount) +
         (UiConstants.buttonSpacing * (rowCount - 1)) +
         UiConstants.largeSpacing +
@@ -612,7 +621,7 @@ class _HomeScreenState extends State<HomeScreen>
         label: l10n.addButton,
       ),
     );
-    if (!_hasClipboardItems) {
+    if (!_canPasteToSelectedDate) {
       return normalActions;
     }
     return Column(
@@ -651,7 +660,10 @@ class _HomeScreenState extends State<HomeScreen>
             onPressed: _bulkActionBusy || _isTodaySelected()
                 ? null
                 : _copySelectedItemsToToday,
-            icon: const Icon(Icons.content_copy_outlined),
+            icon: _bulkActionIcon(
+              loading: _pastingItems,
+              icon: Icons.content_copy_outlined,
+            ),
             label: l10n.copyToTodayButton,
           ),
           right: AppButton(

@@ -216,12 +216,13 @@ void main() {
       await tester.tap(find.text('Copy'));
       await tester.pump();
       expect(find.text('1 selected'), findsNothing);
-      expect(find.text('Paste'), findsOneWidget);
+      expect(find.text('Paste'), findsNothing);
 
       await tester.longPress(find.text('Banana'));
       await tester.tap(find.text('Copy'));
       await tester.pump();
       expect(find.text('1 selected'), findsNothing);
+      expect(find.text('Paste'), findsNothing);
       expect(pastedItems, isNull);
 
       await _swipeToPreviousDay(tester);
@@ -230,6 +231,14 @@ void main() {
         tester.getCenter(_buttonFinder('Paste')).dy,
         lessThan(tester.getCenter(_buttonFinder('Add')).dy),
       );
+
+      await tester.drag(find.byType(PageView), const Offset(-700, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('July 20, 2026'), findsOneWidget);
+      expect(find.text('Paste'), findsNothing);
+
+      await _swipeToPreviousDay(tester);
+      expect(find.text('Paste'), findsOneWidget);
 
       await tester.tap(find.text('Paste'));
       await tester.pump();
@@ -280,9 +289,10 @@ void main() {
       await tester.longPress(find.text('Today food'));
       await tester.tap(find.text('Copy'));
       await tester.pump();
-      expect(find.text('Paste'), findsOneWidget);
+      expect(find.text('Paste'), findsNothing);
 
       await _swipeToPreviousDay(tester);
+      expect(find.text('Paste'), findsOneWidget);
       await tester.longPress(find.text('Apple'));
       await tester.longPress(find.text('Banana'));
       await tester.pump();
@@ -292,12 +302,12 @@ void main() {
 
       expect(copiedItems?.map((item) => item.id), [1, 2]);
       expect(copiedDate, _today);
-      expect(find.text('2 selected'), findsNothing);
-      expect(find.text('Copy to today'), findsNothing);
-      expect(_button('Paste').onPressed, isNull);
+      expect(find.text('2 selected'), findsOneWidget);
+      expect(find.text('Paste'), findsNothing);
+      expect(_button('Copy to today').onPressed, isNull);
       expect(
         find.descendant(
-          of: _buttonFinder('Paste'),
+          of: _buttonFinder('Copy to today'),
           matching: find.byType(CircularProgressIndicator),
         ),
         findsOneWidget,
@@ -313,7 +323,8 @@ void main() {
       expect(find.textContaining('Copied'), findsNothing);
     });
 
-    testWidgets('copy-to-today failure stays on source and clears clipboard',
+    testWidgets(
+        'copy-to-today failure stays on source, retains selection, and clears clipboard',
         (tester) async {
       await _pumpHome(
         tester,
@@ -330,13 +341,18 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('July 19, 2026'), findsOneWidget);
-      expect(find.text('1 selected'), findsNothing);
+      expect(find.text('1 selected'), findsOneWidget);
       expect(find.text('Paste'), findsNothing);
       expect(
         find.textContaining('Failed to paste copied items.'),
         findsOneWidget,
       );
-      expect(_button('Add').onPressed, isNotNull);
+      expect(_button('Copy to today').onPressed, isNotNull);
+
+      await tester.tap(find.text('Apple'));
+      await tester.pump();
+      expect(find.text('1 selected'), findsNothing);
+      expect(find.text('Paste'), findsNothing);
     });
 
     testWidgets('paste failure stays on destination and clears clipboard',
