@@ -79,6 +79,13 @@ class AppLocalizationsHu extends AppLocalizations {
   String get notesLabel => 'Megjegyzések';
 
   @override
+  String get recentlyAddedFoods => 'Legutóbb hozzáadott ételek';
+
+  @override
+  String get retryRecentFoods =>
+      'Nem sikerült betölteni a legutóbbi ételeket. Újra';
+
+  @override
   String get searchFoodsLabel => 'Ételek keresése';
 
   @override

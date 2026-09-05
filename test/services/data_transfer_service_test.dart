@@ -33,6 +33,7 @@ void main() {
       expect(summary.entriesCount, 1);
       expect(summary.itemsCount, 1);
       expect(await _ids(db, 'foods'), [20]);
+      expect((await db.query('foods')).single['last_added_sequence'], isNull);
       expect(await _ids(db, 'entries'), [10]);
       expect(await _ids(db, 'entry_items'), [30]);
       expect(
@@ -51,6 +52,7 @@ void main() {
 
     test('exports, encodes, decodes, and imports a complete round trip',
         () async {
+      await db.update('foods', {'last_added_sequence': 7});
       await db.insert('metabolic_profile_history', {
         'id': 2,
         'profile_date': '2025-01-01',
@@ -156,6 +158,19 @@ void main() {
       );
       expect(included['secure'], {'openai_api_key': 'secret'});
     });
+
+    for (final value in [0, -1, 1.5, 'recent']) {
+      test('rejects invalid recent-food order $value without data loss',
+          () async {
+        final payload = _validPayload();
+        payload.foods.single['last_added_sequence'] = value;
+        await expectLater(
+          DataTransferService.instance.applyImportDataInDatabase(db, payload),
+          throwsA(isA<FormatException>()),
+        );
+        await _expectExistingData(db);
+      });
+    }
 
     test('rejects malformed decoded backup structures', () {
       final service = DataTransferService.instance;
@@ -638,7 +653,8 @@ Future<void> _createSchema(Database db) async {
       notes TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      is_visible_in_library INTEGER NOT NULL
+      is_visible_in_library INTEGER NOT NULL,
+      last_added_sequence INTEGER
     )
     ''',
   );

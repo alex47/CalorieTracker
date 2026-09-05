@@ -23,6 +23,8 @@
   "foodUsesLabel": "Használat",
   "amountLabel": "Mennyiség",
   "notesLabel": "Megjegyzések",
+  "recentlyAddedFoods": "Legutóbb hozzáadott ételek",
+  "retryRecentFoods": "Nem sikerült betölteni a legutóbbi ételeket. Újra",
   "searchFoodsLabel": "Ételek keresése",
   "noFoodsFound": "Nem találhatók ételek.",
   "standardUnitLabel": "Egység",

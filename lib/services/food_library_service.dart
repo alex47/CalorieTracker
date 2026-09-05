@@ -17,6 +17,7 @@ class FoodLibraryService {
   FoodLibraryService._();
 
   static final FoodLibraryService instance = FoodLibraryService._();
+  static const int recentFoodLimit = 5;
 
   static double? defaultQuantityConversionFactor({
     required String sourceUnit,
@@ -90,6 +91,30 @@ class FoodLibraryService {
       ORDER BY LOWER(foods.name) ASC, foods.id ASC
       ''',
       whereArgs,
+    );
+    return rows.map(FoodDefinition.fromMap).toList(growable: false);
+  }
+
+  Future<List<FoodDefinition>> fetchRecentFoods() async {
+    final db = await DatabaseService.instance.database;
+    return fetchRecentFoodsInDatabase(db);
+  }
+
+  Future<List<FoodDefinition>> fetchRecentFoodsInDatabase(
+    DatabaseExecutor db,
+  ) async {
+    final rows = await db.rawQuery(
+      '''
+      SELECT foods.*, COUNT(entry_items.id) AS usage_count
+      FROM foods
+      LEFT JOIN entry_items ON entry_items.food_id = foods.id
+      WHERE foods.last_added_sequence IS NOT NULL
+        AND foods.is_visible_in_library = 1
+      GROUP BY foods.id
+      ORDER BY foods.last_added_sequence DESC, foods.id DESC
+      LIMIT ?
+      ''',
+      [recentFoodLimit],
     );
     return rows.map(FoodDefinition.fromMap).toList(growable: false);
   }

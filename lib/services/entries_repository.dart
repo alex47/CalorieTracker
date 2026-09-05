@@ -225,6 +225,7 @@ class EntriesRepository {
     required DateTime date,
     required int foodId,
     required double multiplier,
+    bool recordRecentAddition = false,
   }) async {
     final db = await DatabaseService.instance.database;
     await addFoodToDateInDatabase(
@@ -232,6 +233,7 @@ class EntriesRepository {
       date: date,
       foodId: foodId,
       multiplier: multiplier,
+      recordRecentAddition: recordRecentAddition,
     );
   }
 
@@ -240,13 +242,28 @@ class EntriesRepository {
     required DateTime date,
     required int foodId,
     required double multiplier,
+    bool recordRecentAddition = false,
   }) async {
-    await db.transaction((txn) {
-      return _addFoodReferencesToDate(
+    await db.transaction((txn) async {
+      await _addFoodReferencesToDate(
         txn,
         date: date,
         foods: [(foodId: foodId, multiplier: multiplier)],
       );
+      if (recordRecentAddition) {
+        // Only the Add Food page opts in. Record order independently of the
+        // selected log date and commit it together with the logged quantity.
+        await txn.rawUpdate(
+          '''
+          UPDATE foods
+          SET last_added_sequence = (
+            SELECT COALESCE(MAX(last_added_sequence), 0) + 1 FROM foods
+          )
+          WHERE id = ?
+          ''',
+          [foodId],
+        );
+      }
     });
   }
 

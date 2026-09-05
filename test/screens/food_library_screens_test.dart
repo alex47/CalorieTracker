@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:calorie_tracker/models/food_definition.dart';
 import 'package:calorie_tracker/screens/add_entry_screen.dart';
 import 'package:calorie_tracker/screens/foods_screen.dart';
@@ -30,6 +32,7 @@ void main() {
 
       expect(find.text('Apple'), findsOneWidget);
       expect(find.text('Banana'), findsOneWidget);
+      expect(find.text('Recently added'), findsNothing);
       await tester.enterText(find.byType(TextField), 'app');
       await tester.pumpAndSettle();
       expect(find.text('Apple'), findsOneWidget);
@@ -125,6 +128,7 @@ void main() {
         screen: AddEntryScreen(
           date: DateTime(2026, 7, 19),
           loadFoods: _singleFoodLoader,
+          loadRecentFoods: () async => [],
           addExistingFood: ({
             required date,
             required foodId,
@@ -137,6 +141,7 @@ void main() {
         ),
       );
 
+      expect(find.text('Recently added'), findsNothing);
       await tester.tap(find.text('Apple'));
       await tester.pumpAndSettle();
 
@@ -154,6 +159,7 @@ void main() {
         tester,
         screen: AddEntryScreen(
           date: DateTime(2026, 7, 19),
+          loadRecentFoods: () async => [],
           loadFoods: ({required searchQuery, required visibleOnly}) async {
             loadCount += 1;
             return [_food(1, 'Apple')];
@@ -176,6 +182,131 @@ void main() {
       expect(loadCount, 2);
     });
 
+    for (final viewport in [const Size(360, 640), const Size(900, 1400)]) {
+      for (final language in ['en', 'hu']) {
+        testWidgets('recent foods add with defaults at $viewport in $language',
+            (tester) async {
+          final foods = List.generate(5, (i) => _food(i + 1, 'Food ${i + 1}'));
+          DateTime? addedDate;
+          int? addedId;
+          double? quantity;
+          bool? routeResult;
+          await _openAddEntry(
+            tester,
+            viewport: viewport,
+            locale: Locale(language),
+            onResult: (result) => routeResult = result,
+            screen: AddEntryScreen(
+              date: DateTime(2026, 7, 18),
+              loadFoods: ({required searchQuery, required visibleOnly}) async =>
+                  foods,
+              loadRecentFoods: () async => foods.reversed.toList(),
+              addExistingFood: (
+                  {required date, required foodId, required multiplier}) async {
+                addedDate = date;
+                addedId = foodId;
+                quantity = multiplier;
+              },
+            ),
+          );
+          expect(tester.takeException(), isNull);
+          final heading = find.text(language == 'en'
+              ? 'Recently added'
+              : 'Legutóbb hozzáadott ételek');
+          expect(heading, findsOneWidget);
+          expect(tester.getTopLeft(heading).dy,
+              lessThan(tester.getTopLeft(find.byType(TextField)).dy));
+          final recentFood = find.text('Food 5').first;
+          await tester.ensureVisible(recentFood);
+          await tester.tap(recentFood);
+          await tester.pumpAndSettle();
+          expect(addedDate, DateTime(2026, 7, 18));
+          expect(addedId, 5);
+          expect(quantity, 100);
+          expect(routeResult, isTrue);
+        });
+      }
+    }
+
+    testWidgets(
+        'search filters the full list while recent foods remain available',
+        (tester) async {
+      var recentLoads = 0;
+      await _openAddEntry(
+        tester,
+        screen: AddEntryScreen(
+          loadRecentFoods: () async {
+            recentLoads++;
+            return [_food(1, 'Apple')];
+          },
+          loadFoods: ({required searchQuery, required visibleOnly}) async => [
+            _food(1, 'Apple'),
+            _food(2, 'Banana')
+          ]
+              .where((food) => food.name.toLowerCase().contains(searchQuery))
+              .toList(),
+        ),
+      );
+      expect(find.text('Apple'), findsNWidgets(2));
+      await tester.enterText(find.byType(TextField), 'banana');
+      await tester.pumpAndSettle();
+      expect(find.text('Apple'), findsOneWidget);
+      expect(find.text('Banana'), findsOneWidget);
+      expect(recentLoads, 1);
+    });
+
+    testWidgets(
+        'recent load failures can retry while the regular list is usable',
+        (tester) async {
+      var attempts = 0;
+      final pending = Completer<List<FoodDefinition>>();
+      await _openAddEntry(
+        tester,
+        screen: AddEntryScreen(
+          loadFoods: _singleFoodLoader,
+          loadRecentFoods: () {
+            attempts++;
+            return attempts == 1
+                ? Future.error(StateError('load failed'))
+                : pending.future;
+          },
+        ),
+      );
+      expect(find.text('Apple'), findsOneWidget);
+      await tester.tap(find.text('Could not load recent foods. Retry'));
+      await tester.pump();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      pending.complete([_food(1, 'Apple')]);
+      await tester.pumpAndSettle();
+      expect(find.text('Recently added'), findsOneWidget);
+      expect(find.text('Apple'), findsNWidgets(2));
+      expect(attempts, 2);
+    });
+
+    testWidgets('a failed recent add follows the same error and reload path',
+        (tester) async {
+      var recentLoads = 0;
+      await _openAddEntry(
+        tester,
+        screen: AddEntryScreen(
+          loadFoods: _singleFoodLoader,
+          loadRecentFoods: () async {
+            recentLoads++;
+            return [_food(1, 'Apple')];
+          },
+          addExistingFood: (
+              {required date, required foodId, required multiplier}) async {
+            throw StateError('add failed');
+          },
+        ),
+      );
+      await tester.tap(find.text('Apple').first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('add failed'), findsOneWidget);
+      expect(find.text('Recently added'), findsOneWidget);
+      expect(recentLoads, 2);
+    });
+
     testWidgets('returns only when add-new reports a saved food',
         (tester) async {
       bool? routeResult;
@@ -187,6 +318,7 @@ void main() {
         screen: AddEntryScreen(
           date: DateTime(2026, 7, 18),
           loadFoods: _singleFoodLoader,
+          loadRecentFoods: () async => [],
           openAddNew: (date) async {
             openedDates.add(date);
             return shouldReturnSaved;
@@ -234,10 +366,14 @@ Future<void> _openAddEntry(
   WidgetTester tester, {
   required AddEntryScreen screen,
   ValueChanged<bool?>? onResult,
+  Size viewport = const Size(900, 1400),
+  Locale locale = const Locale('en'),
 }) async {
   await _setViewport(tester);
+  tester.view.physicalSize = viewport;
   await tester.pumpWidget(
     localizedTestApp(
+      locale: locale,
       home: Builder(
         builder: (context) => Scaffold(
           body: Center(

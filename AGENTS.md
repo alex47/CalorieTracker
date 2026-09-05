@@ -66,6 +66,9 @@ callbacks where needed for deterministic widget tests.
 - Adding or copying a food to a day where that food already exists combines its
   quantity into the first existing item for that food instead of creating
   another row.
+- Recent-food history is updated only by successful additions from the Add Food
+  page, in the same transaction as the log change. Food creation and copying
+  must not update this history.
 - Weekly deficit behavior and estimation rules are documented in `README.md`.
   Do not change those rules incidentally while changing presentation code.
 

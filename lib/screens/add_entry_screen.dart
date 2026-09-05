@@ -21,6 +21,7 @@ class AddEntryScreen extends StatefulWidget {
     super.key,
     this.date,
     this.loadFoods,
+    this.loadRecentFoods,
     this.addExistingFood,
     this.openAddNew,
   });
@@ -29,6 +30,7 @@ class AddEntryScreen extends StatefulWidget {
 
   final DateTime? date;
   final FoodLibraryLoadOperation? loadFoods;
+  final Future<List<FoodDefinition>> Function()? loadRecentFoods;
   final AddExistingFoodOperation? addExistingFood;
   final AddNewFoodNavigationOperation? openAddNew;
 
@@ -75,6 +77,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             date: _entryDate,
             foodId: food.id,
             multiplier: multiplier,
+            recordRecentAddition: true,
           ));
       if (!mounted) {
         return;
@@ -116,6 +119,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         children: [
           FoodLibraryBrowser(
             loadFoods: widget.loadFoods,
+            showRecentFoods: true,
+            loadRecentFoods: widget.loadRecentFoods,
             reloadToken: _libraryReloadToken,
             onFoodTap: _openExistingFood,
           ),

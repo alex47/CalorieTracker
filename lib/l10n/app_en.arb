@@ -23,6 +23,8 @@
   "foodUsesLabel": "Uses",
   "amountLabel": "Amount",
   "notesLabel": "Notes",
+  "recentlyAddedFoods": "Recently added",
+  "retryRecentFoods": "Could not load recent foods. Retry",
   "searchFoodsLabel": "Search foods",
   "noFoodsFound": "No foods found.",
   "standardUnitLabel": "Unit",

@@ -236,6 +236,18 @@ abstract class AppLocalizations {
   /// **'Notes'**
   String get notesLabel;
 
+  /// No description provided for @recentlyAddedFoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently added'**
+  String get recentlyAddedFoods;
+
+  /// No description provided for @retryRecentFoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load recent foods. Retry'**
+  String get retryRecentFoods;
+
   /// No description provided for @searchFoodsLabel.
   ///
   /// In en, this message translates to:

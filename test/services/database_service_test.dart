@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:calorie_tracker/services/database_service.dart';
+import 'package:calorie_tracker/services/entries_repository.dart';
+import 'package:calorie_tracker/services/food_library_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -44,6 +46,8 @@ void main() {
           ]),
         );
 
+        expect(
+            await _columnNames(db, 'foods'), contains('last_added_sequence'));
         final entryItemColumns = await _columnNames(db, 'entry_items');
         expect(
           entryItemColumns,
@@ -69,6 +73,81 @@ void main() {
         expect(
           await _objectNames(db, type: 'index'),
           contains('idx_entry_items_food_id'),
+        );
+      } finally {
+        await db.close();
+      }
+    });
+
+    test('upgrades version 11 without inventing history and persists new adds',
+        () async {
+      final databasePath = path.join(tempDirectory.path, 'recent.db');
+      var db = await _openDatabase(
+        databasePath,
+        version: 11,
+        onCreate: (db, version) async {
+          await _createVersion10Schema(db, version);
+          await _seedVersion10Data(db);
+          await db.execute("""
+            CREATE TABLE foods (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name TEXT NOT NULL,
+              standard_unit TEXT NOT NULL,
+              standard_unit_amount REAL NOT NULL DEFAULT 1.0,
+              standard_calories REAL NOT NULL DEFAULT 0,
+              standard_fat REAL NOT NULL DEFAULT 0,
+              standard_protein REAL NOT NULL DEFAULT 0,
+              standard_carbs REAL NOT NULL DEFAULT 0,
+              notes TEXT,
+              created_at TEXT NOT NULL,
+              updated_at TEXT NOT NULL,
+              is_visible_in_library INTEGER NOT NULL DEFAULT 1
+            )
+          """);
+          await db
+              .execute('ALTER TABLE entry_items ADD COLUMN food_id INTEGER');
+          await db.insert('foods', {
+            'id': 1,
+            'name': 'Apple',
+            'standard_unit': 'g',
+            'standard_unit_amount': 100,
+            'created_at': '2026-01-01',
+            'updated_at': '2026-01-01',
+          });
+          await db.update('entry_items', {'food_id': 1});
+        },
+      );
+      final originalItems = await db.query('entry_items');
+      await db.close();
+      db = await _openDatabase(
+        databasePath,
+        version: DatabaseService.schemaVersion,
+        onUpgrade: DatabaseService.upgradeSchema,
+      );
+      final library = FoodLibraryService.instance;
+      try {
+        expect(await db.getVersion(), 12);
+        expect(await db.query('entry_items'), originalItems);
+        expect(await library.fetchRecentFoodsInDatabase(db), isEmpty);
+        await EntriesRepository.instance.addFoodToDateInDatabase(
+          db,
+          date: DateTime(2026, 7, 20),
+          foodId: 1,
+          multiplier: 100,
+          recordRecentAddition: true,
+        );
+      } finally {
+        await db.close();
+      }
+      db = await _openDatabase(
+        databasePath,
+        version: DatabaseService.schemaVersion,
+        onUpgrade: DatabaseService.upgradeSchema,
+      );
+      try {
+        expect(
+          (await library.fetchRecentFoodsInDatabase(db)).map((food) => food.id),
+          [1],
         );
       } finally {
         await db.close();

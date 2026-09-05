@@ -20,7 +20,7 @@ The app is built primarily for Android, with Linux desktop support used for loca
 
 The home screen shows the selected day, daily calorie progress, macro progress, and tracked foods. Dates are paged by swiping, and future days are blocked. Long-press food rows to select multiple items, then copy and paste them once into another day, copy them directly to today, or delete them.
 
-Adding food starts from the saved food library. New foods can be created manually or estimated with OpenAI from free-form text, then adjusted before saving.
+Adding food starts from the saved food library. The Add Food page shows up to five distinct recently added foods above the full library, newest first. Both lists add the food to the selected day with its standard amount. Only successful additions from this page update the recent list; repeating an addition moves that food to the top. Food creation and copy/paste do not update it. Recent history persists across app restarts and is included in JSON backups. New foods can be created manually or estimated with OpenAI from free-form text, then adjusted before saving.
 
 Food definitions are the live source of truth for linked logs. Editing a food updates the name, nutrition, unit, and notes shown for its past and future entries while preserving each entry's logged quantity.
 

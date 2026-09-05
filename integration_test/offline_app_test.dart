@@ -86,6 +86,11 @@ void main() {
       expect(foods.single.name, 'Apple');
 
       await _pumpAddEntry(tester, db);
+      expect(
+        (await FoodLibraryService.instance.fetchRecentFoodsInDatabase(db))
+            .map((food) => food.name),
+        ['Apple'],
+      );
       await _pumpAddEntry(tester, db);
 
       await _pumpHome(tester, db);
@@ -309,6 +314,8 @@ Future<void> _pumpAddEntry(
     tester,
     AddEntryScreen(
       date: _today,
+      loadRecentFoods: () =>
+          FoodLibraryService.instance.fetchRecentFoodsInDatabase(db),
       loadFoods: ({required searchQuery, required visibleOnly}) =>
           FoodLibraryService.instance.fetchFoodsInDatabase(
         db,
@@ -325,10 +332,11 @@ Future<void> _pumpAddEntry(
         date: date,
         foodId: foodId,
         multiplier: multiplier,
+        recordRecentAddition: true,
       ),
     ),
   );
-  await tester.tap(find.text('Apple'));
+  await tester.tap(find.text('Apple').first);
   await tester.pumpAndSettle();
 }
 

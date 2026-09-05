@@ -243,6 +243,7 @@ class DataTransferService {
             'updated_at': food['updated_at'] as String,
             'is_visible_in_library':
                 (food['is_visible_in_library'] as num).toInt(),
+            'last_added_sequence': food['last_added_sequence'],
           },
           conflictAlgorithm: ConflictAlgorithm.abort,
         );
@@ -382,6 +383,9 @@ class DataTransferService {
       _requireString(food, 'created_at', table: 'foods');
       _requireString(food, 'updated_at', table: 'foods');
       _requireNum(food, 'is_visible_in_library', table: 'foods');
+      if (food['last_added_sequence'] != null) {
+        _requirePositiveInt(food, 'last_added_sequence', table: 'foods');
+      }
       if ((food['standard_unit_amount'] as num).toDouble() <= 0) {
         throw const FormatException(
           'Invalid "foods.standard_unit_amount" in backup payload.',

@@ -79,6 +79,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notesLabel => 'Notes';
 
   @override
+  String get recentlyAddedFoods => 'Recently added';
+
+  @override
+  String get retryRecentFoods => 'Could not load recent foods. Retry';
+
+  @override
   String get searchFoodsLabel => 'Search foods';
 
   @override

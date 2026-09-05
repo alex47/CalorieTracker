@@ -7,7 +7,7 @@ class DatabaseService {
   DatabaseService._();
 
   static final DatabaseService instance = DatabaseService._();
-  static const int schemaVersion = 11;
+  static const int schemaVersion = 12;
 
   static Future<void> configureDatabase(Database db) async {
     await db.execute('PRAGMA foreign_keys = ON');
@@ -45,7 +45,8 @@ class DatabaseService {
             notes TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
-            is_visible_in_library INTEGER NOT NULL DEFAULT 1
+            is_visible_in_library INTEGER NOT NULL DEFAULT 1,
+            last_added_sequence INTEGER
           )
           ''',
     );
@@ -305,6 +306,10 @@ class DatabaseService {
         'CREATE INDEX idx_entry_items_food_id ON entry_items(food_id)',
       );
       await _migrateEntryItemsToFoods(db);
+    }
+    if (oldVersion < 12) {
+      await db
+          .execute('ALTER TABLE foods ADD COLUMN last_added_sequence INTEGER');
     }
   }
 
